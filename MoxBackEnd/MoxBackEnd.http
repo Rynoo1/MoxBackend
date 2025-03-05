@@ -1,0 +1,6 @@
+@MoxBackEnd_HostAddress = http://localhost:5183
+
+GET {{MoxBackEnd_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
