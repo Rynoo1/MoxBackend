@@ -1,3 +1,6 @@
+using Microsoft.EntityFrameworkCore;
+using MoxBackEnd.Data;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -7,6 +10,9 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+var connectionstring = builder.Configuration.GetConnectionString("LiveConnection");
+builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionstring));
 
 var app = builder.Build();
 
@@ -24,3 +30,9 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+
+
+///TODO: CREATE INTERFACES, SERVICES, AND CONTROLLERS
+/// - write all the endpoints for all the necessary functionality
+/// - set up a DTO
