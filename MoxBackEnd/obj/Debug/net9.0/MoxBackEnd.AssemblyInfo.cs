@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MoxBackEnd")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e2ff579bd30971266412bfa6c2e17d70f9f99f6a")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ccd06b379c085b1e1f99d1498e766d666da9b9bc")]
 [assembly: System.Reflection.AssemblyProductAttribute("MoxBackEnd")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MoxBackEnd")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

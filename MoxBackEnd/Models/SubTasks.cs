@@ -5,18 +5,21 @@ namespace MoxBackEnd.Controllers;
 public class SubTasks
 {
     /// <summary>
-    /// SubTasks table model
-    /// SubTaskID : string PK
-    /// Title : string
-    /// Description : string
-    /// State : string
-    /// TaskID : string FK
+    /// The ID of the task
+    /// 
     /// </summary>
     
-    public string SubTaskID { get; set; } // PK
+    public int TaskID { get; set; }
     public string Title { get; set; }
-    public string Description { get; set; }
-    public string State { get; set; }
-    public string TaskID { get; set; } // FK
+    public string? Description { get; set; }
+    public DateTime DueDate { get; set; }
+    public bool IsCompleted { get; set; } = false;
+    public DateTime? CompletedDate { get; set; }
+    public int? AssignedUserID { get; set; }
+    public User? AssignedUser { get; set; }
+    public int Priority { get; set; }
+    public int? ParentTaskId { get; set; }
+    public TaskItem? ParentTask { get; set; }
+    public ICollection<TaskItem> Subtasks { get; set; } = new List<TaskItem>();
     
 }
