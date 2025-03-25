@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "cLDapeeOAvo=",
+  "dgSpecHash": "ZPfo7TQDyw8=",
   "success": true,
-  "projectFilePath": "D:\\Varsity\\Year 3\\Interactive Development\\Semester 1\\Practical\\MoxBackend\\MoxBackEnd\\MoxBackEnd.csproj",
+  "projectFilePath": "D:\\Varsity\\Year 3\\Interactive Development\\Semester 1\\Practical\\newMoxbackend\\MoxBackend\\MoxBackEnd\\MoxBackEnd.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\m1cha\\.nuget\\packages\\azure.core\\1.38.0\\azure.core.1.38.0.nupkg.sha512",
     "C:\\Users\\m1cha\\.nuget\\packages\\azure.identity\\1.11.4\\azure.identity.1.11.4.nupkg.sha512",

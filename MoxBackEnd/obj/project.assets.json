@@ -8206,11 +8206,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\Varsity\\Year 3\\Interactive Development\\Semester 1\\Practical\\MoxBackend\\MoxBackEnd\\MoxBackEnd.csproj",
+      "projectUniqueName": "D:\\Varsity\\Year 3\\Interactive Development\\Semester 1\\Practical\\newMoxbackend\\MoxBackend\\MoxBackEnd\\MoxBackEnd.csproj",
       "projectName": "MoxBackEnd",
-      "projectPath": "D:\\Varsity\\Year 3\\Interactive Development\\Semester 1\\Practical\\MoxBackend\\MoxBackEnd\\MoxBackEnd.csproj",
+      "projectPath": "D:\\Varsity\\Year 3\\Interactive Development\\Semester 1\\Practical\\newMoxbackend\\MoxBackend\\MoxBackEnd\\MoxBackEnd.csproj",
       "packagesPath": "C:\\Users\\m1cha\\.nuget\\packages\\",
-      "outputPath": "D:\\Varsity\\Year 3\\Interactive Development\\Semester 1\\Practical\\MoxBackend\\MoxBackEnd\\obj\\",
+      "outputPath": "D:\\Varsity\\Year 3\\Interactive Development\\Semester 1\\Practical\\newMoxbackend\\MoxBackend\\MoxBackEnd\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\m1cha\\AppData\\Roaming\\NuGet\\NuGet.Config"
