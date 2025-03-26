@@ -1,4 +1,6 @@
+using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MoxBackEnd.Models
 {
@@ -20,16 +22,15 @@ namespace MoxBackEnd.Models
 
         public string? Location { get; set; }
 
-        // Optional: connect to a group/project
-        public int? GroupId { get; set; }
+        // Link to group/project (optional)
+        public string? GroupID { get; set; }
         public Group? Group { get; set; }
 
-        // Who created the meeting
         [Required]
         public int CreatedByUserId { get; set; }
         public User CreatedBy { get; set; } = null!;
 
-        // Attendees (many-to-many)
+        // Who should attend
         public ICollection<User> Attendees { get; set; } = new List<User>();
     }
 }
