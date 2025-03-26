@@ -13,7 +13,6 @@ namespace MoxBackEnd.Models
 
         public string? RoleDescription { get; set; }
 
-        // Navigation properties
         public ICollection<User> Users { get; set; } = new List<User>();
         public ICollection<Group> Groups { get; set; } = new List<Group>();
     }

@@ -21,7 +21,6 @@ namespace MoxBackEnd.Models
 
         public DateTime? CompletedDate { get; set; }
 
-        // Assigned user (optional)
         public int? AssignedUserId { get; set; }
         public User? AssignedUser { get; set; }
 

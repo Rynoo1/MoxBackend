@@ -26,7 +26,6 @@ namespace MoxBackEnd.Models
         public string? PhoneNumber { get; set; }
         public string? ProfileImage { get; set; }
 
-        // Navigation properties
         public ICollection<TaskItem> Tasks { get; set; } = new List<TaskItem>();
         public ICollection<Group> Groups { get; set; } = new List<Group>();
         public ICollection<Role> Roles { get; set; } = new List<Role>();

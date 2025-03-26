@@ -22,7 +22,6 @@ namespace MoxBackEnd.Models
 
         public string? Location { get; set; }
 
-        // Link to group/project (optional)
         public string? GroupID { get; set; }
         public Group? Group { get; set; }
 

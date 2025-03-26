@@ -12,7 +12,7 @@ namespace MoxBackEnd.Models
         [Required]
         public string Message { get; set; } = string.Empty;
 
-        public string? NoteType { get; set; }  // e.g. "Urgent", "Feedback", "Change Request"
+        public string? NoteType { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
@@ -20,11 +20,9 @@ namespace MoxBackEnd.Models
         public int AuthorId { get; set; }
         public User Author { get; set; } = null!;
 
-        // Optional: Link to a Group (Project)
         public string? GroupID { get; set; }
         public Group? Group { get; set; }
 
-        // Optional: Link to a specific Task
         public int? TaskItemId { get; set; }
         public TaskItem? TaskItem { get; set; }
     }

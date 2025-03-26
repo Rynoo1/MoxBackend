@@ -28,15 +28,12 @@ namespace MoxBackEnd.Models
         [Required]
         public bool IsCompleted { get; set; } = false;
 
-        // Assigned user
         public int? AssignedUserId { get; set; }
         public User? AssignedUser { get; set; }
 
-        // Group/project this task belongs to
         public string? GroupID { get; set; }
         public Group? Group { get; set; }
 
-        // Optional: For parent-child structure
         public int? ParentTaskId { get; set; }
         public TaskItem? ParentTask { get; set; }
 

@@ -17,7 +17,6 @@ namespace MoxBackEnd.Models
         // Assuming file uploads are stored as paths or URLs
         public string[] FileUploads { get; set; } = Array.Empty<string>();
 
-        // Navigation properties
         public ICollection<TaskItem> Tasks { get; set; } = new List<TaskItem>();
         public ICollection<User> Users { get; set; } = new List<User>();
         public ICollection<Role> Roles { get; set; } = new List<Role>();
