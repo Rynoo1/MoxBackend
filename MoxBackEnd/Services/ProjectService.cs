@@ -1,15 +1,20 @@
 using System;
+using MoxBackEnd.Data;
+using MoxBackEnd.Models;
 using MoxBackEnd.Interfaces;
 
 namespace MoxBackEnd.Services
 {
-    public class ProjectService : IProject
+    public class ProjectService : IProjects
     {
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public DateTime StartDate { get; set; }
-        public DateTime EndDate { get; set; }
+        private readonly AppDbContext _context;
+        public ProjectService(AppDbContext context)
+        {
+            _context = context;
+        }
+
+
+
 
     }
 }

@@ -13,11 +13,13 @@ public class Roles
 
 
     public string RoleName { get; set; } = string.Empty;
-    public string RoleDescription { get; set; } 
+    public string RoleDescription { get; set; } = string.Empty;
 
 
 
     //TODO - Navigation properties - ICollection does not exist
-    // public ICollection<User> Users { get; set; } = new List<User>();
+    // public ICollection<User> Users { get; set; } = new List<User>(); -- fetch/connect to a list
+    public Users? User { get; set; } // fetch/connect to a single 
+    public Projects? Projects { get; set; }
     // public ICollection<Projects> Projects { get; set; } = new List<Projects>();
 }
