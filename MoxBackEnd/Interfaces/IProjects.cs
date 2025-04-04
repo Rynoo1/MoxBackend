@@ -1,8 +1,9 @@
 using System;
+using MoxBackEnd.Models;
 
 namespace MoxBackEnd.Interfaces;
 
-public interface IProject
+public interface IProjects
 {
     int Id { get; set; }
     string Name { get; set; }
