@@ -5,7 +5,7 @@ namespace MoxBackEnd.Models;
 public class Tasks
 {
          [Key]
-        public int Id { get; set; }
+        public int TaskId { get; set; }
 
         [Required]
         public string Title { get; set; } = string.Empty;
