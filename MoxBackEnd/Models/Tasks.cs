@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace MoxBackEnd.Models;
 
@@ -26,14 +27,14 @@ public class Tasks
         [Required]
         public bool IsCompleted { get; set; } = false;
 
-        public int? AssignedUserId { get; set; }
-        public User? AssignedUser { get; set; }
+        // public int? AssignedUserId { get; set; }
+        // public Users? AssignedUser { get; set; }
 
-        public string? ProjectsID { get; set; }
-        public Group? Projects { get; set; }
+        // public string? ProjectsID { get; set; }
+        // public Group? Projects { get; set; }
 
-        public int? ParentTaskId { get; set; }
-        public TaskItem? ParentTask { get; set; }
+        // public int? ParentTaskId { get; set; }
+        // public TaskItem? ParentTask { get; set; }
 
-        public ICollection<TaskItem> Subtasks { get; set; } = new List<TaskItem>();
+        // public ICollection<TaskItem> Subtasks { get; set; } = new List<TaskItem>();
 }

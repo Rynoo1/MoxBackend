@@ -5,9 +5,7 @@ namespace MoxBackEnd.Interfaces;
 
 public interface IProjects
 {
-    int Id { get; set; }
-    string Name { get; set; }
-    string Description { get; set; }
-    DateTime StartDate { get; set; }
-    DateTime EndDate { get; set; }
+    Task<Projects> CreateProjectAsync(Projects projects); // takes in a param of type project - all the data has already been put into an object - add this object to the DB (where is the object created/populated?)
+    Task<Projects> AddUserAsync(Users user);
+    
 }
