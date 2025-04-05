@@ -1,17 +1,20 @@
 using System;
+using MoxBackEnd.Models;
 
 namespace MoxBackEnd.Interfaces;
 
 public interface IUser
 {
-    string UserName { get; set; }
-    string UserID { get; set; }
-    string UEmail { get; set; }
-    string UPassword { get; set; }
-    string ComfirmPassword { get; set; }
-    string UFirstName { get; set; }
-    string ULastName { get; set; }
-    string UPhoneNumber { get; set; }
-    string ProfileImage { get; set; }
+    public Task<bool> RegisterUser(Users user);
+    public Task<string> HashPassword(string password);
+    public Task<Users?> UserExists(string email);
+    public Task<bool> LoginUser(string email, string password);
+    public Task<bool> VaildatePassword(Users user, string password);
+    
+    Task<Users> GetUserID (int userID);
+    Task<Tasks> GetUserTasks (int userID);
+    Task<SubTasks> GetUserSubtasks (int userID);
+    Task<Roles> GetUserRoles (int userID);
+
 }
 

@@ -13,8 +13,14 @@ namespace MoxBackEnd.Services
             _context = context;
         }
 
+        public Task<Projects> AddUserAsync(Users user)
+        {
+            throw new NotImplementedException();
+        }
 
-
-
+        public Task<Projects> CreateProjectAsync(Projects projects)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

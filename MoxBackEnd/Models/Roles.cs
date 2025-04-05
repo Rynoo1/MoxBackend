@@ -1,25 +1,22 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using MoxBackEnd.Data;
+using MoxBackEnd.Interfaces;
 
 namespace MoxBackEnd.Models;
 
 public class Roles
 {
-
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int RoleID { get; set; } // PK
+    public int UserID { get; set; }
+    public int ProjectID {get; set; }
+    public string RoleDescription { get; set; } = string.Empty; // rolename
 
 
-    public string RoleName { get; set; } = string.Empty;
-    public string RoleDescription { get; set; } = string.Empty;
-
-
-
-    //TODO - Navigation properties - ICollection does not exist
-    // public ICollection<User> Users { get; set; } = new List<User>(); -- fetch/connect to a list
-    public Users? User { get; set; } // fetch/connect to a single 
-    public Projects? Projects { get; set; }
-    // public ICollection<Projects> Projects { get; set; } = new List<Projects>();
+    // Navigation properties
+    public Users? User { get; set; }
+    public Projects? Project { get; set; }
 }

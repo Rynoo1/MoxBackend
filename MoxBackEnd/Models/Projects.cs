@@ -1,15 +1,18 @@
 using System;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MoxBackEnd.Models;
 
 public class Projects
 {
-        public string ProjectsID { get; set; } // PK
-    public string ProjectsName { get; set; }
-    public TimeDate? DueDate { get; set; }
-    public string[] FileUploads { get; set; }
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    public int ProjectsID { get; set; } // PK
+    public string ProjectName { get; set; } = string.Empty;
+    public DateTime? DueDate { get; set; }
 
-    public ICollection<TaskItem> Tasks { get; set; } = new List<TaskItem>();
-    public ICollection<User> Users { get; set; } = new List<User>();
-    public ICollection<Roles> Roles { get; set; } = new List<Roles>();
+    //Navigation Properties
+    public List<FileUpload> FileUploads { get; set; } = new List<FileUpload>();
+    public List<Roles> Role { get; set; } = new List<Roles>();
 }
