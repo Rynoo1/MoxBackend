@@ -6,19 +6,44 @@ namespace MoxBackEnd.Models;
 public class SubTasks
 {
     [Key]
-    public int TaskID { get; set; } 
-    public string Title { get; set; }
-    public string? Description { get; set; }
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    public int SubTaskID { get; set; } // PK
+
+    [Required]
+    [ForeignKey("Tasks")]
+    public int TaskID { get; set; } // FK to Tasks table
+    
+    [Required]
+    [ForeignKey("Projects")]
+    public int ProjectsId { get; set; } // FK to Projects table
+
+    [Required]
+    public string Title { get; set; } = string.Empty;
+
+    public string? Description { get; set; } = string.Empty;
+
     public DateTime DueDate { get; set; }
+
     public bool IsCompleted { get; set; } = false;
+
     public DateTime? CompletedDate { get; set; }
+
+    [Required]
+    [ForeignKey("Users")]
     public int? AssignedUserID { get; set; }
+
+    [Required]
     public Users? AssignedUser { get; set; }
-    public int Priority { get; set; }
-    public int? ParentTaskId { get; set; }
+
+    public int Priority { get; set; } = 0; // 0 = Low, 1 = Medium, 2 = High
+
+    public int? ParentTaskId { get; set; } =-1; // FK to parent task, -1 if no parent task
+    public bool IsEmergency { get; set; } = false;
+
 
     
-    // public TaskItem? ParentTask { get; set; }
-    // public ICollection<TaskItem> Subtasks { get; set; } = new List<TaskItem>();
-    // public ICollection<SubTasks> SubTasks { get; set; } = new List<SubTasks>();
+    // Navigation properties
+    public Tasks? ParentTask { get; set; } // Navigation property to parent task
+    public Projects? Projects { get; set; } // Navigation property to Projects table
+    public Users? Users { get; set; } // Navigation property to Users table
 }

@@ -5,36 +5,34 @@ namespace MoxBackEnd.Models;
 
 public class Tasks
 {
-         [Key]
-        public int TaskId { get; set; }
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int TaskId { get; set; } // PK
+
+        [Required]
+        [ForeignKey("Projects")]
+        public int ProjectsId { get; set; } // FK to Projects table
 
         [Required]
         public string Title { get; set; } = string.Empty;
 
-        public string? Description { get; set; }
+        public string? Description { get; set; } = string.Empty;
 
         [Required]
-        public int Priority { get; set; }
+        public int Priority { get; set; } = 0; // 0 = Low, 1 = Medium, 2 = High
 
         [Required]
         public bool IsEmergency { get; set; } = false;
 
         [Required]
-        public DateTime DueDate { get; set; }
-
+        public DateTime DueDate { get; set; } 
         public DateTime? CompletedAt { get; set; }
 
         [Required]
         public bool IsCompleted { get; set; } = false;
 
-        // public int? AssignedUserId { get; set; }
-        // public Users? AssignedUser { get; set; }
+        // Navigation properties
+        public Projects? Projects { get; set; } // Navigation property to Projects table
 
-        // public string? ProjectsID { get; set; }
-        // public Group? Projects { get; set; }
 
-        // public int? ParentTaskId { get; set; }
-        // public TaskItem? ParentTask { get; set; }
-
-        // public ICollection<TaskItem> Subtasks { get; set; } = new List<TaskItem>();
 }
