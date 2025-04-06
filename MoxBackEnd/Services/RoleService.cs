@@ -3,7 +3,6 @@ using MoxBackEnd.Data;
 using MoxBackEnd.Interfaces;
 using MoxBackEnd.Models;
 
-
 namespace MoxBackEnd.Services;
 
 public class RoleService : IRole

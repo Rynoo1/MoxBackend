@@ -14,5 +14,6 @@ public class Projects
 
     //Navigation Properties
     public List<FileUpload> FileUploads { get; set; } = new List<FileUpload>();
-    public List<Roles> Role { get; set; } = new List<Roles>();
+    public List<Roles> Roles { get; set; } = new List<Roles>();
+    public List<Tasks> Tasks { get; set; } = [];
 }

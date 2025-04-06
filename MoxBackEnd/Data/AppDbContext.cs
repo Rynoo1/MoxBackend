@@ -22,15 +22,36 @@ public class AppDbContext : DbContext
     /// - create a migration (STILL NEED TO DO INITIAL MIGRATION AND DB SETUP)
     /// - update the database to sync the changes
 
-    // protected override void OnModelCreating(ModelBuilder modelBuilder)
-    // {
-    //     base.OnModelCreating(modelBuilder);
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
 
-    //     modelBuilder.Entity<Users>()
-    //         .HasMany(u => u.Roles)
-    //         .WithOne(r => r.Users)
-    //         .HasForeignKey(r => r.UserId);
+        // One user User can have many roles  -- Should it be many to many - should it create a new object containing the project, user and role data for each user in each project
+        modelBuilder.Entity<Users>()
+            .HasMany(u => u.Roles)
+            .WithOne(r => r.User)
+            .HasForeignKey(r => r.UserID);
+        
+        modelBuilder.Entity<Projects>()
+            .HasMany(p => p.Roles)
+            .WithOne(r => r.Project)
+            .HasForeignKey(r => r.ProjectID);
 
-    // }
+        modelBuilder.Entity<Tasks>()
+            .HasMany(t => t.SubTasks)
+            .WithOne(s => s.ParentTask)
+            .HasForeignKey(s => s.ParentTaskId);
+
+        modelBuilder.Entity<Projects>()
+            .HasMany(p => p.Tasks)
+            .WithOne(t => t.Projects)
+            .HasForeignKey(t => t.ProjectsId);
+
+        modelBuilder.Entity<SubTasks>()
+            .HasMany(s => s.AssignedUsers)
+            .WithMany(u => u.AssignedSubTasks)
+            .UsingEntity(j => j.ToTable("SubTaskUserAssignments"));
+
+    }
 
 }

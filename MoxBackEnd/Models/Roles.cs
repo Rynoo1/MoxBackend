@@ -11,8 +11,8 @@ public class Roles
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int RoleID { get; set; } // PK
-    public int UserID { get; set; }
-    public int ProjectID {get; set; }
+    public int UserID { get; set; } //FK
+    public int ProjectID {get; set; } //FK
     public string RoleDescription { get; set; } = string.Empty; // rolename
 
 
