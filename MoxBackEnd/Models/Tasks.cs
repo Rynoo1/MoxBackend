@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MoxBackEnd.Models;
 
@@ -10,7 +11,7 @@ public class Tasks
         public int TaskId { get; set; } // PK
 
         [Required]
-        [ForeignKey("Projects")]
+        //[ForeignKey("Projects")]
         public int ProjectsId { get; set; } // FK to Projects table
 
         [Required]
@@ -28,11 +29,11 @@ public class Tasks
         public DateTime DueDate { get; set; } 
         public DateTime? CompletedAt { get; set; }
 
+        public enum TaskStatus { NotStarted, InProgress, Completed, Canceled }
         [Required]
-        public bool IsCompleted { get; set; } = false;
+        public TaskStatus Status { get; set; } = TaskStatus.NotStarted;
 
         // Navigation properties
         public Projects? Projects { get; set; } // Navigation property to Projects table
-
-
+        public List<SubTasks> SubTasks { get; set; } = [];
 }

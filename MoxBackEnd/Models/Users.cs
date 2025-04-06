@@ -15,6 +15,7 @@ public class Users
   public string? ProfilePicture { get; set; }
 
   //Navigation Properties
-  public List<Roles> Roles { get; set; } = [];
+  public List<Roles> Roles { get; set; } = []; 
 
+  public ICollection<SubTasks> AssignedSubTasks { get; set; } = [];
 }

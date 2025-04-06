@@ -2,7 +2,6 @@ using System;
 using MoxBackEnd.Models;
 using MoxBackEnd.Interfaces;
 
-
 namespace MoxBackEnd.Interfaces;
 
 public interface IRole
