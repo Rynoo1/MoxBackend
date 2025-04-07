@@ -15,7 +15,7 @@ public class UserService : IUser
     }
 
 
-    public Task<Users> GetUserID(int userID)
+    public Task<Users> GetUserWithID(int userID)
     {
         throw new NotImplementedException();
     }

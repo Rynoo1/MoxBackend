@@ -15,18 +15,10 @@ public class AppDbContext : DbContext
     public DbSet<Tasks> Tasks { get; set; }
     public DbSet<SubTasks> SubTasks { get; set; }
 
-    ///TODO: Set up relationships
-    /// - create models for each table
-    /// - include navigation properties in models
-    /// - complete override with rest of relationships
-    /// - create a migration (STILL NEED TO DO INITIAL MIGRATION AND DB SETUP)
-    /// - update the database to sync the changes
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
-        // One user User can have many roles  -- Should it be many to many - should it create a new object containing the project, user and role data for each user in each project
         modelBuilder.Entity<Users>()
             .HasMany(u => u.Roles)
             .WithOne(r => r.User)
