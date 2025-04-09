@@ -1,0 +1,47 @@
+# Build results
+bin/
+obj/
+out/
+
+# User-specific files
+*.user
+*.rsuser
+*.suo
+*.userosscache
+*.sln.docstates
+
+# VS Code settings
+.vscode/
+
+# Rider settings
+.idea/
+
+# ASP.NET generated secrets
+**/secrets.json
+
+# Dotnet tools
+*.dbmdl
+*.pdb
+
+# Logs
+*.log
+
+# Others
+*.nupkg
+*.snupkg
+*.tgz
+
+# npm / node (if you're using front-end tools)
+node_modules/
+dist/
+
+# Environment files
+.env
+.env.*
+
+# EF Core Migrations snapshot (optional - keep if you want versioned migrations)
+Migrations/
+
+# macOS / Windows cruft
+.DS_Store
+Thumbs.db
