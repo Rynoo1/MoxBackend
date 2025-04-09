@@ -7,8 +7,8 @@ namespace MoxBackEnd.Interfaces;
 public interface IRole
 {
 
-    Task<Roles> SetRole(int userID, int roleID);
+    Task<Roles> SetRole(int userID, int projectID, int roleID);
     //public Task<bool> SetRole(int userID, int projectID, int roleID);
-    
+
 
 }
