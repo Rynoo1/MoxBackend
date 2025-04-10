@@ -6,14 +6,16 @@ using MoxBackEnd.Interfaces;
 
 namespace MoxBackEnd.Models;
 
-public class Roles
+public class AppRoles
 {
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int RoleID { get; set; } // PK
-    public int UserID { get; set; } //FK
+    public string UserID { get; set; } = string.Empty; //FK
     public int ProjectID { get; set; } //FK
     public string RoleDescription { get; set; } = string.Empty; // rolename
+
+    // make roledescription/status an enum?
 
 
     // Navigation properties

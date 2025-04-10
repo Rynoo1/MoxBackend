@@ -21,15 +21,15 @@ public class RoleService : IRole
     }
 
     // Check if the user has admin permissions using the configurable _adminRoleId
-    private async Task<bool> HasAdminPermissionsAsync(int userId)
+    private async Task<bool> HasAdminPermissionsAsync(string userId)
     {
-        return await _context.Roles.AnyAsync(r => r.UserID == userId && r.RoleID == _adminRoleId);
+        return await _context.AppRoles.AnyAsync(r => r.UserID == userId && r.RoleID == _adminRoleId);
     }
 
     // Fetch Admin Role ID from the database (only if needed)
     private async Task<int> GetAdminRoleIdAsync()
     {
-        var adminRole = await _context.Roles.FirstOrDefaultAsync(r => r.RoleDescription == "Admin");
+        var adminRole = await _context.AppRoles.FirstOrDefaultAsync(r => r.RoleDescription == "Admin");
         if (adminRole == null)
             throw new InvalidOperationException("Admin role not found");
 
@@ -37,7 +37,7 @@ public class RoleService : IRole
     }
 
     // Set role for a user
-    public async Task<Roles> SetRole(int userId, int projectId, int roleId)
+    public async Task<AppRoles> SetRole(string userId, int projectId, int roleId)
     {
         if (!await HasAdminPermissionsAsync(userId))
             throw new UnauthorizedAccessException("User does not have admin permissions");
@@ -48,33 +48,33 @@ public class RoleService : IRole
         if (user == null || project == null)
             throw new ArgumentException("User or project not found");
 
-        var userRole = new Roles
+        var userRole = new AppRoles
         {
             UserID = userId,
             ProjectID = projectId,
             RoleID = roleId
         };
 
-        _context.Roles.Add(userRole);
+        _context.AppRoles.Add(userRole);
         await _context.SaveChangesAsync();
 
         return userRole;
     }
 
     // Get a user's role for a specific project
-    public async Task<Roles?> GetUserRole(int userId, int projectId)
+    public async Task<AppRoles?> GetUserRole(string userId, int projectId)
     {
-        return await _context.Roles
+        return await _context.AppRoles
             .FirstOrDefaultAsync(r => r.UserID == userId && r.ProjectID == projectId);
     }
 
     // Update a user's role for a project
-    public async Task<Roles> UpdateUserRole(int userId, int projectId, int newRoleId)
+    public async Task<AppRoles> UpdateUserRole(string userId, int projectId, int newRoleId)
     {
         if (!await HasAdminPermissionsAsync(userId))
             throw new UnauthorizedAccessException("User does not have admin permissions");
 
-        var userRole = await _context.Roles
+        var userRole = await _context.AppRoles
             .FirstOrDefaultAsync(r => r.UserID == userId && r.ProjectID == projectId);
 
         if (userRole == null)
@@ -87,12 +87,12 @@ public class RoleService : IRole
     }
 
     // Remove a user's role for a project
-    public async Task<bool> RemoveUserRole(int userId, int projectId)
+    public async Task<bool> RemoveUserRole(string userId, int projectId)
     {
-        var userRole = await _context.Roles.FirstOrDefaultAsync(r => r.UserID == userId && r.ProjectID == projectId);
+        var userRole = await _context.AppRoles.FirstOrDefaultAsync(r => r.UserID == userId && r.ProjectID == projectId);
         if (userRole == null) return false;
 
-        _context.Roles.Remove(userRole);
+        _context.AppRoles.Remove(userRole);
         await _context.SaveChangesAsync();
         return true;
     }
