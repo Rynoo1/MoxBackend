@@ -48,7 +48,5 @@ public class SubTasks
     // Navigation properties
     public Tasks? ParentTask { get; set; } // Navigation property to parent task
     public Projects? Projects { get; set; } // Navigation property to Projects table
-    //public Users? Users { get; set; } // Navigation property to Users table
-
     public ICollection<Users> AssignedUsers { get; set; } = []; // Many to Many navigation property
 }

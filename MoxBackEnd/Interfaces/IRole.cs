@@ -1,14 +1,12 @@
 using System;
 using MoxBackEnd.Models;
-using MoxBackEnd.Interfaces;
 
 namespace MoxBackEnd.Interfaces;
 
 public interface IRole
 {
-
-    Task<Roles> SetRole(int userID, int projectID, int roleID);
-    //public Task<bool> SetRole(int userID, int projectID, int roleID);
-
-
+    public Task<AppRoles> SetRole(string userId, int projectId, int roleId);
+    public Task<AppRoles?> GetUserRole(string userId, int projectId);
+    public Task<AppRoles> UpdateUserRole(string userId, int projectId, int newRoleId);
+    public Task<bool> RemoveUserRole(string userId, int projectId);
 }

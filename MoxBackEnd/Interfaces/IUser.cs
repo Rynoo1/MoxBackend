@@ -5,16 +5,16 @@ namespace MoxBackEnd.Interfaces;
 
 public interface IUser
 {
-    public Task<bool> RegisterUser(Users user);
-    public Task<string> HashPassword(string password);
-    public Task<Users?> UserExists(string email);
-    public Task<bool> LoginUser(string email, string password);
-    public Task<bool> VaildatePassword(Users user, string password);
+    public Task<bool> RegisterUser(Users user, string password);
+    //public Task<string> HashPassword(string password);
+    // public Task<Users?> UserExists(string email);
+    public Task<string> LoginUser(string email, string password);
+    // public Task<bool> ValidatePassword(Users user, string password);
     
-    Task<Users> GetUserWithID (int userID);
-    Task<Tasks> GetUserTasks (int userID);
-    Task<SubTasks> GetUserSubtasks (int userID);
-    Task<Roles> GetUserRoles (int userID);
+    Task<Users> GetUserWithID (string userID);
+    //Task<Tasks> GetUserTasks (int userID);
+    Task<IEnumerable<SubTasks>> GetUserSubtasks (string userID);
+    Task<IEnumerable<AppRoles>> GetUserRoles (string userID);
 
 }
 

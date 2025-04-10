@@ -11,7 +11,7 @@ public class FileUpload
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int FileUploadID { get; set; }
     [Required]
-    public int ProjectID { get; set; }
+    public int ProjectID { get; set; } //FK
     [Required]
     public string FilePath { get; set; } = string.Empty;
     [Required]

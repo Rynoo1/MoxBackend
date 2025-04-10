@@ -1,5 +1,7 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MoxBackEnd.Data;
+using MoxBackEnd.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +12,12 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddAuthorization();
+builder.Services.AddAuthentication().AddCookie(IdentityConstants.ApplicationScheme);
+
+//builder.Services.AddIdentityCore<ApplicationUser>
+  //  .AddEntityFrameworkStore
 
 var connectionstring = builder.Configuration.GetConnectionString("LiveConnection");
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionstring));

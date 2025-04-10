@@ -3,60 +3,133 @@ using MoxBackEnd.Interfaces;
 using System.ComponentModel.DataAnnotations;
 using MoxBackEnd.Models;
 using MoxBackEnd.Data;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
+using MoxBackEnd.Exceptions;
 
 namespace MoxBackEnd.Services;
 
 public class UserService : IUser
 {
     private readonly AppDbContext _context;
-    public UserService(AppDbContext context)
+    private readonly UserManager<Users> _userManager;
+    private readonly SignInManager<Users> _signInManager;
+    public UserService(AppDbContext context, UserManager<Users> userManager, SignInManager<Users> signInManager)
     {
         _context = context;
+        _userManager = userManager;
+        _signInManager = signInManager;
     }
 
 
-    public Task<Users> GetUserWithID(int userID)
+    public async Task<Users> GetUserWithID(string userID)
+    {
+        var user = await _userManager.FindByIdAsync(userID);
+
+        if (user == null)
+        {
+            throw new UserNotFoundException(userID);
+        }
+
+        return user;
+    }
+
+    public async Task<IEnumerable<AppRoles>> GetUserRoles(string userID)
+    {
+        var user = await _userManager.FindByIdAsync(userID) ?? throw new UserNotFoundException(userID);
+
+        return user.AppRoles ?? []; 
+    }
+
+    public Task<IEnumerable<SubTasks>> GetUserSubtasks(string userID)
     {
         throw new NotImplementedException();
     }
 
-    public Task<Roles> GetUserRoles(int userID)
+    // public Task<Tasks> GetUserTasks(string userID)
+    // {
+    //     throw new NotImplementedException();
+    // }
+
+    // public Task<string> HashPassword(string password)
+    // {
+    //     string HashedPassword = BCrypt.Net.BCrypt.EnhancedHashPassword(password, 13);
+    //     return Task.FromResult(HashedPassword);
+    // }
+
+    public async Task<string> LoginUser(string email, string password)
     {
-        throw new NotImplementedException();
+        // Users? userFromDB = UserExists(email).Result;
+
+        // if (userFromDB == null)
+        // {
+        //     return Task.FromResult("User does not exist");
+        // }
+
+        // if (ValidatePassword(userFromDB, password).Result)
+        // {
+        //     return Task.FromResult("Password is incorrect");
+        // }
+
+        // return Task.FromResult("Login Successful!");
+
+        var user = await _userManager.FindByEmailAsync(email);
+
+        if (user == null)
+        {
+            return "User does not exist";
+        }
+
+        var result = await _signInManager.CheckPasswordSignInAsync(user, password, lockoutOnFailure: false);
+
+        if (!result.Succeeded)
+        {
+            return "Password is incorrect";
+        }
+
+        await _signInManager.SignInAsync(user, isPersistent: false);
+
+        return "Login Successful!";
     }
 
-    public Task<SubTasks> GetUserSubtasks(int userID)
+    public async Task<bool> RegisterUser(Users user, string password)
     {
-        throw new NotImplementedException();
+        
+        // Users? doesUserExist = UserExists(user.UEmail).Result;
+
+        // if (doesUserExist != null)
+        // {
+        //     return Task.FromResult(false);
+        // }
+
+        // user.UPassword = HashPassword(user.Pass).Result;
+
+        // _context.Users.Add(user);
+        // _context.SaveChangesAsync();
+
+        // return Task.FromResult(true);
+
+        var existingUser = await _userManager.FindByEmailAsync(user.Email!); // null error bypass - validate upstream
+        if (existingUser != null)
+        {
+            return false;
+        }
+
+        var result = await _userManager.CreateAsync(user, password);
+
+        return result.Succeeded;
     }
 
-    public Task<Tasks> GetUserTasks(int userID)
-    {
-        throw new NotImplementedException();
-    }
+    // public async Task<Users?> UserExists(string email)
+    // {
+    //     Users? userFromFB = await _context.Users.FirstOrDefaultAsync(userInDB => userInDB.Email == email);
 
-    public Task<string> HashPassword(string password)
-    {
-        throw new NotImplementedException();
-    }
+    //     return userFromFB;
+    // }
 
-    public Task<bool> LoginUser(string email, string password)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<bool> RegisterUser(Users user)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<Users?> UserExists(string email)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<bool> VaildatePassword(Users user, string password)
-    {
-        throw new NotImplementedException();
-    }
+    // public Task<bool> ValidatePassword(Users user, string password)
+    // {
+    //     bool isPasswordValid = BCrypt.Net.BCrypt.EnhancedVerify(password, user.PasswordHash);
+    //     return Task.FromResult(isPasswordValid);
+    // }
 }
