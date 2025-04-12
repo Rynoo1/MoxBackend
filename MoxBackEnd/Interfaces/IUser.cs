@@ -5,7 +5,7 @@ namespace MoxBackEnd.Interfaces;
 
 public interface IUser
 {
-    public Task<bool> RegisterUser(Users user, string password);
+    public Task<(bool Succeeded, string[] Errors)> RegisterUser(Users user, string password);
     //public Task<string> HashPassword(string password);
     // public Task<Users?> UserExists(string email);
     public Task<string> LoginUser(string email, string password);
