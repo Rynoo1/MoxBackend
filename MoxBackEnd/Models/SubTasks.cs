@@ -25,8 +25,8 @@ public class SubTasks
 
     public DateTime DueDate { get; set; }
 
-    public enum TaskStatus { NotStarted, InProgress, Completed, Canceled }
-    public TaskStatus SubTStatus { get; set; } = TaskStatus.NotStarted;
+    public enum SubTaskStatus { NotStarted, InProgress, Completed, Canceled }
+    public SubTaskStatus SubTStatus { get; set; } = SubTaskStatus.NotStarted;
 
     public DateTime? CompletedDate { get; set; }
 

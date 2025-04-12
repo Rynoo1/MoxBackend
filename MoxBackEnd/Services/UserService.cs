@@ -92,32 +92,42 @@ public class UserService : IUser
         return "Login Successful!";
     }
 
-    public async Task<bool> RegisterUser(Users user, string password)
+    public async Task<(bool Succeeded, string[] Errors)> RegisterUser(Users user, string password)
     {
-        
-        // Users? doesUserExist = UserExists(user.UEmail).Result;
+        if (user == null)
+        {
+            return (false, new[] { "User cannot be null" });
+        }
 
-        // if (doesUserExist != null)
-        // {
-        //     return Task.FromResult(false);
-        // }
+        if (string.IsNullOrWhiteSpace(user.Email))
+        {
+            return (false, new[] { "Email is required" });
+        }
 
-        // user.UPassword = HashPassword(user.Pass).Result;
+        if (string.IsNullOrWhiteSpace(password))
+        {
+            return (false, new[] { "Password is required" });
+        }
 
-        // _context.Users.Add(user);
-        // _context.SaveChangesAsync();
+        user.Email = user.Email.Trim().ToLower();
+        user.UserName ??= user.Email;
 
-        // return Task.FromResult(true);
-
-        var existingUser = await _userManager.FindByEmailAsync(user.Email!); // null error bypass - validate upstream
+        var existingUser = await _userManager.FindByEmailAsync(user.Email);
         if (existingUser != null)
         {
-            return false;
+            return (false, new[] { "User with this email already exists" });
         }
 
         var result = await _userManager.CreateAsync(user, password);
 
-        return result.Succeeded;
+        if (result.Succeeded)
+        {
+            return (true, Array.Empty<string>());
+        } else
+        {
+            return (false, result.Errors.Select(e => e.Description).ToArray());
+        }
+
     }
 
     // public async Task<Users?> UserExists(string email)
