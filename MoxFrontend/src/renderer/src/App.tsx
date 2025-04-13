@@ -1,12 +1,16 @@
 import Versions from './components/Versions'
-import electronLogo from './assets/electron.svg'
+import Logo from './assets/logo.svg'
 
 function App(): React.JSX.Element {
   const ipcHandle = (): void => window.electron.ipcRenderer.send('ping')
 
   return (
     <>
-      <img alt="logo" className="logo" src={electronLogo} />
+      <div className="dashboard">
+      {/* You can start building your dashboard content below */}
+    </div>
+      <img alt="logo" className="logo" src={Logo} />
+
       <div className="creator">Powered by electron-vite</div>
       <div className="text">
         Build an Electron app with <span className="react">React</span>
