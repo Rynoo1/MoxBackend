@@ -39,9 +39,6 @@ dist/
 .env
 .env.*
 
-# EF Core Migrations snapshot (optional - keep if you want versioned migrations)
-Migrations/
-
 # macOS / Windows cruft
 .DS_Store
 Thumbs.db
