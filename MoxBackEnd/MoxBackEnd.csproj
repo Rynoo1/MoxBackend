@@ -4,6 +4,11 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+
+  <CompressionEnabled>false</CompressionEnabled>
+
+        <!-- <EnableCompressionInStaticWebAssets>false</EnableCompressionInStaticWebAssets> -->
+
   </PropertyGroup>
 
   <ItemGroup>
