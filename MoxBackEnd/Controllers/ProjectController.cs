@@ -1,73 +1,76 @@
-// using Microsoft.AspNetCore.Mvc;
-// using MoxBackEnd.Interfaces;
-// using MoxBackEnd.Models;
-// using MoxBackEnd.Services;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using MoxBackEnd.Interfaces;
+using MoxBackEnd.Models;
+using MoxBackEnd.Services;
 
 // namespace MoxBackEnd.Controllers;
 
-// [ApiController]
-// [Route("api/[controller]")]
-// public class ProjectController(IProjects projectService) : ControllerBase
-// {
-//     private readonly IProjects _projectService = projectService;
+[ApiController]
+[Route("api/[controller]")]
+public class ProjectController(IProjects projectService) : ControllerBase
+{
+    private readonly IProjects _projectService = projectService;
 
-//         [HttpGet]
-//         public IActionResult GetAllProjects()
-//         {
-//             var projects = _projectService.GetAllProjects();
-//             return Ok(projects);
-//         }
+        [HttpGet]
+        public async Task<IActionResult> GetAllProjects()
+        {
+            var projects = await _projectService.GetAllProjects();
+            return Ok(projects);
+        }
 
-//         [HttpGet("{id}")]
-//         public IActionResult GetProjectById(int id)
-//         {
-//             var project = _projectService.GetProjectById(id);
-//             if (project == null)
-//             {
-//                 return NotFound();
-//             }
-//             return Ok(project);
-//         }
 
-//         [HttpPost]
-//         public IActionResult CreateProject([FromBody] Project project)
-//         {
-//             if (!ModelState.IsValid)
-//             {
-//                 return BadRequest(ModelState);
-//             }
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetProjectById(int id)
+        {
+            var project = await _projectService.GetProjectById(id);
+            if (project == null)
+            {
+                return NotFound();
+            }
+            return Ok(project);
+        }
 
-//             var createdProject = _projectService.CreateProject(project);
-//             return CreatedAtAction(nameof(GetProjectById), new { id = createdProject.Id }, createdProject);
-//         }
 
-//         [HttpPut("{id}")]
-//         public IActionResult UpdateProject(int id, [FromBody] Project project)
-//         {
-//             if (!ModelState.IsValid)
-//             {
-//                 return BadRequest(ModelState);
-//             }
+       [HttpPost]
+        public async Task<IActionResult> CreateProject([FromBody] Projects project)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
 
-//             var updatedProject = _projectService.UpdateProject(id, project);
-//             if (updatedProject == null)
-//             {
-//                 return NotFound();
-//             }
+            var createdProject = await _projectService.CreateProjectAsync(project);
+            return CreatedAtAction(nameof(GetProjectById), new { id = createdProject.ProjectID}, createdProject);
+        }
 
-//             return Ok(updatedProject);
-//         }
 
-//         [HttpDelete("{id}")]
-//         public IActionResult DeleteProject(int id)
-//         {
-//             var deleted = _projectService.DeleteProject(id);
-//             if (!deleted)
-//             {
-//                 return NotFound();
-//             }
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateProjectAsync(int id, [FromBody] Projects project)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
 
-//             return NoContent();
-//         }
-// }
+            var updatedProject = await _projectService.UpdateProjectAsync(id, project);
+            if (updatedProject == null)
+            {
+                return NotFound();
+            }
 
+            return Ok(updatedProject);
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteProjectAsync(int id)
+        {
+            var deleted = await _projectService.DeleteProjectAsync(id);
+            if (!deleted)
+            {
+                return NotFound();
+            }
+
+            return NoContent();
+        }
+}

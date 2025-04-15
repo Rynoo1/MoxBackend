@@ -27,7 +27,7 @@ public class UserRolesDTO
 public class UserSubTaskDTO
 {
     public int Id { get; set; }
-    public int ProjectId { get; set; }
+    public int ProjectID { get; set; }
     public string Title { get; set; } = string.Empty;
-    public SubTasks.SubTaskStatus SubTStatus { get; set; } = SubTasks.SubTaskStatus.NotStarted;
+    public WorkStatus SubTStatus { get; set; } = WorkStatus.NotStarted;
 }

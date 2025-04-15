@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using MoxBackEnd.Data;
 using MoxBackEnd.Models;
@@ -23,16 +24,14 @@ namespace MoxBackEnd.Services
                 throw new ArgumentNullException(nameof(user));
             }
 
-            // Add the user to the database
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
-            // you want to return the user's associated project
             var project = await _context.Projects
                 .Include(p => p.Users)
                 .FirstOrDefaultAsync(p => p.Users.Contains(user));
 
-            return project;
+            return project!;
         }
 
         public async Task<Projects> CreateProjectAsync(Projects project)
@@ -42,11 +41,42 @@ namespace MoxBackEnd.Services
                 throw new ArgumentNullException(nameof(project));
             }
 
-            // Add the project to the database
             _context.Projects.Add(project);
             await _context.SaveChangesAsync();
-
             return project;
+        }
+
+        public async Task<List<Projects>> GetAllProjects()
+        {
+            return await _context.Projects.ToListAsync();
+        }
+
+        public async Task<Projects?> GetProjectById(int id)
+        {
+            return await _context.Projects.FindAsync(id);
+        }
+
+        public async Task<Projects?> UpdateProjectAsync(int id, Projects updatedProject)
+        {
+            var existingProject = await _context.Projects.FindAsync(id);
+            if (existingProject == null) return null;
+
+            existingProject.ProjectName = updatedProject.ProjectName;
+            existingProject.DueDate = updatedProject.DueDate;
+            existingProject.GroupID = updatedProject.GroupID;
+
+            await _context.SaveChangesAsync();
+            return existingProject;
+        }
+
+        public async Task<bool> DeleteProjectAsync(int id)
+        {
+            var project = await _context.Projects.FindAsync(id);
+            if (project == null) return false;
+
+            _context.Projects.Remove(project);
+            await _context.SaveChangesAsync();
+            return true;
         }
     }
 }

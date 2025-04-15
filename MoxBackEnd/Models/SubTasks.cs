@@ -16,7 +16,7 @@ public class SubTasks
     
     [Required]
     //[ForeignKey("Projects")]
-    public int ProjectsId { get; set; } // FK to Projects table
+    public int ProjectID { get; set; } // FK to Projects table
 
     [Required]
     public string Title { get; set; } = string.Empty;
@@ -25,8 +25,8 @@ public class SubTasks
 
     public DateTime DueDate { get; set; }
 
-    public enum SubTaskStatus { NotStarted, InProgress, Completed, Canceled }
-    public SubTaskStatus SubTStatus { get; set; } = SubTaskStatus.NotStarted;
+    [Required]
+    public WorkStatus SubTStatus { get; set; } = WorkStatus.NotStarted;
 
     public DateTime? CompletedDate { get; set; }
 
@@ -37,16 +37,16 @@ public class SubTasks
     // [Required]
     // public Users? AssignedUser { get; set; }
 
-    public enum PriorityLevel { Low, Medium, High }
-    public PriorityLevel Priority { get; set; } = PriorityLevel.Low;
 
-    public int? ParentTaskId { get; set; } = -1; // FK to parent task, -1 if no parent task
+    [Required]
+    public PriorityLevel Priority { get; set; } = PriorityLevel.Medium;
+
+    public int? TaskId { get; set; } 
     public bool IsEmergency { get; set; } = false;
 
 
-    
     // Navigation properties
-    public Tasks? ParentTask { get; set; } // Navigation property to parent task
-    public Projects? Projects { get; set; } // Navigation property to Projects table
+    public Tasks? Task { get; set; } // Navigation property to parent task
+    public Projects? Project { get; set; } // Navigation property to Projects table
     public ICollection<Users> AssignedUsers { get; set; } = []; // Many to Many navigation property
 }
