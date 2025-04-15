@@ -132,7 +132,7 @@ namespace MoxBackEnd.Controllers
                 SubTasks = UserD.AssignedSubTasks.Select(SubTs => new UserSubTaskDTO
                 {
                     Id = SubTs.SubTaskID,
-                    ProjectId = SubTs.ProjectsId,
+                    ProjectID = SubTs.ProjectID,
                     Title = SubTs.Title,
                     SubTStatus = SubTs.SubTStatus
                 }).ToList()

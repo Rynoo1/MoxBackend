@@ -15,8 +15,6 @@ public class AppRoles
     public int ProjectID { get; set; } //FK
     public string RoleDescription { get; set; } = string.Empty; // rolename
 
-    // make roledescription/status an enum?
-
 
     // Navigation properties
     public Users? User { get; set; }
