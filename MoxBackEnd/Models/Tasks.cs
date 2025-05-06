@@ -8,11 +8,10 @@ public class Tasks
 {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int TaskId { get; set; } // PK
+        public int TaskId { get; set; }
 
         [Required]
-        //[ForeignKey("Projects")]
-        public int ProjectID { get; set; } // FK to Projects table
+        public int ProjectID { get; set; }
 
         [Required]
         public string Title { get; set; } = string.Empty;
@@ -33,8 +32,7 @@ public class Tasks
         [Required]
         public WorkStatus Status { get; set; } = WorkStatus.NotStarted;
 
-        // Navigation properties
-        public Projects? Project { get; set; } // Navigation property to Projects table
+        public Projects? Project { get; set; }
         public List<SubTasks> SubTasks { get; set; } = [];
         public ICollection<StickyNote> StickyNotes { get; set; } = new List<StickyNote>();
 
