@@ -13,30 +13,27 @@ public class RoleService : IRole
     private readonly AppDbContext _context;
     private readonly int _adminRoleId;
 
-    // Constructor accepts IConfiguration to get the AdminRoleId
     public RoleService(AppDbContext context, IConfiguration configuration)
     {
         _context = context;
         _adminRoleId = configuration.GetValue<int>("AppSettings:AdminRoleId");  // Configurable Admin Role ID
     }
 
-    // Check if the user has admin permissions using the configurable _adminRoleId
     private async Task<bool> HasAdminPermissionsAsync(string userId)
     {
         return await _context.AppRoles.AnyAsync(r => r.UserID == userId && r.RoleID == _adminRoleId);
     }
 
-    // Fetch Admin Role ID from the database (only if needed)
     private async Task<int> GetAdminRoleIdAsync()
     {
         var adminRole = await _context.AppRoles.FirstOrDefaultAsync(r => r.RoleDescription == "Admin");
         if (adminRole == null)
             throw new InvalidOperationException("Admin role not found");
 
-        return adminRole.RoleID;  // Assuming you want to return the RoleID of the Admin role
+        return adminRole.RoleID;
     }
 
-    // Set role for a user
+
     public async Task<AppRoles> SetRole(string userId, int projectId, int roleId)
     {
         if (!await HasAdminPermissionsAsync(userId))
@@ -61,14 +58,14 @@ public class RoleService : IRole
         return userRole;
     }
 
-    // Get a user's role for a specific project
+
     public async Task<AppRoles?> GetUserRole(string userId, int projectId)
     {
         return await _context.AppRoles
             .FirstOrDefaultAsync(r => r.UserID == userId && r.ProjectID == projectId);
     }
 
-    // Update a user's role for a project
+
     public async Task<AppRoles> UpdateUserRole(string userId, int projectId, int newRoleId)
     {
         if (!await HasAdminPermissionsAsync(userId))
@@ -86,7 +83,7 @@ public class RoleService : IRole
         return userRole;
     }
 
-    // Remove a user's role for a project
+
     public async Task<bool> RemoveUserRole(string userId, int projectId)
     {
         var userRole = await _context.AppRoles.FirstOrDefaultAsync(r => r.UserID == userId && r.ProjectID == projectId);

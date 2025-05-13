@@ -23,7 +23,11 @@
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.1",
     "@electron-toolkit/utils": "^4.0.0",
-    "electron-updater": "^6.3.9"
+    "@tailwindcss/cli": "^4.1.6",
+    "daisyui": "^5.0.35",
+    "electron-updater": "^6.3.9",
+    "react-router-dom": "^7.6.0",
+    "tailwindcss": "^4.1.6"
   },
   "devDependencies": {
     "@electron-toolkit/eslint-config-prettier": "^3.0.0",
@@ -33,7 +37,7 @@
     "@types/react": "^19.1.1",
     "@types/react-dom": "^19.1.2",
     "@vitejs/plugin-react": "^4.3.4",
-    "electron": "^35.1.5",
+    "electron": "^35.3.0",
     "electron-builder": "^25.1.8",
     "electron-vite": "^3.1.0",
     "eslint": "^9.24.0",
