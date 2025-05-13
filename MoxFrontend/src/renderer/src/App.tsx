@@ -1,39 +1,27 @@
-import Versions from './components/Versions'
-import Logo from './assets/logo.svg'
+// src/App.tsx
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Dashboard from "./pages/Dashboard";
+import KanbanBoard from "./pages/KanbanBoard";
+import Sidebar from "./components/Sidebar";
 
-function App(): React.JSX.Element {
-  const ipcHandle = (): void => window.electron.ipcRenderer.send('ping')
-
+function App() {
   return (
-    <>
-      <div className="dashboard">
-      {/* You can start building your dashboard content below */}
-    </div>
-      <img alt="logo" className="logo" src={Logo} />
+    <Router>
+      <div className="flex min-h-screen">
+        {/* Sidebar */}
+        <Sidebar />
 
-      <div className="creator">Powered by electron-vite</div>
-      <div className="text">
-        Build an Electron app with <span className="react">React</span>
-        &nbsp;and <span className="ts">TypeScript</span>
-      </div>
-      <p className="tip">
-        Please try pressing <code>F12</code> to open the devTool
-      </p>
-      <div className="actions">
-        <div className="action">
-          <a href="https://electron-vite.org/" target="_blank" rel="noreferrer">
-            Documentation
-          </a>
-        </div>
-        <div className="action">
-          <a target="_blank" rel="noreferrer" onClick={ipcHandle}>
-            Send IPC
-          </a>
+        {/* Content area */}
+        <div className="flex-1 ml-64 p-4">
+          {/* Routes */}
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/kanban" element={<KanbanBoard />} />
+          </Routes>
         </div>
       </div>
-      <Versions></Versions>
-    </>
-  )
+    </Router>
+  );
 }
 
-export default App
+export default App;
