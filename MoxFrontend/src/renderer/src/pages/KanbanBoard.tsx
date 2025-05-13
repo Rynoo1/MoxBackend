@@ -1,5 +1,5 @@
 const KanbanBoard = () => {
-  return <h1>KanbanBoard Page</h1>;
+  return <h1>KanbanBoard Page - test</h1>;
 };
 
-export default KanbanBoard;
+export default KanbanBoard
