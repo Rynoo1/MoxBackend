@@ -4,7 +4,7 @@ using MoxBackEnd.Interfaces;
 using MoxBackEnd.Models;
 using MoxBackEnd.Services;
 
-// namespace MoxBackEnd.Controllers;
+namespace MoxBackEnd.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]

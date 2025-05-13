@@ -7,15 +7,21 @@ namespace MoxBackEnd.DTOs;
 public class UserDTO
 {
     public string Id { get; set; } = string.Empty;
-    [Required]
     public string UserName { get; set; } = string.Empty;
-    [Required]
     [EmailAddress]
     public string Email { get; set; } = string.Empty;
 
     public List<UserRolesDTO> AppRoles { get; set; } = [];
     public List<UserSubTaskDTO> SubTasks { get; set; } = [];
 
+}
+
+public class RegisterUserDTO
+{
+    public required string Username { get; set; }
+
+    [EmailAddress]
+    public required string Email { get; set; }
 }
 
 public class UserRolesDTO

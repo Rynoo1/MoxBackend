@@ -7,12 +7,6 @@ namespace MoxBackEnd.Models;
 
 public class Users : IdentityUser
 {
-  // [Key]
-  // [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-  // public int UserID { get; set; } // PK
-  // public string UserName { get; set; } = string.Empty;
-  // public string UEmail { get; set; } = string.Empty;
-  // public string UPassword { get; set; } = string.Empty;
   public string? ProfilePicture { get; set; }
 
   //Navigation Properties
@@ -25,4 +19,5 @@ public class Users : IdentityUser
   public ICollection<StickyNote> StickyNotes { get; set; } = new List<StickyNote>();
   public ICollection<Projects> Projects { get; set; } = new List<Projects>();
   public ICollection<Tasks> AssignedTasks { get; set; } = new List<Tasks>();
+  
 }

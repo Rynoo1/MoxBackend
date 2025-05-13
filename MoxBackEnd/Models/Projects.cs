@@ -21,9 +21,9 @@ public class Projects
     // ✅ Navigation to Group
     public Group? Group { get; set; }
 
-    public List<FileUpload> FileUploads { get; set; } = new List<FileUpload>();
-    public List<AppRoles> AppRoles { get; set; } = new List<AppRoles>();
-    public List<Tasks> Tasks { get; set; } = new List<Tasks>();
-    public ICollection<StickyNote> StickyNotes { get; set; } = new List<StickyNote>();
-    public ICollection<Users> Users { get; set; } = new List<Users>();
+    public List<FileUpload> FileUploads { get; set; } = [];
+    public List<AppRoles> AppRoles { get; set; } = [];
+    public List<Tasks> Tasks { get; set; } = [];
+    public ICollection<StickyNote> StickyNotes { get; set; } = [];
+    public ICollection<Users> Users { get; set; } = [];
 }

@@ -11,6 +11,7 @@ using MoxBackEnd.Models;
 using MoxBackEnd.Services;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using QRCoder;
+using System.Text.Json;
 
 namespace MoxBackEnd.Controllers
 {
@@ -30,11 +31,11 @@ namespace MoxBackEnd.Controllers
             _emailSender = emailSender;
         }
 
-        [Authorize]
+        // [Authorize]
         [HttpGet("enable2fa")]
-        public async Task<IActionResult> Enable2FA()
+        public async Task<IActionResult> Enable2FA(string Id)
         {
-            var user = await _userManager.GetUserAsync(User);
+            var user = await _userManager.FindByIdAsync(Id);
             if (user == null)
             {
                 return NotFound();
@@ -76,7 +77,7 @@ namespace MoxBackEnd.Controllers
             var user = new Users
             {
                 Email = request.User!.Email,
-                UserName = request.User.UserName,
+                UserName = request.User.Username,
             };
 
             var (succeeded, errors) = await _user.RegisterUser(user, request.Password);
@@ -94,7 +95,7 @@ namespace MoxBackEnd.Controllers
         public class RegistrationRequest
         {
             [Required]
-            public UserDTO? User { get; set; }
+            public RegisterUserDTO? User { get; set; }
 
             [Required]
             [StringLength(50, MinimumLength = 6)]
@@ -117,12 +118,14 @@ namespace MoxBackEnd.Controllers
                 return NotFound();
             }
 
-            return Userr;
+            var json = JsonSerializer.Serialize(Userr);
+            return Content(json, "application/json");
+
         }
 
         //Get Subtasks w ID
         [HttpGet("{id}/subtasks")]
-        public async Task<ActionResult<UserDTO>> GetUserSubtasks(string id)
+        public async Task<ActionResult<UserDTO>> GetUserSubtasks(string id) 
         {
             var UserD = await _context.Users.Select(UserD => new UserDTO
             {
@@ -143,7 +146,8 @@ namespace MoxBackEnd.Controllers
                 return NotFound();
             }
 
-            return UserD;
+            var json = JsonSerializer.Serialize(UserD);
+            return Content(json, "application/json");
         }
 
         [HttpPost("test-email")]
