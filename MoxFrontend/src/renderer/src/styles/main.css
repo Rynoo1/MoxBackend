@@ -1,4 +1,17 @@
-@import './base.css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap");
+
+
+html,
+body,
+#root {
+  height: 100%;
+  width: 100%;
+  font-family: 'Poppins', sans-serif;
+}
 
 body {
   display: flex;
@@ -146,9 +159,10 @@ code {
   font-size: 14px;
   line-height: 14px;
   opacity: 0.8;
-  &:last-child {
-    border: none;
-  }
+}
+
+.versions li:last-child {
+  border-right: none;
 }
 
 @media (max-width: 720px) {

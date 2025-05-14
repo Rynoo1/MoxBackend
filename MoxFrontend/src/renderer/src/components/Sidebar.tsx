@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
 import {
   HouseDoor as HomeIcon,
@@ -11,54 +11,40 @@ import {
 import "./styles/Sidebar.css";
 import logo from "../assets/logo.svg";
 
-const Sidebar: React.FC = () => {
-  const [isDarkMode, setIsDarkMode] = useState(localStorage.getItem("theme") === "dark");
+interface SidebarProps {
+  isDarkMode: boolean;
+  toggleDarkMode: () => void;
+}
 
-  const toggleDarkMode = () => {
-    const newMode = !isDarkMode ? "dark" : "light";
-    setIsDarkMode(!isDarkMode);
-    localStorage.setItem("theme", newMode);
-    document.body.classList.toggle("dark-mode", !isDarkMode);
-  };
-
-  useEffect(() => {
-    if (isDarkMode) {
-      document.body.classList.add("dark-mode");
-    } else {
-      document.body.classList.remove("dark-mode");
-    }
-  }, [isDarkMode]);
-
+const Sidebar: React.FC<SidebarProps> = ({ isDarkMode, toggleDarkMode }) => {
   return (
-    <div className="sidebar">
+    <div className={`sidebar ${isDarkMode ? "dark-mode" : ""}`}>
       <div className="logo">
         <img src={logo} alt="Logo" />
       </div>
-
       <ul className="sidebar-nav">
         <li>
-          <Link to="/" className="nav-link hover:bg-base-300 p-2 rounded-md">
+          <Link to="/" className="nav-link">
             <HomeIcon className="mr-2 h-5 w-5" />
             Home
           </Link>
         </li>
         <li>
-          <Link to="/projects" className="nav-link hover:bg-base-300 p-2 rounded-md">
+          <Link to="/projects" className="nav-link">
             <FolderIcon className="mr-2 h-5 w-5" />
             Projects
           </Link>
         </li>
-        {/* Kanban with Timeline Icon */}
         <li>
-          <Link to="/kanban" className="nav-link hover:bg-base-300 p-2 rounded-md">
-            <TimelineIcon className="mr-2 h-5 w-5" /> {/* Timeline Icon */}
+          <Link to="/kanban" className="nav-link">
+            <TimelineIcon className="mr-2 h-5 w-5" />
             Kanban Board
           </Link>
         </li>
         <li>
           <button
             onClick={toggleDarkMode}
-            className="nav-link hover:bg-base-300 p-2 rounded-md w-full text-left"
+            className="nav-link w-full text-left"
           >
             {isDarkMode ? (
               <>
@@ -74,7 +60,7 @@ const Sidebar: React.FC = () => {
           </button>
         </li>
         <li>
-          <Link to="/logout" className="nav-link hover:bg-base-300 p-2 rounded-md">
+          <Link to="/logout" className="nav-link">
             <LogoutIcon className="mr-2 h-5 w-5" />
             Logout
           </Link>
