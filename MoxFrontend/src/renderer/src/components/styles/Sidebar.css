@@ -1,0 +1,93 @@
+.sidebar {
+  width: 250px;
+  height: 100vh;
+  background-color: #1E3A8A;
+  padding: 20px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  position: fixed;
+  top: 0;
+  left: 0;
+  color: #fff;
+}
+
+.logo img {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.sidebar-nav {
+  list-style-type: none;
+  padding: 0;
+}
+
+.sidebar-nav li {
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+
+.nav-link {
+  color: inherit;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.nav-link:hover {
+  background-color: #3b82f6;
+}
+
+.upgrade {
+  margin-top: 20px;
+}
+
+.upgrade h6 {
+  margin-bottom: 10px;
+  font-size: 14px;
+  color: #eee;
+}
+
+.upgrade-btn {
+  display: block;
+  width: 100%;
+  padding: 10px 0;
+  text-align: center;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.upgrade-btn:hover {
+  background-color: #0056b3;
+}
+
+/* Dark Mode Styles */
+body.dark-mode {
+  background-color: #1e1e1e;
+  color: #fff;
+}
+
+body.dark-mode .sidebar {
+  background-color: #122235;
+}
+
+body.dark-mode .nav-link {
+  color: #e2e8f0;
+}
+
+body.dark-mode .nav-link:hover {
+  background-color: #4a5568;
+}
+
+body.dark-mode .upgrade-btn {
+  background-color: #2b6cb0;
+}
+
+body.dark-mode .upgrade-btn:hover {
+  background-color: #3182ce;
+}
