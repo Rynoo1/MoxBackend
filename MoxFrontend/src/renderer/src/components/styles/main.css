@@ -1,0 +1,78 @@
+:root {
+  --background-light: url('./assets/Background.jpg');
+  --background-dark: url('./assets/Background.jpg');
+  --background-login-signup: url('./assets/signup_background.jpg');
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+  font-family: 'Poppins', sans-serif;
+  margin: 0;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+
+body {
+  background: var(--background-light);
+  background-size: cover;
+  background-position: center;
+  color: #000000;
+
+  @apply bg-white text-black dark:bg-gray-900 dark:text-white;
+
+}
+
+body.login-signup {
+  background: var(--background-login-signup);
+  background-size: cover;
+  background-position: center;
+}
+
+body.dark-mode {
+  background-color: #121212;
+  background-image: var(--background-dark);
+  background-size: cover;
+  background-position: center;
+  color: #ffffff;
+}
+
+body.dark-mode .dashboard,
+body.dark-mode .kanban,
+body.dark-mode .projects {
+  background-color: #121212;
+  background-image: var(--background-dark);
+  background-size: cover;
+  background-position: center;
+}
+
+button {
+  background-color: var(--button-bg-color);
+  color: var(--button-text-color);
+  border-radius: 17px;
+  border: 1px solid var(--form-border-color);
+}
+
+input, form {
+  background-color: var(--input-bg-color);
+  border-radius: 17px;
+  border: 1px solid var(--form-border-color);
+  width: 370px;
+  height: 55px;
+}
+
+h1 {
+  color: var(--h1-color);
+}
+
+h2 {
+  color: var(--h2-color);
+}
+
+.dark-mode .sidebar {
+  background-color: #1a202c;
+}
+
+.dark-mode .sidebar-nav .nav-link {
+  color: #cbd5e0;
+}
