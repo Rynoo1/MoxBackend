@@ -19,7 +19,7 @@ body {
   background-position: center;
   color: #000000;
 
-  @apply bg-white text-black dark:bg-gray-900 dark:text-white;
+ @apply bg-white text-black dark:bg-gray-900 dark:text-white;
 
 }
 
