@@ -18,8 +18,10 @@ body {
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  background-image: url('./wavy-lines.svg');
+  background-image: url('/src/assets/Background.jpg');
   background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
   user-select: none;
 }
 
