@@ -41,24 +41,27 @@ const Sidebar: React.FC<SidebarProps> = ({ isDarkMode, toggleDarkMode }) => {
             Kanban Board
           </Link>
         </li>
-        <li>
+
+        {/* Light/Dark Mode Toggle */}
+        <li className="nav-link w-full text-left flex items-center space-x-2">
           <button
             onClick={toggleDarkMode}
-            className="nav-link w-full text-left"
+            className="flex items-center space-x-2 focus:outline-none"
           >
             {isDarkMode ? (
               <>
                 <SunIcon className="mr-2 h-5 w-5" />
-                Light Mode
+                <span>Light Mode</span>
               </>
             ) : (
               <>
                 <MoonIcon className="mr-2 h-5 w-5" />
-                Dark Mode
+                <span>Dark Mode</span>
               </>
             )}
           </button>
         </li>
+
         <li>
           <Link to="/logout" className="nav-link">
             <LogoutIcon className="mr-2 h-5 w-5" />
