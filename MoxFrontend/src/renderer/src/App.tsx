@@ -11,12 +11,13 @@ import "./styles/main.css";
 function App() {
   const [isDarkMode, setIsDarkMode] = useState(false);
 
+  // Toggle dark mode
   const toggleDarkMode = () => {
     setIsDarkMode((prev) => !prev);
   };
 
   useEffect(() => {
-    const root = document.documentElement;
+    const root = document.documentElement; // This targets <html>
     if (isDarkMode) {
       root.classList.add("dark");
     } else {
