@@ -25,6 +25,7 @@
     "@electron-toolkit/utils": "^4.0.0",
     "@heroicons/react": "^2.2.0",
     "@tailwindcss/cli": "^4.1.6",
+    "canvas-confetti": "^1.9.3",
     "daisyui": "^5.0.35",
     "electron-updater": "^6.3.9",
     "react-bootstrap-icons": "^1.11.6",
