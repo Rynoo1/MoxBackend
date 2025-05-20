@@ -435,6 +435,9 @@ namespace MoxBackEnd.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("TaskId"));
 
+                    b.Property<string>("AssignedUserId")
+                        .HasColumnType("text");
+
                     b.Property<DateTime?>("CompletedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -464,6 +467,8 @@ namespace MoxBackEnd.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("TaskId");
+
+                    b.HasIndex("AssignedUserId");
 
                     b.HasIndex("GroupID");
 
@@ -763,6 +768,10 @@ namespace MoxBackEnd.Migrations
 
             modelBuilder.Entity("MoxBackEnd.Models.Tasks", b =>
                 {
+                    b.HasOne("MoxBackEnd.Models.Users", "AssignedUser")
+                        .WithMany("AssignedTasks")
+                        .HasForeignKey("AssignedUserId");
+
                     b.HasOne("MoxBackEnd.Models.Group", null)
                         .WithMany("Tasks")
                         .HasForeignKey("GroupID")
@@ -773,6 +782,8 @@ namespace MoxBackEnd.Migrations
                         .HasForeignKey("ProjectID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("AssignedUser");
 
                     b.Navigation("Project");
                 });
@@ -837,6 +848,8 @@ namespace MoxBackEnd.Migrations
             modelBuilder.Entity("MoxBackEnd.Models.Users", b =>
                 {
                     b.Navigation("AppRoles");
+
+                    b.Navigation("AssignedTasks");
 
                     b.Navigation("CreatedMeetings");
 

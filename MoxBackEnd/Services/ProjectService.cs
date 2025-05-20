@@ -1,82 +1,106 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using MoxBackEnd.Data;
 using MoxBackEnd.Models;
+using MoxBackEnd.Dtos;
 using MoxBackEnd.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
-namespace MoxBackEnd.Services
+namespace MoxBackEnd.Services;
+
+public class ProjectService : IProjects
 {
-    public class ProjectService : IProjects
+    private readonly AppDbContext _context;
+
+    public ProjectService(AppDbContext context)
     {
-        private readonly AppDbContext _context;
+        _context = context;
+    }
 
-        public ProjectService(AppDbContext context)
+    public async Task<ProjectReadDto> CreateProjectAsync(ProjectCreateDto dto)
+    {
+        var project = new Projects
         {
-            _context = context;
-        }
+            ProjectName = dto.ProjectName,
+            DueDate = dto.DueDate
+            
+        };
 
-        public async Task<Projects> AddUserAsync(Users user)
+        _context.Projects.Add(project);
+        await _context.SaveChangesAsync();
+
+        return new ProjectReadDto
         {
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
+            ProjectID = project.ProjectID,
+            ProjectName = project.ProjectName,
+            DueDate = project.DueDate
+            
+        };
+    }
 
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
-
-            var project = await _context.Projects
-                .Include(p => p.Users)
-                .FirstOrDefaultAsync(p => p.Users.Contains(user));
-
-            return project!;
-        }
-
-        public async Task<Projects> CreateProjectAsync(Projects project)
+    public async Task<List<ProjectReadDto>> GetAllProjects()
+    {
+        var projects = await _context.Projects.ToListAsync();
+        return projects.Select(p => new ProjectReadDto
         {
-            if (project == null)
-            {
-                throw new ArgumentNullException(nameof(project));
-            }
+            ProjectID = p.ProjectID,
+            ProjectName = p.ProjectName,
+            DueDate = p.DueDate
+            
+        }).ToList();
+    }
 
-            _context.Projects.Add(project);
-            await _context.SaveChangesAsync();
-            return project;
-        }
+    public async Task<ProjectReadDto?> GetProjectById(int id)
+    {
+        var project = await _context.Projects.FindAsync(id);
+        if (project == null) return null;
 
-        public async Task<List<Projects>> GetAllProjects()
+        return new ProjectReadDto
         {
-            return await _context.Projects.ToListAsync();
-        }
+            ProjectID = project.ProjectID,
+            ProjectName = project.ProjectName,
+            DueDate = project.DueDate
+            
+        };
+    }
 
-        public async Task<Projects?> GetProjectById(int id)
+    public async Task<ProjectReadDto?> UpdateProjectAsync(int id, ProjectUpdateDto dto)
+    {
+        var project = await _context.Projects.FindAsync(id);
+        if (project == null) return null;
+
+        project.ProjectName = dto.ProjectName;
+        project.DueDate = dto.DueDate;
+        
+
+        await _context.SaveChangesAsync();
+
+        return new ProjectReadDto
         {
-            return await _context.Projects.FindAsync(id);
-        }
+            ProjectID = project.ProjectID,
+            ProjectName = project.ProjectName,
+            DueDate = project.DueDate
+            
+        };
+    }
 
-        public async Task<Projects?> UpdateProjectAsync(int id, Projects updatedProject)
-        {
-            var existingProject = await _context.Projects.FindAsync(id);
-            if (existingProject == null) return null;
+    public async Task<bool> DeleteProjectAsync(int id)
+    {
+        var project = await _context.Projects.FindAsync(id);
+        if (project == null) return false;
 
-            existingProject.ProjectName = updatedProject.ProjectName;
-            existingProject.DueDate = updatedProject.DueDate;
-            existingProject.GroupID = updatedProject.GroupID;
+        _context.Projects.Remove(project);
+        await _context.SaveChangesAsync();
+        return true;
+    }
 
-            await _context.SaveChangesAsync();
-            return existingProject;
-        }
+    public async Task<Projects> AddUserAsync(Users user)
+    {
+        _context.Users.Add(user);
+        await _context.SaveChangesAsync();
 
-        public async Task<bool> DeleteProjectAsync(int id)
-        {
-            var project = await _context.Projects.FindAsync(id);
-            if (project == null) return false;
+        var project = await _context.Projects
+            .Include(p => p.Users)
+            .FirstOrDefaultAsync(p => p.Users.Contains(user));
 
-            _context.Projects.Remove(project);
-            await _context.SaveChangesAsync();
-            return true;
-        }
+        return project!;
     }
 }
