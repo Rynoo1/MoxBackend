@@ -127,28 +127,30 @@ namespace MoxBackEnd.Controllers
         [HttpGet("{id}/subtasks")]
         public async Task<ActionResult<UserDTO>> GetUserSubtasks(string id) 
         {
-            var UserD = await _context.Users.Select(UserD => new UserDTO
-            {
-                Id = UserD.Id,
-                UserName = UserD.UserName!,
-                Email = UserD.Email!,
-                SubTasks = UserD.AssignedSubTasks.Select(SubTs => new UserSubTaskDTO
+            var UserD = await _context.Users
+                .Select(user => new UserDTO
                 {
-                    Id = SubTs.SubTaskID,
-                    ProjectID = SubTs.ProjectID,
-                    Title = SubTs.Title,
-                    SubTStatus = SubTs.SubTStatus
-                }).ToList()
-            }).FirstOrDefaultAsync(UserD => UserD.Id == id);
-
+                    Id = user.Id,
+                    UserName = user.UserName!,
+                    Email = user.Email!,
+                    SubTasks = user.AssignedSubTasks.Select(subTask => new UserSubTaskDTO
+                    {
+                        Id = subTask.SubTaskID,
+                        ProjectID = subTask.ProjectID,
+                        Title = subTask.Title,
+                        SubTStatus = subTask.SubTStatus
+                    }).ToList()
+                })
+                .FirstOrDefaultAsync(user => user.Id == id);
+        
             if (UserD == null)
             {
                 return NotFound();
             }
-
-            var json = JsonSerializer.Serialize(UserD);
-            return Content(json, "application/json");
+        
+            return Ok(UserD);
         }
+
 
         [HttpPost("test-email")]
         public async Task<IActionResult> TestEmail()
