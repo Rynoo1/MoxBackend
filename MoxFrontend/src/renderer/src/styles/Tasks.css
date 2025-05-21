@@ -1,0 +1,141 @@
+.tasks-container {
+  min-height: 100vh;
+  padding: 2rem;
+  margin-left: 8rem;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.sprint {
+  margin-bottom: 3rem;
+}
+
+.sprint-heading {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: white;
+  margin-bottom: 1rem;
+}
+
+.sprint-card {
+  background-color: #1f1f1f;
+  color: white;
+  border-radius: 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  padding: 2rem;
+  width: 1500px;
+}
+
+.tasks-table {
+  width: 100%;
+  font-size: 0.875rem;
+  border-collapse: collapse;
+  text-align: center;
+}
+
+.tasks-table th,
+.tasks-table td {
+  padding: 1rem 0.5rem;
+}
+
+.tasks-table thead {
+  color: #7cc2ff;
+  border-bottom: 1px solid #444;
+}
+
+.tasks-table tbody tr {
+  border-bottom: 1px solid #333;
+}
+
+.assigned-icons {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.progress-bar:disabled {
+  width: 100px;
+  appearance: none;
+  height: 15px;
+  background: #555;
+  border-radius: 5px;
+  outline: none;
+  transition: background 0.3s ease;
+}
+
+.progress-bar:disabled::-webkit-slider-thumb {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #4f9df7;
+  cursor: default;
+  transition: background 0.3s ease;
+}
+
+.progress-bar:disabled::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #4f9df7;
+  cursor: default;
+}
+
+.progress-label {
+  font-size: 0.75rem;
+  color: #ccc;
+  margin-top: 4px;
+}
+
+.emergency-popup {
+  position: fixed;
+  top: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #1f1f1f;
+  color: white;
+  padding: 1.5rem;
+  border: 2px solid #ff4444;
+  border-radius: 1rem;
+  z-index: 1000;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 0 15px rgba(255, 0, 0, 0.3);
+}
+
+.emergency-popup button {
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  background: #ff4444;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+
+.emergency-badge {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  font-size: 1.5rem;
+  color: #ff4444;
+  cursor: pointer;
+  z-index: 1000;
+}
+
+.emergency-icon {
+  color: #ff4444;
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.alert-message {
+  margin-top: 2rem;
+  font-weight: bold;
+  color: #ff8888;
+  background: rgba(255, 0, 0, 0.1);
+  padding: 1rem;
+  border-radius: 0.5rem;
+}
