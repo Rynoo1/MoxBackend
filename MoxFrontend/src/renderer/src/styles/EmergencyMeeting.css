@@ -1,0 +1,43 @@
+.emergency-create {
+  max-width: 600px;
+  margin: 2rem auto;
+  background: #1f1f1f;
+  color: white;
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 0 20px rgba(255, 0, 0, 0.2);
+}
+
+.emergency-create h1 {
+  font-size: 1.8rem;
+  margin-bottom: 1.5rem;
+}
+
+.emergency-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.emergency-form label {
+  margin-top: 1rem;
+  font-weight: 500;
+}
+
+.emergency-form input,
+.emergency-form textarea {
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  border: none;
+  margin-top: 0.3rem;
+}
+
+.emergency-form button {
+  margin-top: 2rem;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 0.5rem;
+  background-color: #ff4444;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
