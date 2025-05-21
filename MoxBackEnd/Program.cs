@@ -59,7 +59,19 @@ builder.Services.AddIdentity<Users, IdentityRole>(Options => {
 var connectionstring = builder.Configuration.GetConnectionString("LiveConnection");
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionstring));
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173") //change to port
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
 var app = builder.Build();
+
+app.UseCors("AllowFrontend");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
