@@ -1,30 +1,30 @@
-import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Dashboard from "./pages/Dashboard";
-import KanbanBoard from "./pages/KanbanBoard";
-import Projects from "./pages/Projects";
-import Login from "./pages/Login";
-import Signup from "./pages/Signup";
-import Tasks from "./pages/Tasks";
-import Sidebar from "./components/Sidebar";
-import "./styles/main.css";
+import React, { useState, useEffect } from 'react'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import Dashboard from './pages/Dashboard'
+import KanbanBoard from './pages/KanbanBoard'
+import Projects from './pages/Projects'
+import Login from './pages/Login'
+import Signup from './pages/Signup'
+import Tasks from './pages/Tasks'
+import Sidebar from './components/Sidebar'
+// import './styles/main.css'
 
 function App() {
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false)
 
   // Toggle dark mode
   const toggleDarkMode = () => {
-    setIsDarkMode((prev) => !prev);
-  };
+    setIsDarkMode((prev) => !prev)
+  }
 
   useEffect(() => {
-    const root = document.documentElement; // This targets <html>
+    const root = document.documentElement // This targets <html>
     if (isDarkMode) {
-      root.classList.add("dark");
+      root.classList.add('dark')
     } else {
-      root.classList.remove("dark");
+      root.classList.remove('dark')
     }
-  }, [isDarkMode]);
+  }, [isDarkMode])
 
   return (
     <Router>
@@ -42,7 +42,7 @@ function App() {
         </div>
       </div>
     </Router>
-  );
+  )
 }
 
-export default App;
+export default App
