@@ -7,6 +7,9 @@ using MoxBackEnd.Interfaces;
 using MoxBackEnd.Models;
 using MoxBackEnd.Services;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +24,7 @@ builder.Services.AddScoped<IStickyNote, StickyNoteService>();
 builder.Services.AddScoped<IEmergencyMeeting, EmergencyMeetingService>();
 builder.Services.AddScoped<IGroup, GroupService>();
 builder.Services.AddScoped<ITask, TaskService>();
+builder.Services.AddScoped<ITokenServices, TokenServices>();
 
 
 builder.Services.AddControllers()
@@ -32,6 +36,28 @@ builder.Services.AddControllers()
 builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+var jwtSettings = builder.Configuration.GetSection("JwtSettings");
+var key = Encoding.UTF8.GetBytes(jwtSettings["Secret"]);
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+ .AddJwtBearer(options =>
+ {
+     options.TokenValidationParameters = new TokenValidationParameters
+     {
+         ValidateIssuer = true,
+         ValidateAudience = true,
+         ValidateLifetime = true,
+         ValidateIssuerSigningKey = true,
+         ValidIssuer = jwtSettings["Issuer"],
+         ValidAudience = jwtSettings["Audience"],
+         IssuerSigningKey = new SymmetricSecurityKey(key)
+     };
+ });
 
 builder.Services.AddAuthorization();
 // builder.Services.AddAuthentication().Add
@@ -72,6 +98,8 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 app.UseCors("AllowFrontend");
+app.UseAuthentication();
+app.UseAuthorization();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -82,8 +110,6 @@ if (app.Environment.IsDevelopment())
 }
 
 // app.UseHttpsRedirection();
-
-// app.UseAuthorization();
 
 app.MapControllers();
 
