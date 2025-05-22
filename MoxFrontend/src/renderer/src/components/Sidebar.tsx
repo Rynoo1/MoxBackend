@@ -70,7 +70,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isDarkMode, toggleDarkMode }) => {
         </li>
 
         <li>
-          <Link to="/logout" className="nav-link">
+          <Link to="/login" className="nav-link">
             <LogoutIcon className="mr-2 h-5 w-5" />
             Logout
           </Link>

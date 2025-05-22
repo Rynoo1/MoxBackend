@@ -1,45 +1,47 @@
-import React, { useEffect, useState } from "react";
-import { fetchAllTasks } from "../services/api";
-import TaskSprints from "../components/TaskSprints";
+import React, { useEffect, useState } from 'react'
+import { fetchAllTasks } from '../services/api'
+import TaskSprints from '../components/TaskSprints'
 
 type Task = {
-  task: string;
-  assigned: (string | number)[];
-  status: string;
-  priority: string;
-  progress: number;
-  date: string;
-};
+  task: string
+  assigned: (string | number)[]
+  status: string
+  priority: string
+  progress: number
+  date: string
+}
 
 const Tasks: React.FC = () => {
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([])
 
   useEffect(() => {
     const loadTasks = async () => {
       try {
-        const all = await fetchAllTasks();
-        const statusLabels = ["Not Started", "In Progress", "Blocked", "Completed"];
-        const priorityLabels = ["Low", "Medium", "High", "Critical"];
+        const all = await fetchAllTasks()
+        const statusLabels = ['Not Started', 'In Progress', 'Blocked', 'Completed']
+        const priorityLabels = ['Low', 'Medium', 'High', 'Critical']
 
         const formatted = all.map((t: any) => ({
           task: t.title,
           assigned: t.assignedUserId ? [t.assignedUserId] : [],
-          status: statusLabels[t.status] ?? "Unknown",
-          priority: priorityLabels[t.priority - 1] ?? "N/A",
+          status: statusLabels[t.status] ?? 'Unknown',
+          priority: priorityLabels[t.priority - 1] ?? 'N/A',
           progress: t.completedAt ? 100 : 0,
-          date: new Date(t.dueDate).toLocaleDateString("en-ZA", {
-            day: "2-digit", month: "2-digit", year: "numeric",
-          }),
-        }));
+          date: new Date(t.dueDate).toLocaleDateString('en-ZA', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+          })
+        }))
 
-        setTasks(formatted);
+        setTasks(formatted)
       } catch (err) {
-        console.error("Failed to load tasks", err);
+        console.error('Failed to load tasks', err)
       }
-    };
+    }
 
-    loadTasks();
-  }, []);
+    loadTasks()
+  }, [])
 
   return (
     <div className="p-6 space-y-4">
@@ -60,7 +62,7 @@ const Tasks: React.FC = () => {
         ))}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Tasks;
+export default Tasks
