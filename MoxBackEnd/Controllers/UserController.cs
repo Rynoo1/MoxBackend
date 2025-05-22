@@ -23,12 +23,14 @@ namespace MoxBackEnd.Controllers
         private readonly AppDbContext _context;
         private readonly UserManager<Users> _userManager;
         private readonly IEmailSender _emailSender;
-        public UserController(IUser user, AppDbContext context, UserManager<Users> userManager, IEmailSender emailSender)
+        private readonly ITokenServices _tokenservices;
+        public UserController(IUser user, AppDbContext context, UserManager<Users> userManager, IEmailSender emailSender, ITokenServices tokenServices)
         {
             _user = user;
             _context = context;
             _userManager = userManager;
             _emailSender = emailSender;
+            _tokenservices = tokenServices;
         }
 
         // [Authorize]
@@ -149,6 +151,20 @@ namespace MoxBackEnd.Controllers
             }
         
             return Ok(UserD);
+        }
+
+        //GenerateJWTToken
+        [HttpPost("generate-toke")]
+        public async Task<IActionResult> GenerateToken([FromBody] DirectTokenRequest request)
+        {
+            var token = _tokenservices.GenerateToken(request.UserId, request.Email);
+            return await Task.FromResult(Ok(new { Token = token }));
+        }
+
+        public class DirectTokenRequest
+        {
+            public string UserId { get; set; } = string.Empty;
+            public string Email { get; set; } = string.Empty;
         }
 
 
