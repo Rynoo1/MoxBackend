@@ -1,4 +1,4 @@
-:root {
+/* :root {
   --background-light: url('./assets/Background.jpg');
   --background-dark: url('./assets/Background.jpg');
   --background-login-signup: url('./assets/signup_background.jpg');
@@ -19,7 +19,7 @@ body {
   background-position: center;
   color: #000000;
 
-
+ @apply bg-white text-black dark:bg-gray-900 dark:text-white;
 }
 
 body.login-signup {
@@ -74,4 +74,4 @@ h2 {
 
 .dark-mode .sidebar-nav .nav-link {
   color: #cbd5e0;
-}
+} */

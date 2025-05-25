@@ -1,7 +1,7 @@
 import daisyui from 'daisyui'
 
 const config = {
-  content: ['./src/**/*.{js,ts,jsx,tsx,html}'],
+  content: ['./src/**/*.{js,ts,jsx,tsx,html}', './renderer/src/**/*.{js,ts,jsx,tsx,html}'],
   theme: {
     extend: {}
   },
