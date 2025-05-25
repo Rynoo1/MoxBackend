@@ -1,16 +1,14 @@
-import React from "react";
+import React from 'react'
+import LogInForm from '../components/LogInForm'
 
-const Login: React.FC = () => {
+const LoginPage: React.FC = () => {
   return (
-    <div className="login-page">
-      <h1>Login</h1>
-      <form className="login-form">
-        <input type="email" placeholder="Email" name="email" required />
-        <input type="password" placeholder="Password" name="password" required />
-        <button type="submit">Log In</button>
-      </form>
+    <div className="bg-red-500 text-white p-4">
+      <LogInForm />
+      {/* Test Tailwind css
+      <button className="btn btn-primary"> Test Button </button> */}
     </div>
-  );
-};
+  )
+}
 
-export default Login;
+export default LoginPage

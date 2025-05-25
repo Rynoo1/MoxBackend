@@ -16,6 +16,7 @@
     "build": "npm run typecheck && electron-vite build",
     "postinstall": "electron-builder install-app-deps",
     "build:unpack": "npm run build && electron-builder --dir",
+    "build:css": "postcss src/renderer/src/styles/main.css -o src/renderer/src/styles/output.css",
     "build:win": "npm run build && electron-builder --win",
     "build:mac": "electron-vite build && electron-builder --mac",
     "build:linux": "electron-vite build && electron-builder --linux"
@@ -26,22 +27,23 @@
     "@heroicons/react": "^2.2.0",
     "@tailwindcss/cli": "^4.1.6",
     "canvas-confetti": "^1.9.3",
-    "daisyui": "^5.0.35",
     "electron-updater": "^6.3.9",
+    "postcss-cli": "^11.0.1",
     "react-bootstrap-icons": "^1.11.6",
-    "react-router-dom": "^7.6.0",
-    "recharts": "^2.15.3",
-    "tailwindcss": "^4.1.6"
+    "react-router-dom": "^7.6.0"
   },
   "devDependencies": {
     "@electron-toolkit/eslint-config-prettier": "^3.0.0",
     "@electron-toolkit/eslint-config-ts": "^3.0.0",
     "@electron-toolkit/tsconfig": "^1.0.1",
+    "@tailwindcss/postcss": "^4.1.7",
     "@tailwindcss/vite": "^4.1.7",
     "@types/node": "^22.14.1",
-    "@types/react": "^19.1.1",
+    "@types/react": "^19.1.5",
     "@types/react-dom": "^19.1.2",
     "@vitejs/plugin-react": "^4.4.1",
+    "autoprefixer": "^10.4.21",
+    "daisyui": "^5.0.37",
     "electron": "^35.3.0",
     "electron-builder": "^25.1.8",
     "electron-vite": "^3.1.0",
@@ -49,9 +51,11 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.19",
+    "postcss": "^8.5.3",
     "prettier": "^3.5.3",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "tailwindcss": "^4.1.7",
     "typescript": "^5.8.3",
     "vite": "^6.3.5"
   }
