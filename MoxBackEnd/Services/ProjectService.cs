@@ -63,7 +63,6 @@ namespace MoxBackEnd.Services
 
             existingProject.ProjectName = updatedProject.ProjectName;
             existingProject.DueDate = updatedProject.DueDate;
-            existingProject.GroupID = updatedProject.GroupID;
 
             await _context.SaveChangesAsync();
             return existingProject;

@@ -1,6 +1,5 @@
 import React from "react";
 import { PersonCircle } from "react-bootstrap-icons";
-import "../styles/Tasks.css"
 
 type Props = {
   task: string;

@@ -22,8 +22,6 @@ public class AppDbContext : IdentityDbContext<Users>
     public DbSet<FileUpload> FileUploads{ get; set; }
     public DbSet<StickyNote> StickyNotes { get; set; }
     public DbSet<EmergencyMeeting> EmergencyMeetings { get; set; }
-    public DbSet<Group> Groups { get; set; }
-
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
 {
@@ -48,6 +46,11 @@ public class AppDbContext : IdentityDbContext<Users>
         .HasMany(p => p.Tasks)
         .WithOne(t => t.Project)
         .HasForeignKey(t => t.ProjectID);
+    
+    modelBuilder.Entity<Projects>()
+        .HasMany(p => p.Users)
+        .WithMany(u => u.Projects)
+        .UsingEntity(j => j.ToTable("ProjectUsers"));
 
     modelBuilder.Entity<FileUpload>()
         .HasOne(f => f.Project)
@@ -58,32 +61,6 @@ public class AppDbContext : IdentityDbContext<Users>
         .HasMany(s => s.AssignedUsers)
         .WithMany(u => u.AssignedSubTasks)
         .UsingEntity(j => j.ToTable("SubTaskUserAssignments"));
-
-    modelBuilder.Entity<Group>()
-        .HasMany(g => g.Users)
-        .WithMany(u => u.Groups);
-
-    modelBuilder.Entity<Group>()
-        .HasMany(g => g.Projects)
-        .WithOne(p => p.Group)
-        .HasForeignKey(p => p.GroupID)
-        .OnDelete(DeleteBehavior.SetNull);
-
-    modelBuilder.Entity<Group>()
-        .HasMany(g => g.Tasks)
-        .WithOne()
-        .OnDelete(DeleteBehavior.SetNull);
-
-    modelBuilder.Entity<Group>()
-        .HasMany(g => g.Roles)
-        .WithOne()
-        .OnDelete(DeleteBehavior.SetNull);
-
-    modelBuilder.Entity<EmergencyMeeting>()
-        .HasOne(em => em.Group)
-        .WithMany()
-        .HasForeignKey(em => em.GroupID)
-        .OnDelete(DeleteBehavior.SetNull);
 
     modelBuilder.Entity<EmergencyMeeting>()
         .HasOne(em => em.Project)

@@ -14,13 +14,6 @@ public class Projects
 
     public DateTime? DueDate { get; set; }
 
-    // ✅ Foreign Key to Group
-    [Required]
-    public string GroupID { get; set; } = string.Empty;
-
-    // ✅ Navigation to Group
-    public Group? Group { get; set; }
-
     public List<FileUpload> FileUploads { get; set; } = [];
     public List<AppRoles> AppRoles { get; set; } = [];
     public List<Tasks> Tasks { get; set; } = [];
