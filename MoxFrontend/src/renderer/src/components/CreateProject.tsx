@@ -22,7 +22,7 @@ const CreateProject: React.FC = () => {
     const [tasks, setTasks] = useState<Task[]>([]);
     const [showTaskForm, setShowTaskForm] = useState(false);
 
-    // Task form state
+    
     const [taskForm, setTaskForm] = useState({
         name: "",
         description: "",
@@ -32,14 +32,14 @@ const CreateProject: React.FC = () => {
     });
     const [showSubtaskForm, setShowSubtaskForm] = useState(false);
 
-    // Subtask form state
+    
     const [subtaskForm, setSubtaskForm] = useState({
         name: "",
         description: "",
         users: [] as User[],
     });
 
-    // Fetch users from backend
+    
     useEffect(() => {
         const fetchUsers = async () => {
             try {
@@ -55,7 +55,7 @@ const CreateProject: React.FC = () => {
         fetchUsers();
     }, []);
 
-    // Handlers for project
+   
     const handleAddTask = () => setShowTaskForm(true);
 
     const handleTaskFormChange = (
@@ -76,7 +76,7 @@ const CreateProject: React.FC = () => {
         setShowTaskForm(false);
     };
 
-    // Handlers for subtask
+    
     const handleAddSubtask = () => setShowSubtaskForm(true);
 
     const handleSubtaskFormChange = (
@@ -109,7 +109,7 @@ const CreateProject: React.FC = () => {
         setShowSubtaskForm(false);
     };
 
-    // Submit handler
+    
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         const project = {
@@ -117,47 +117,46 @@ const CreateProject: React.FC = () => {
             dueDate: projectDueDate,
             tasks,
         };
-        // Submit project to backend here
+        
         alert("Project submitted!\n" + JSON.stringify(project, null, 2));
-        // Reset all
+        
         setProjectName("");
         setProjectDueDate("");
         setTasks([]);
     };
 
     return (
-        <div className="createprojectcontainer">
-            
-                <h2>Create Project</h2>
-                <form onSubmit={handleSubmit}>
-                    <div>
-                        <label>
-                            Project Name:
-                            <input
-                                name="projectName"
-                                value={projectName}
-                                onChange={(e) => setProjectName(e.target.value)}
-                                required
-                            />
-                        </label>
-                    </div>
-                    <div>
-                        <label>
-                            Project Due Date:
-                            <input
-                                type="date"
-                                name="projectDueDate"
-                                value={projectDueDate}
-                                onChange={(e) => setProjectDueDate(e.target.value)}
-                                required
-                            />
-                        </label>
-                    </div>
-                
-                <div style={{ marginTop: 16 }}>
+        <div className="createprojectcontainer flex flex-col p-6 min-h-screen h-screen overflow-y-auto">
+            <h1 className="mb-6">Create Project</h1>
+            <form onSubmit={handleSubmit} className="flex flex-col gap-6 w-full">
+                <div className="flex flex-col gap-4">
+                    <label className="projectnameinput">
+                        Project Name:
+                        <input
+                            name="projectName"
+                            value={projectName}
+                            onChange={(e) => setProjectName(e.target.value)}
+                            required
+                            className="input input-bordered w-full"
+                        />
+                    </label>
+                    <label>
+                        Project Due Date:
+                        <input
+                            type="date"
+                            name="projectDueDate"
+                            value={projectDueDate}
+                            onChange={(e) => setProjectDueDate(e.target.value)}
+                            required
+                            className="input input-bordered w-full"
+                        />
+                    </label>
+                    
+                </div>
+                <div className="flex flex-col gap-4">
                     <h3>Tasks</h3>
                     {tasks.map((task, idx) => (
-                        <div key={idx} style={{ border: "1px solid #ccc", marginBottom: 8, padding: 8 }}>
+                        <div key={idx} className="border border-gray-300 rounded p-3 mb-2">
                             <strong>{task.name}</strong> (Due: {task.dueDate}, Priority: {task.priority})
                             <div>{task.description}</div>
                             <div>
@@ -174,62 +173,63 @@ const CreateProject: React.FC = () => {
                         </div>
                     ))}
                     {!showTaskForm && (
-                        <button type="button" onClick={handleAddTask}>
+                        <button
+                            type="button"
+                            onClick={handleAddTask}
+                            className="btn btn-secondary w-full md:w-auto create-project-from-button-secondary"
+                        >
                             Add Task
                         </button>
                     )}
+                    
                     {showTaskForm && (
-                        <div style={{ border: "1px solid #aaa", padding: 8, marginTop: 8 }}>
-                            <div>
-                                <label>
-                                    Task Name:
-                                    <input
-                                        name="name"
-                                        value={taskForm.name}
-                                        onChange={handleTaskFormChange}
-                                        required
-                                    />
-                                </label>
-                            </div>
-                            <div>
-                                <label>
-                                    Task Description:
-                                    <textarea
-                                        name="description"
-                                        value={taskForm.description}
-                                        onChange={handleTaskFormChange}
-                                    />
-                                </label>
-                            </div>
-                            <div>
-                                <label>
-                                    Task Due Date:
-                                    <input
-                                        type="date"
-                                        name="dueDate"
-                                        value={taskForm.dueDate}
-                                        onChange={handleTaskFormChange}
-                                        required
-                                    />
-                                </label>
-                            </div>
-                            <div>
-                                <label>
-                                    Priority:
-                                    <select
-                                        name="priority"
-                                        value={taskForm.priority}
-                                        onChange={handleTaskFormChange}
-                                        required
-                                    >
-                                        <option value="">Select</option>
-                                        <option value="Low">Low</option>
-                                        <option value="Normal">Normal</option>
-                                        <option value="High">High</option>
-                                    </select>
-                                </label>
-                            </div>
-                            <div style={{ marginTop: 8 }}>
+                    <div className="border border-gray-400 rounded p-3 mt-2 flex flex-col gap-4">
+                        <label>
+                        Task Name:
+                            <input
+                                name="name"
+                                value={taskForm.name}
+                                onChange={handleTaskFormChange}
+                                required
+                                className="input input-bordered w-full"
+                            />
+                        </label>
+                        <label>
+                        Task Description:
+                            <textarea
+                                name="description"
+                                value={taskForm.description}
+                                onChange={handleTaskFormChange}
+                                className="textarea textarea-bordered w-full"
+                            />
+                        </label>
+                        <label>
+                        Task Due Date:
+                            <input
+                                type="date"
+                                name="dueDate"
+                                value={taskForm.dueDate}
+                                onChange={handleTaskFormChange}
+                                required
+                                className="input input-bordered w-full"
+                            />
+                        </label>
+                        <label>
+                        Priority:
+                            <select
+                                name="priority"
+                                value={taskForm.priority}
+                                onChange={handleTaskFormChange}
+                                required
+                                className="select select-bordered w-full"
+                            >
+                                <option value="">Select</option>
+                                <option value="Low">Low</option>
+                                <option value="Normal">Normal</option>
+                                <option value="High">High</option>
+                            </select>
+                        </label>
+                            <div className="mt-3">
                                 <h4>Subtasks</h4>
                                 <ul>
                                     {taskForm.subtasks.map((sub, sidx) => (
@@ -240,77 +240,89 @@ const CreateProject: React.FC = () => {
                                     ))}
                                 </ul>
                                 {!showSubtaskForm && (
-                                    <button type="button" onClick={handleAddSubtask}>
+                                    <button
+                                        type="button"
+                                        onClick={handleAddSubtask}
+                                        className="btn btn-accent w-full md:w-auto mt-2 create-project-from-button-secondary"
+                                    >
                                         Add Subtask
                                     </button>
                                 )}
+
+                                
                                 {showSubtaskForm && (
-                                    <div style={{ border: "1px solid #bbb", padding: 8, marginTop: 8 }}>
-                                        <div>
-                                            <label>
-                                                Subtask Name:
-                                                <input
-                                                    name="name"
-                                                    value={subtaskForm.name}
-                                                    onChange={handleSubtaskFormChange}
-                                                    required
-                                                />
-                                            </label>
+                                <div className="border border-gray-300 rounded p-2 mt-2 flex flex-col gap-4">
+                                    <label>
+                                    Subtask Name:
+                                        <input
+                                            name="name"
+                                            value={subtaskForm.name}
+                                            onChange={handleSubtaskFormChange}
+                                            required
+                                            className="input input-bordered w-full"
+                                        />
+                                    </label>
+                                    <label>
+                                    Subtask Description:
+                                        <textarea
+                                            name="description"
+                                            value={subtaskForm.description}
+                                            onChange={handleSubtaskFormChange}
+                                            className="textarea textarea-bordered w-full"
+                                        />
+                                    </label>
+                                    <label>
+                                    Add Users:
+                                        <select
+                                            onChange={(e) => handleUserSelect(Number(e.target.value))}
+                                            value=""
+                                            className="select select-bordered w-full"
+                                        >
+                                            <option value="">Select user</option>
+                                            {users.map((user) => (
+                                            <option key={user.id} value={user.id}>
+                                                {user.name}
+                                            </option>
+                                            ))}
+                                        </select>
+                                    </label>
+
+                                        <div className="flex flex-wrap gap-2 mt-2">
+                                            {subtaskForm.users.map((user) => (
+                                                <span key={user.id} className="badge badge-outline">
+                                                    {user.name}
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleRemoveUser(user.id)}
+                                                        className="ml-1 text-red-500"
+                                                    >
+                                                        x
+                                                    </button>
+                                                </span>
+                                            ))}
                                         </div>
-                                        <div>
-                                            <label>
-                                                Subtask Description:
-                                                <textarea
-                                                    name="description"
-                                                    value={subtaskForm.description}
-                                                    onChange={handleSubtaskFormChange}
-                                                />
-                                            </label>
-                                        </div>
-                                        <div>
-                                            <label>
-                                                Add Users:
-                                                <select
-                                                    onChange={(e) => handleUserSelect(Number(e.target.value))}
-                                                    value=""
-                                                >
-                                                    <option value="">Select user</option>
-                                                    {users.map((user) => (
-                                                        <option key={user.id} value={user.id}>
-                                                            {user.name}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                            </label>
-                                            <div>
-                                                {subtaskForm.users.map((user) => (
-                                                    <span key={user.id} style={{ marginRight: 8 }}>
-                                                        {user.name}{" "}
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => handleRemoveUser(user.id)}
-                                                            style={{ color: "red" }}
-                                                        >
-                                                            x
-                                                        </button>
-                                                    </span>
-                                                ))}
-                                            </div>
-                                        </div>
-                                        <button type="button" onClick={handleAddSubtaskToTask}>
+                                        <button
+                                            type="button"
+                                            onClick={handleAddSubtaskToTask}
+                                            className="btn btn-success w-full md:w-auto mt-2 create-project-from-button"
+                                        >
                                             Save Subtask
                                         </button>
                                     </div>
                                 )}
                             </div>
-                            <button type="button" onClick={handleAddTaskToList} style={{ marginTop: 8 }}>
+                            <button
+                                type="button"
+                                onClick={handleAddTaskToList}
+                                className="btn btn-info w-full md:w-auto mt-3 create-project-from-button"
+                            >
                                 Save Task
                             </button>
                         </div>
                     )}
                 </div>
-                <button type="submit" style={{ marginTop: 16 }}>
-                    Submit Project
+                <button type="submit" className="btn btn-primary mt-4 w-full md:w-auto create-project-from-button">
+                        Submit Project
                 </button>
             </form>
         </div>
