@@ -5,7 +5,6 @@ import KanbanBoard from './pages/KanbanBoard'
 import Projects from './pages/Projects'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
-import Tasks from './pages/Tasks'
 import Sidebar from './components/Sidebar'
  import './styles/main.css'
 
@@ -37,7 +36,6 @@ function App() {
             <Route path="/projects" element={<Projects />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
-            <Route path="/tasks" element={<Tasks />} />
           </Routes>
         </div>
       </div>

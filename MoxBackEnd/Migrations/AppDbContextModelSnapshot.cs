@@ -37,21 +37,6 @@ namespace MoxBackEnd.Migrations
                     b.ToTable("EmergencyMeetingUsers");
                 });
 
-            modelBuilder.Entity("GroupUsers", b =>
-                {
-                    b.Property<string>("GroupsGroupID")
-                        .HasColumnType("text");
-
-                    b.Property<string>("UsersId")
-                        .HasColumnType("text");
-
-                    b.HasKey("GroupsGroupID", "UsersId");
-
-                    b.HasIndex("UsersId");
-
-                    b.ToTable("GroupUsers");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")
@@ -192,9 +177,6 @@ namespace MoxBackEnd.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("RoleID"));
 
-                    b.Property<string>("GroupID")
-                        .HasColumnType("text");
-
                     b.Property<int>("ProjectID")
                         .HasColumnType("integer");
 
@@ -207,8 +189,6 @@ namespace MoxBackEnd.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("RoleID");
-
-                    b.HasIndex("GroupID");
 
                     b.HasIndex("ProjectID");
 
@@ -235,9 +215,6 @@ namespace MoxBackEnd.Migrations
                     b.Property<DateTime>("EndTime")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("GroupID")
-                        .HasColumnType("text");
-
                     b.Property<bool>("IsResolved")
                         .HasColumnType("boolean");
 
@@ -257,8 +234,6 @@ namespace MoxBackEnd.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CreatedByUserId");
-
-                    b.HasIndex("GroupID");
 
                     b.HasIndex("ProjectID");
 
@@ -294,27 +269,6 @@ namespace MoxBackEnd.Migrations
                     b.ToTable("FileUploads");
                 });
 
-            modelBuilder.Entity("MoxBackEnd.Models.Group", b =>
-                {
-                    b.Property<string>("GroupID")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("DueDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.PrimitiveCollection<string[]>("FileUploads")
-                        .IsRequired()
-                        .HasColumnType("text[]");
-
-                    b.Property<string>("GroupName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("GroupID");
-
-                    b.ToTable("Groups");
-                });
-
             modelBuilder.Entity("MoxBackEnd.Models.Projects", b =>
                 {
                     b.Property<int>("ProjectID")
@@ -326,17 +280,11 @@ namespace MoxBackEnd.Migrations
                     b.Property<DateTime?>("DueDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("GroupID")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<string>("ProjectName")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("ProjectID");
-
-                    b.HasIndex("GroupID");
 
                     b.ToTable("Projects");
                 });
@@ -447,9 +395,6 @@ namespace MoxBackEnd.Migrations
                     b.Property<DateTime>("DueDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("GroupID")
-                        .HasColumnType("text");
-
                     b.Property<bool>("IsEmergency")
                         .HasColumnType("boolean");
 
@@ -469,8 +414,6 @@ namespace MoxBackEnd.Migrations
                     b.HasKey("TaskId");
 
                     b.HasIndex("AssignedUserId");
-
-                    b.HasIndex("GroupID");
 
                     b.HasIndex("ProjectID");
 
@@ -556,7 +499,7 @@ namespace MoxBackEnd.Migrations
 
                     b.HasIndex("UsersId");
 
-                    b.ToTable("ProjectsUsers");
+                    b.ToTable("ProjectUsers", (string)null);
                 });
 
             modelBuilder.Entity("SubTasksUsers", b =>
@@ -585,21 +528,6 @@ namespace MoxBackEnd.Migrations
                     b.HasOne("MoxBackEnd.Models.EmergencyMeeting", null)
                         .WithMany()
                         .HasForeignKey("MeetingsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("GroupUsers", b =>
-                {
-                    b.HasOne("MoxBackEnd.Models.Group", null)
-                        .WithMany()
-                        .HasForeignKey("GroupsGroupID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("MoxBackEnd.Models.Users", null)
-                        .WithMany()
-                        .HasForeignKey("UsersId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -657,11 +585,6 @@ namespace MoxBackEnd.Migrations
 
             modelBuilder.Entity("MoxBackEnd.Models.AppRoles", b =>
                 {
-                    b.HasOne("MoxBackEnd.Models.Group", null)
-                        .WithMany("Roles")
-                        .HasForeignKey("GroupID")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.HasOne("MoxBackEnd.Models.Projects", "Project")
                         .WithMany("AppRoles")
                         .HasForeignKey("ProjectID")
@@ -687,19 +610,12 @@ namespace MoxBackEnd.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("MoxBackEnd.Models.Group", "Group")
-                        .WithMany()
-                        .HasForeignKey("GroupID")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.HasOne("MoxBackEnd.Models.Projects", "Project")
                         .WithMany()
                         .HasForeignKey("ProjectID")
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("CreatedBy");
-
-                    b.Navigation("Group");
 
                     b.Navigation("Project");
                 });
@@ -713,17 +629,6 @@ namespace MoxBackEnd.Migrations
                         .IsRequired();
 
                     b.Navigation("Project");
-                });
-
-            modelBuilder.Entity("MoxBackEnd.Models.Projects", b =>
-                {
-                    b.HasOne("MoxBackEnd.Models.Group", "Group")
-                        .WithMany("Projects")
-                        .HasForeignKey("GroupID")
-                        .OnDelete(DeleteBehavior.SetNull)
-                        .IsRequired();
-
-                    b.Navigation("Group");
                 });
 
             modelBuilder.Entity("MoxBackEnd.Models.StickyNote", b =>
@@ -772,11 +677,6 @@ namespace MoxBackEnd.Migrations
                         .WithMany("AssignedTasks")
                         .HasForeignKey("AssignedUserId");
 
-                    b.HasOne("MoxBackEnd.Models.Group", null)
-                        .WithMany("Tasks")
-                        .HasForeignKey("GroupID")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.HasOne("MoxBackEnd.Models.Projects", "Project")
                         .WithMany("Tasks")
                         .HasForeignKey("ProjectID")
@@ -816,15 +716,6 @@ namespace MoxBackEnd.Migrations
                         .HasForeignKey("AssignedUsersId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("MoxBackEnd.Models.Group", b =>
-                {
-                    b.Navigation("Projects");
-
-                    b.Navigation("Roles");
-
-                    b.Navigation("Tasks");
                 });
 
             modelBuilder.Entity("MoxBackEnd.Models.Projects", b =>

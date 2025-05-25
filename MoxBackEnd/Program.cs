@@ -22,7 +22,6 @@ builder.Services.AddScoped<IUser, UserService>();
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 builder.Services.AddScoped<IStickyNote, StickyNoteService>();
 builder.Services.AddScoped<IEmergencyMeeting, EmergencyMeetingService>();
-builder.Services.AddScoped<IGroup, GroupService>();
 builder.Services.AddScoped<ITask, TaskService>();
 builder.Services.AddScoped<ITokenServices, TokenServices>();
 
