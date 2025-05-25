@@ -1,98 +1,31 @@
 import React, { useState } from 'react';
 
-interface ProgressbarProps {
-    progress: number; // Progress value between 0 and 100
-    tooltipText?: string; // Optional custom text for the tooltip
-    settooltipText?: (text: string) => 'complete'; // Optional function to set tooltip text
-}
+const ProgressBar: React.FC<{ progress: number }> = ({ progress }) => {
+  const getColor = () => {
+    if (progress >= 75) return "bg-green-500";
+    if (progress >= 50) return "bg-yellow-400";
+    return "bg-red-500";
+  };
 
-const Progressbar: React.FC<ProgressbarProps> = ({ progress, tooltipText }) => {
-    const [isHovered, setIsHovered] = useState(false);
-
-    const getBarColor = () => {
-        if (progress < 40) return '#EF4444'; // Red
-        if (progress < 80) return '#EFB917'; // Sunburn orange
-        return '#B9E425'; // Lime green
-    };
-
-    // Constrain the thumb position
-    const constrainedProgress = Math.min(100, Math.max(0, progress));
-
-    return (
-        <div
-            style={styles.container}
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-        >
-            <div
-                style={{
-                    ...styles.fill,
-                    width: `${constrainedProgress}%`,
-                    background: getBarColor(),
-                }}
-            />
-            <div
-                style={{
-                    ...styles.thumb,
-                    left: `calc(${constrainedProgress}% - 10px)`, // Center the thumb
-                }}
-            />
-            {isHovered && (
-                <div
-                    style={{
-                        ...styles.tooltip,
-                        left: `calc(${constrainedProgress}% - 20px)`, // Center the tooltip
-                    }}
-                >
-                    {tooltipText ? tooltipText : `${constrainedProgress}%`}
-                </div>
-            )}
+  return (
+    <div className="relative w-full group">
+      {/* Tooltip - One line, 12px, no wrapping */}
+      <div className="absolute left-1/2 -translate-x-1/2 -top-8 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
+        <div className="bg-[#8b2eff] text-white text-[12px] font-medium px-4 py-1 rounded-full shadow whitespace-nowrap relative">
+          {progress}% completed
+          <div className="absolute left-1/2 -bottom-1 -translate-x-1/2 w-2 h-2 bg-[#8b2eff] rotate-45 z-[-1]"></div>
         </div>
-    );
+      </div>
+
+      {/* Bar */}
+      <div className="w-full bg-gray-200 rounded-full h-3 shadow-inner">
+        <div
+          className={`h-3 rounded-full ${getColor()} transition-all duration-300 ease-in-out`}
+          style={{ width: `${progress}%` }}
+        ></div>
+      </div>
+    </div>
+  );
 };
 
-const styles = {
-    container: {
-        width: '100%',
-        height: '20px',
-        backgroundColor: '#e0e0e0',
-        borderRadius: '10px',
-        position: 'relative' as 'relative',
-        overflow: 'hidden',
-        boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.2)',
-    },
-    fill: {
-        height: '100%',
-        borderRadius: '10px',
-        transition: 'width 0.3s ease',
-        boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.2)',
-    },
-    thumb: {
-        position: 'absolute' as 'absolute',
-        top: '50%',
-        transform: 'translateY(-50%)',
-        marginLeft: '-10px',
-        width: '16px',
-        height: '16px',
-        borderRadius: '50%',
-        backgroundColor: '#fff',
-        boxShadow: '0 0 3px rgba(0,0,0,0.3)',
-        transition: 'left 0.3s ease',
-    },
-    tooltip: {
-        position: 'absolute' as 'absolute',
-        top: '-35px', // Adjusted to ensure it appears above the bar
-        padding: '5px 10px',
-        backgroundColor: '#333',
-        color: '#fff',
-        borderRadius: '5px',
-        fontSize: '12px',
-        whiteSpace: 'nowrap',
-        transform: 'translateX(-50%)',
-        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
-        zIndex: 10, // Ensure it appears above other elements
-        border: '1px solid #fff', // Optional border for better visibility
-    },
-};
-
-export default Progressbar;
+export default ProgressBar;

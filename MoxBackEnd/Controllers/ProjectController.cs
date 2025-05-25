@@ -1,14 +1,23 @@
 using Microsoft.AspNetCore.Mvc;
-using MoxBackEnd.Dtos;
+using Microsoft.EntityFrameworkCore;
+using MoxBackEnd.Data;
 using MoxBackEnd.Interfaces;
+using MoxBackEnd.Models;
 
 namespace MoxBackEnd.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class ProjectController(IProjects projectService) : ControllerBase
+public class ProjectController : ControllerBase
 {
-    private readonly IProjects _projectService = projectService;
+    private readonly IProjects _projectService;
+    private readonly AppDbContext _context;
+
+    public ProjectController(IProjects projectService, AppDbContext context)
+    {
+        _projectService = projectService;
+        _context = context;
+    }
 
     [HttpGet]
     public async Task<IActionResult> GetAllProjects()
@@ -28,27 +37,45 @@ public class ProjectController(IProjects projectService) : ControllerBase
         return Ok(project);
     }
 
+    [HttpGet("{projectId}/assigned-users")]
+    public async Task<IActionResult> GetAssignedUsers(int projectId)
+    {
+        var project = await _context.Projects
+            .Include(p => p.Users)
+            .FirstOrDefaultAsync(p => p.ProjectID == projectId);
+
+        if (project == null)
+            return NotFound("Project not found.");
+
+        return Ok(project.Users.Select(u => new
+        {
+            u.Id,
+            u.UserName,
+            u.Email
+        }));
+    }
+
     [HttpPost]
-    public async Task<IActionResult> CreateProject([FromBody] ProjectCreateDto projectDto)
+    public async Task<IActionResult> CreateProject([FromBody] Projects project)
     {
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
         }
 
-        var createdProject = await _projectService.CreateProjectAsync(projectDto);
+        var createdProject = await _projectService.CreateProjectAsync(project);
         return CreatedAtAction(nameof(GetProjectById), new { id = createdProject.ProjectID }, createdProject);
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateProjectAsync(int id, [FromBody] ProjectUpdateDto projectDto)
+    public async Task<IActionResult> UpdateProjectAsync(int id, [FromBody] Projects project)
     {
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
         }
 
-        var updatedProject = await _projectService.UpdateProjectAsync(id, projectDto);
+        var updatedProject = await _projectService.UpdateProjectAsync(id, project);
         if (updatedProject == null)
         {
             return NotFound();

@@ -6,7 +6,11 @@ const Emergency: React.FC = () => {
   const [error, setError] = useState("");
   const [showPopup, setShowPopup] = useState(true);
 
-  const activeMeetings = meetings.filter((m) => !m.isResolved);
+  const activeMeetings = meetings.filter((m) => {
+    const now = new Date();
+    const endTime = new Date(m.endTime);
+    return !m.isResolved && endTime > now;
+  });
 
   useEffect(() => {
     const loadMeetings = async () => {
@@ -71,9 +75,25 @@ const Emergency: React.FC = () => {
                     {new Date(meeting.endTime).toLocaleTimeString()}
                     </p>
 
+                  {meeting.attendees?.$values?.length > 0 ? (
+                    <p className="text-sm mb-1">
+                      <span className="font-semibold">👥 Attendees:</span>{" "}
+                      {meeting.attendees.$values.map((a: any, idx: number) => (
+                        <span key={a.id}>
+                          {a.userName}
+                          {idx < meeting.attendees.$values.length - 1 ? ", " : ""}
+                        </span>
+                      ))}
+                    </p>
+                  ) : (
+                    <p className="text-sm mb-1 text-gray-400">
+                      <span className="font-semibold">👥 Attendees:</span> None
+                    </p>
+                  )}
+
                     <p className="text-sm mb-1">
                     <span className="font-semibold">👤 Created by:</span>{" "}
-                    {meeting.createdByUserId}
+                    {meeting.createdBy}
                     </p>
                 </div>
                 ))}

@@ -13,7 +13,6 @@ public class Users : IdentityUser
   public List<AppRoles> AppRoles { get; set; } = []; 
 
   public ICollection<SubTasks> AssignedSubTasks { get; set; } = [];
-  public ICollection<Group> Groups { get; set; } = [];
   public ICollection<EmergencyMeeting> Meetings { get; set; } = [];
   public ICollection<EmergencyMeeting> CreatedMeetings { get; set; } = [];
   public ICollection<StickyNote> StickyNotes { get; set; } = [];

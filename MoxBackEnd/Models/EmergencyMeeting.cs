@@ -22,9 +22,6 @@ namespace MoxBackEnd.Models
 
         public string? Location { get; set; }
 
-        public string? GroupID { get; set; }
-        public Group? Group { get; set; }
-
         public int? ProjectID { get; set; }
         public Projects? Project { get; set; }
 

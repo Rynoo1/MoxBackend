@@ -17,10 +17,10 @@ public class EmergencyMeetingService : IEmergencyMeeting
     }
 
     public async Task<List<EmergencyMeeting>> GetAllMeetingsAsync() =>
-        await _context.EmergencyMeetings.ToListAsync();
-
-    public async Task<List<EmergencyMeeting>> GetMeetingsByGroupAsync(string groupId) =>
-        await _context.EmergencyMeetings.Where(m => m.GroupID == groupId).ToListAsync();
+        await _context.EmergencyMeetings
+            .Include(m => m.CreatedBy)
+            .Include(m => m.Attendees)
+            .ToListAsync();
 
     public async Task<List<EmergencyMeeting>> GetMeetingsByProjectAsync(int projectId) =>
         await _context.EmergencyMeetings.Where(m => m.ProjectID == projectId).ToListAsync();

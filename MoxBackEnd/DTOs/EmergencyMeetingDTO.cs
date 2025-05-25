@@ -17,7 +17,6 @@ public class EmergencyMeetingDto
 
     public string? Location { get; set; }
 
-    public string? GroupID { get; set; }
     public int? ProjectID { get; set; }
 
     [Required]
