@@ -1,13 +1,11 @@
-import { WorkStatus, PriorityLevel } from "./TaskEnums";
-
-export interface TaskDto {
-  taskId?: number;
+export interface EmergencyMeeting {
+  id: number;
   title: string;
-  description?: string;
+  description: string;
+  startTime: string;
+  endTime: string;
+  location: string;
   projectID: number;
-  assignedTo?: string[];
-  priority: PriorityLevel;
-  status: WorkStatus;
-  deadline?: string;
-  isEmergency: boolean;
+  createdByUserId: string;
+  isResolved: boolean;
 }
