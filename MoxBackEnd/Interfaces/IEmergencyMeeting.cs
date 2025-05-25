@@ -6,7 +6,6 @@ namespace MoxBackEnd.Interfaces;
 public interface IEmergencyMeeting
 {
     Task<List<EmergencyMeeting>> GetAllMeetingsAsync();
-    Task<List<EmergencyMeeting>> GetMeetingsByGroupAsync(string groupId);
     Task<List<EmergencyMeeting>> GetMeetingsByProjectAsync(int projectId);
     Task<List<EmergencyMeeting>> GetMeetingsByUserAsync(string userId);
     Task<EmergencyMeeting?> GetMeetingByIdAsync(int id);

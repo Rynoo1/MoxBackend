@@ -1,4 +1,4 @@
-import { WorkStatus, PriorityLevel } from "./TaskEnums";
+import { WorkStatus, PriorityLevel } from "../src/models/TaskEnums";
 
 export interface TaskDto {
   taskId?: number;

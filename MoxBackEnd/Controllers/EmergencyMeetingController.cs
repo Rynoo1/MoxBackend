@@ -19,10 +19,29 @@ public class EmergencyMeetingController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll() => Ok(await _service.GetAllMeetingsAsync());
+    public async Task<IActionResult> GetAll()
+    {
+        var meetings = await _service.GetAllMeetingsAsync();
 
-    [HttpGet("by-group/{groupId}")]
-    public async Task<IActionResult> GetByGroup(string groupId) => Ok(await _service.GetMeetingsByGroupAsync(groupId));
+        var result = meetings.Select(m => new
+        {
+            m.Id,
+            m.Title,
+            m.Description,
+            m.StartTime,
+            m.EndTime,
+            m.Location,
+            m.ProjectID,
+            m.IsResolved,
+            CreatedBy = m.CreatedBy?.UserName ?? "Unknown",
+            Attendees = m.Attendees.Select(a => new {
+                a.Id,
+                a.UserName
+            })
+        });
+
+        return Ok(result);
+    }
 
     [HttpGet("by-project/{projectId}")]
     public async Task<IActionResult> GetByProject(int projectId) => Ok(await _service.GetMeetingsByProjectAsync(projectId));
@@ -51,7 +70,6 @@ public class EmergencyMeetingController : ControllerBase
             StartTime = dto.StartTime,
             EndTime = dto.EndTime,
             Location = dto.Location,
-            GroupID = dto.GroupID,
             ProjectID = dto.ProjectID,
             CreatedByUserId = dto.CreatedByUserId,
             IsResolved = dto.IsResolved,

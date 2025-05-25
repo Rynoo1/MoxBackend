@@ -19,16 +19,16 @@ public class EmergencyMeetingServiceTests
     }
 
     [Fact]
-    public async Task GetMeetingsByGroupAsync_ReturnsCorrectMeetings()
+    public async Task GetMeetingsByProjectAsync_ReturnsCorrectMeetings()
     {
         // Arrange
         var context = GetInMemoryDbContext();
 
         context.EmergencyMeetings.AddRange(new List<EmergencyMeeting>
         {
-            new EmergencyMeeting { Id = 1, GroupID = "G1", Title = "G1 Meeting" },
-            new EmergencyMeeting { Id = 2, GroupID = "G2", Title = "G2 Meeting" },
-            new EmergencyMeeting { Id = 3, GroupID = "G1", Title = "G1 Meeting 2" }
+            new EmergencyMeeting { Id = 1, ProjectID = 1, Title = "Project 1 Meeting" },
+            new EmergencyMeeting { Id = 2, ProjectID = 2, Title = "Project 2 Meeting" },
+            new EmergencyMeeting { Id = 3, ProjectID = 1, Title = "Project 1 Meeting 2" }
         });
 
         await context.SaveChangesAsync();
@@ -36,10 +36,10 @@ public class EmergencyMeetingServiceTests
         var service = new EmergencyMeetingService(context);
 
         // Act
-        var result = await service.GetMeetingsByGroupAsync("G1");
+        var result = await service.GetMeetingsByProjectAsync(1);
 
         // Assert
         Assert.Equal(2, result.Count);
-        Assert.All(result, m => Assert.Equal("G1", m.GroupID));
+        Assert.All(result, m => Assert.Equal(1, m.ProjectID));
     }
 }
