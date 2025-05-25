@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import Dashboard from './pages/Dashboard'
 import KanbanBoard from './pages/KanbanBoard'
 import Projects from './pages/Projects'
@@ -7,7 +7,7 @@ import Login from './pages/Login'
 import Signup from './pages/Signup'
 import Tasks from './pages/Tasks'
 import Sidebar from './components/Sidebar'
-// import './styles/main.css'
+ import './styles/main.css'
 
 function App() {
   const [isDarkMode, setIsDarkMode] = useState(false)
