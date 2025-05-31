@@ -167,185 +167,249 @@ const LoginForm: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
     }
   }
 
-  return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100">
-      <div className="card w-96 bg-white shadow-lg">
-        <div className="text-center my-6">
-          <h2 className="text-2xl font-bold">Welcome</h2>
-          <p>Account Access</p>
-        </div>
-
-        {error && (
-          <div className="alert alert-error mb-4">
-            <span>{error}</span>
-          </div>
-        )}
-
-        <div className="tabs">
-          <button
-            className={`tab tab-bordered ${activeTabKey === '1' ? 'tab-active' : ''}`}
-            onClick={() => handleTabChange('1')}
-          >
-            Login
-          </button>
-          <button
-            className={`tab tab-bordered ${activeTabKey === '2' ? 'tab-active' : ''}`}
-            onClick={() => handleTabChange('2')}
-          >
-            Register
-          </button>
-        </div>
-        <div role="tablist" className="tabs">
-          <a role="tab" className="tab">
-            Tab 1
-          </a>
-          <a role="tab" className="tab tab-active">
-            Tab 2
-          </a>
-          <a role="tab" className="tab">
-            Tab 3
-          </a>
-        </div>
-
-        {activeTabKey === '1' && (
-          <form
-            className="p-4"
-            onSubmit={(e) => {
-              e.preventDefault()
-              onLoginFinish()
-            }}
-          >
-            <div className="form-control mb-4">
-              <label className="label">
-                <span className="label-text">Email</span>
-              </label>
-              <input
-                type="email"
-                name="Email"
-                value={loginValues.email}
-                onChange={handleLoginChange}
-                placeholder="Email"
-                className="input input-bordered"
-                required
-              />
-            </div>
-
-            <div className="form-control mb-4">
-              <label className="label">
-                <span className="label-text">Username</span>
-              </label>
-              <input
-                type="text"
-                name="Username"
-                value={loginValues.username}
-                onChange={handleLoginChange}
-                placeholder="Username"
-                className="input input-bordered"
-                required
-              />
-            </div>
-
-            <div className="form-control mb-4">
-              <label className="label">
-                <span className="label-text">Password</span>
-              </label>
-              <input
-                type="password"
-                name="Password"
-                value={loginValues.password}
-                onChange={handleLoginChange}
-                placeholder="Password"
-                className="input input-bordered"
-                required
-              />
-            </div>
-
-            <button className={`btn btn-primary w-full ${loading ? 'loading' : ''}`} type="submit">
-              Log in
-            </button>
-
-            <div className="text-center mt-4">
-              <a href="#register" className="link">
-                Don&apos;t have an account? Register now
-              </a>
-            </div>
-          </form>
-        )}
-
-        {activeTabKey === '2' && (
-          <form
-            className="p-4"
-            onSubmit={(e) => {
-              e.preventDefault()
-              onRegisterFinish()
-            }}
-          >
-            <div className="form-control mb-4">
-              <label className="label">
-                <span className="label-text">Email</span>
-              </label>
-              <input
-                type="email"
-                name="email"
-                value={registerValues.email}
-                onChange={handleRegisterChange}
-                placeholder="Email"
-                className="input input-bordered"
-                required
-              />
-            </div>
-
-            <div className="form-control mb-4">
-              <label className="label">
-                <span className="label-text">Username</span>
-              </label>
-              <input
-                type="text"
-                name="username"
-                value={registerValues.username}
-                onChange={handleRegisterChange}
-                placeholder="Username"
-                className="input input-bordered"
-                required
-              />
-            </div>
-
-            <div className="form-control mb-4">
-              <label className="label">
-                <span className="label-text">Password</span>
-              </label>
-              <input
-                type="password"
-                name="password"
-                value={registerValues.password}
-                onChange={handleRegisterChange}
-                placeholder="Password"
-                className="input input-bordered"
-                required
-              />
-            </div>
-
-            <div className="form-control mb-4">
-              <label className="cursor-pointer flex items-center">
-                <input type="checkbox" className="checkbox" />
-                <span className="label-text ml-2">TwoFactor Authentication</span>
-              </label>
-            </div>
-
-            <button className={`btn btn-primary w-full ${loading ? 'loading' : ''}`} type="submit">
-              Register
-            </button>
-
-            <div className="text-center mt-4">
-              <a href="#login" className="link">
-                Already have an account? Login now
-              </a>
-            </div>
-          </form>
-        )}
+ return (
+    <form
+      className="register-form space-y-5"
+      onSubmit={(e) => {
+        e.preventDefault()
+        onLoginFinish()
+      }}
+    >
+      {/* Email */}
+      <div className="form-group">
+        <label className="fieldset-legend">Email</label>
+        <input
+          type="email"
+          name="email"
+          value={loginValues.email}
+          onChange={handleLoginChange}
+          placeholder="Email"
+          className="input input-bordered input-custom"
+          required
+        />
       </div>
-    </div>
+
+      {/* Username */}
+      <div className="form-group">
+        <label className="fieldset-legend">Username</label>
+        <input
+          type="text"
+          name="username"
+          value={loginValues.username}
+          onChange={handleLoginChange}
+          placeholder="Username"
+          className="input input-bordered input-custom"
+          required
+        />
+      </div>
+
+      {/* Password */}
+      <div className="form-group">
+        <label className="fieldset-legend">Password</label>
+        <input
+          type="password"
+          name="password"
+          value={loginValues.password}
+          onChange={handleLoginChange}
+          placeholder="Password"
+          className="input input-bordered input-custom"
+          required
+        />
+      </div>
+
+      {/* Submit */}
+      <button type="submit" className="register-btn w-full">
+        Log In
+      </button>
+
+      {/* Switch to Register */}
+      <div className="register-footer">
+        <a href="#register">Don’t have an account? Register now</a>
+      </div>
+    </form>
   )
 }
 
 export default LoginForm
+
+//OLD CODE
+
+// return (
+//   <div className="flex justify-center items-center min-h-screen bg-gray-100">
+//     <div className="card w-96 bg-white shadow-lg">
+//       <div className="text-center my-6">
+//         <h2 className="text-2xl font-bold">Welcome</h2>
+//         <p>Account Access</p>
+//       </div>
+
+//       {error && (
+//         <div className="alert alert-error mb-4">
+//           <span>{error}</span>
+//         </div>
+//       )}
+
+//       <div className="tabs">
+//         <button
+//           className={`tab tab-bordered ${activeTabKey === '1' ? 'tab-active' : ''}`}
+//           onClick={() => handleTabChange('1')}
+//         >
+//           Login
+//         </button>
+//         <button
+//           className={`tab tab-bordered ${activeTabKey === '2' ? 'tab-active' : ''}`}
+//           onClick={() => handleTabChange('2')}
+//         >
+//           Register
+//         </button>
+//       </div>
+//       <div role="tablist" className="tabs">
+//         <a role="tab" className="tab">
+//           Tab 1
+//         </a>
+//         <a role="tab" className="tab tab-active">
+//           Tab 2
+//         </a>
+//         <a role="tab" className="tab">
+//           Tab 3
+//         </a>
+//       </div>
+
+//       {activeTabKey === '1' && (
+//         <form
+//           className="p-4"
+//           onSubmit={(e) => {
+//             e.preventDefault()
+//             onLoginFinish()
+//           }}
+//         >
+//           <div className="form-control mb-4">
+//             <label className="label">
+//               <span className="label-text">Email</span>
+//             </label>
+//             <input
+//               type="email"
+//               name="Email"
+//               value={loginValues.email}
+//               onChange={handleLoginChange}
+//               placeholder="Email"
+//               className="input input-bordered"
+//               required
+//             />
+//           </div>
+
+//           <div className="form-control mb-4">
+//             <label className="label">
+//               <span className="label-text">Username</span>
+//             </label>
+//             <input
+//               type="text"
+//               name="Username"
+//               value={loginValues.username}
+//               onChange={handleLoginChange}
+//               placeholder="Username"
+//               className="input input-bordered"
+//               required
+//             />
+//           </div>
+
+//           <div className="form-control mb-4">
+//             <label className="label">
+//               <span className="label-text">Password</span>
+//             </label>
+//             <input
+//               type="password"
+//               name="Password"
+//               value={loginValues.password}
+//               onChange={handleLoginChange}
+//               placeholder="Password"
+//               className="input input-bordered"
+//               required
+//             />
+//           </div>
+
+//           <button className={`btn btn-primary w-full ${loading ? 'loading' : ''}`} type="submit">
+//             Log in
+//           </button>
+
+//           <div className="text-center mt-4">
+//             <a href="#register" className="link">
+//               Don&apos;t have an account? Register now
+//             </a>
+//           </div>
+//         </form>
+//       )}
+
+//       {activeTabKey === '2' && (
+//         <form
+//           className="p-4"
+//           onSubmit={(e) => {
+//             e.preventDefault()
+//             onRegisterFinish()
+//           }}
+//         >
+//           <div className="form-control mb-4">
+//             <label className="label">
+//               <span className="label-text">Email</span>
+//             </label>
+//             <input
+//               type="email"
+//               name="email"
+//               value={registerValues.email}
+//               onChange={handleRegisterChange}
+//               placeholder="Email"
+//               className="input input-bordered"
+//               required
+//             />
+//           </div>
+
+//           <div className="form-control mb-4">
+//             <label className="label">
+//               <span className="label-text">Username</span>
+//             </label>
+//             <input
+//               type="text"
+//               name="username"
+//               value={registerValues.username}
+//               onChange={handleRegisterChange}
+//               placeholder="Username"
+//               className="input input-bordered"
+//               required
+//             />
+//           </div>
+
+//           <div className="form-control mb-4">
+//             <label className="label">
+//               <span className="label-text">Password</span>
+//             </label>
+//             <input
+//               type="password"
+//               name="password"
+//               value={registerValues.password}
+//               onChange={handleRegisterChange}
+//               placeholder="Password"
+//               className="input input-bordered"
+//               required
+//             />
+//           </div>
+
+//           <div className="form-control mb-4">
+//             <label className="cursor-pointer flex items-center">
+//               <input type="checkbox" className="checkbox" />
+//               <span className="label-text ml-2">TwoFactor Authentication</span>
+//             </label>
+//           </div>
+
+//           <button className={`btn btn-primary w-full ${loading ? 'loading' : ''}`} type="submit">
+//             Register
+//           </button>
+
+//           <div className="text-center mt-4">
+//             <a href="#login" className="link">
+//               Already have an account? Login now
+//             </a>
+//           </div>
+//         </form>
+//       )}
+//     </div>
+//   </div>
+// )
