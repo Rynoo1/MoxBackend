@@ -1,46 +1,56 @@
-import React, { useState, useEffect } from 'react'
-import { HashRouter as Router, Routes, Route } from 'react-router-dom';
-import Dashboard from './pages/Dashboard'
-import KanbanBoard from './pages/KanbanBoard'
-import Projects from './pages/Projects'
-import Login from './pages/Login'
-import Signup from './pages/Signup'
-import Sidebar from './components/Sidebar'
- import './styles/main.css'
+import React, { useState, useEffect } from 'react';
+import { HashRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import Dashboard from './pages/Dashboard';
+import KanbanBoard from './pages/KanbanBoard';
+import Projects from './pages/Projects';
+import MoxAuth from './pages/MoxAuth';
+// import Login from './pages/Login';
+// import Signup from './pages/Signup';
+import Sidebar from './components/Sidebar';
+import './styles/main.css';
 
-function App() {
-  const [isDarkMode, setIsDarkMode] = useState(false)
+const AppContent = () => {
+  const location = useLocation();
+  const hideSidebar = location.pathname === '/auth';
 
-  // Toggle dark mode
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
   const toggleDarkMode = () => {
-    setIsDarkMode((prev) => !prev)
-  }
+    setIsDarkMode((prev) => !prev);
+  };
 
   useEffect(() => {
-    const root = document.documentElement // This targets <html>
+    const root = document.documentElement;
     if (isDarkMode) {
-      root.classList.add('dark')
+      root.classList.add('dark');
     } else {
-      root.classList.remove('dark')
+      root.classList.remove('dark');
     }
-  }, [isDarkMode])
+  }, [isDarkMode]);
 
   return (
-    <Router>
-      <div className="flex min-h-screen">
+    <div className="flex min-h-screen">
+      {!hideSidebar && (
         <Sidebar isDarkMode={isDarkMode} toggleDarkMode={toggleDarkMode} />
-        <div className="flex-1 ml-64 p-4">
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/kanban" element={<KanbanBoard />} />
-            <Route path="/projects" element={<Projects />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
-          </Routes>
-        </div>
+      )}
+      <div className={`${!hideSidebar ? 'ml-64' : ''} flex-1 p-4`}>
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/kanban" element={<KanbanBoard />} />
+          <Route path="/projects" element={<Projects />} />
+          <Route path="/auth" element={<MoxAuth />} />
+        </Routes>
       </div>
+    </div>
+  );
+};
+
+function App() {
+  return (
+    <Router>
+      <AppContent />
     </Router>
-  )
+  );
 }
 
-export default App
+export default App;
