@@ -13,4 +13,6 @@ public interface IEmergencyMeeting
     Task<bool> CancelMeetingAsync(int id);
 
     Task<List<Users>> GetUsersByIdsAsync(List<string> ids);
+    Task<List<Users>> GetUsersByProjectIdAsync(int projectId);
+    Task<bool> UpdateMeetingAsync(EmergencyMeeting meeting);
 }

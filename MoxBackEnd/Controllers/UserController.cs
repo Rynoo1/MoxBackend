@@ -66,6 +66,20 @@ namespace MoxBackEnd.Controllers
             });
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetAllUsers()
+        {
+            var users = await _context.Users
+                .Select(u => new
+                {
+                    u.Id,
+                    u.UserName
+                })
+                .ToListAsync();
+
+            return Ok(users);
+        }
+
         //Register endpoint
         [HttpPost("register")]
         public async Task<IActionResult> RegisterUser([FromBody] RegistrationRequest request)

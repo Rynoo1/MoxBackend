@@ -20,7 +20,7 @@ builder.Services.AddScoped<IRole, RoleService>();
 builder.Services.AddScoped<ISubTask, SubTaskService>();
 builder.Services.AddScoped<IUser, UserService>();
 builder.Services.AddTransient<IEmailSender, EmailSender>();
-builder.Services.AddScoped<IStickyNote, StickyNoteService>();
+builder.Services.AddScoped<IComment, CommentService>();
 builder.Services.AddScoped<IEmergencyMeeting, EmergencyMeetingService>();
 builder.Services.AddScoped<ITask, TaskService>();
 builder.Services.AddScoped<ITokenServices, TokenServices>();

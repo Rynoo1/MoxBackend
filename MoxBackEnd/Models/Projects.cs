@@ -17,6 +17,7 @@ public class Projects
     public List<FileUpload> FileUploads { get; set; } = [];
     public List<AppRoles> AppRoles { get; set; } = [];
     public List<Tasks> Tasks { get; set; } = [];
-    public ICollection<StickyNote> StickyNotes { get; set; } = [];
+    public ICollection<Comment> Comments { get; set; } = [];
     public ICollection<Users> Users { get; set; } = [];
+    public ICollection<ProjectUser> ProjectUsers { get; set; } = new List<ProjectUser>();
 }

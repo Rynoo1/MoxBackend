@@ -197,6 +197,44 @@ namespace MoxBackEnd.Migrations
                     b.ToTable("AppRoles");
                 });
 
+            modelBuilder.Entity("MoxBackEnd.Models.Comment", b =>
+                {
+                    b.Property<int>("CommentID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("CommentID"));
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedByUserId")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("ProjectID")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("TaskId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("CommentID");
+
+                    b.HasIndex("CreatedByUserId");
+
+                    b.HasIndex("ProjectID");
+
+                    b.HasIndex("TaskId");
+
+                    b.ToTable("Comments");
+                });
+
             modelBuilder.Entity("MoxBackEnd.Models.EmergencyMeeting", b =>
                 {
                     b.Property<int>("Id")
@@ -269,6 +307,21 @@ namespace MoxBackEnd.Migrations
                     b.ToTable("FileUploads");
                 });
 
+            modelBuilder.Entity("MoxBackEnd.Models.ProjectUser", b =>
+                {
+                    b.Property<int>("ProjectID")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("UserID")
+                        .HasColumnType("text");
+
+                    b.HasKey("ProjectID", "UserID");
+
+                    b.HasIndex("UserID");
+
+                    b.ToTable("ProjectMembers");
+                });
+
             modelBuilder.Entity("MoxBackEnd.Models.Projects", b =>
                 {
                     b.Property<int>("ProjectID")
@@ -287,47 +340,6 @@ namespace MoxBackEnd.Migrations
                     b.HasKey("ProjectID");
 
                     b.ToTable("Projects");
-                });
-
-            modelBuilder.Entity("MoxBackEnd.Models.StickyNote", b =>
-                {
-                    b.Property<int>("NoteID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("NoteID"));
-
-                    b.Property<string>("ColorHex")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("CreatedByUserId")
-                        .HasColumnType("text");
-
-                    b.Property<int?>("ProjectID")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("TaskId")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("NoteID");
-
-                    b.HasIndex("CreatedByUserId");
-
-                    b.HasIndex("ProjectID");
-
-                    b.HasIndex("TaskId");
-
-                    b.ToTable("StickyNotes");
                 });
 
             modelBuilder.Entity("MoxBackEnd.Models.SubTasks", b =>
@@ -499,7 +511,7 @@ namespace MoxBackEnd.Migrations
 
                     b.HasIndex("UsersId");
 
-                    b.ToTable("ProjectUsers", (string)null);
+                    b.ToTable("ProjectAssignments", (string)null);
                 });
 
             modelBuilder.Entity("SubTasksUsers", b =>
@@ -602,6 +614,29 @@ namespace MoxBackEnd.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("MoxBackEnd.Models.Comment", b =>
+                {
+                    b.HasOne("MoxBackEnd.Models.Users", "CreatedBy")
+                        .WithMany("Comments")
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("MoxBackEnd.Models.Projects", "Project")
+                        .WithMany("Comments")
+                        .HasForeignKey("ProjectID")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("MoxBackEnd.Models.Tasks", "Task")
+                        .WithMany("Comments")
+                        .HasForeignKey("TaskId");
+
+                    b.Navigation("CreatedBy");
+
+                    b.Navigation("Project");
+
+                    b.Navigation("Task");
+                });
+
             modelBuilder.Entity("MoxBackEnd.Models.EmergencyMeeting", b =>
                 {
                     b.HasOne("MoxBackEnd.Models.Users", "CreatedBy")
@@ -631,27 +666,23 @@ namespace MoxBackEnd.Migrations
                     b.Navigation("Project");
                 });
 
-            modelBuilder.Entity("MoxBackEnd.Models.StickyNote", b =>
+            modelBuilder.Entity("MoxBackEnd.Models.ProjectUser", b =>
                 {
-                    b.HasOne("MoxBackEnd.Models.Users", "CreatedBy")
-                        .WithMany("StickyNotes")
-                        .HasForeignKey("CreatedByUserId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.HasOne("MoxBackEnd.Models.Projects", "Project")
-                        .WithMany("StickyNotes")
+                        .WithMany("ProjectUsers")
                         .HasForeignKey("ProjectID")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.HasOne("MoxBackEnd.Models.Tasks", "Task")
-                        .WithMany("StickyNotes")
-                        .HasForeignKey("TaskId");
-
-                    b.Navigation("CreatedBy");
+                    b.HasOne("MoxBackEnd.Models.Users", "User")
+                        .WithMany("ProjectUsers")
+                        .HasForeignKey("UserID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Project");
 
-                    b.Navigation("Task");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("MoxBackEnd.Models.SubTasks", b =>
@@ -722,16 +753,18 @@ namespace MoxBackEnd.Migrations
                 {
                     b.Navigation("AppRoles");
 
+                    b.Navigation("Comments");
+
                     b.Navigation("FileUploads");
 
-                    b.Navigation("StickyNotes");
+                    b.Navigation("ProjectUsers");
 
                     b.Navigation("Tasks");
                 });
 
             modelBuilder.Entity("MoxBackEnd.Models.Tasks", b =>
                 {
-                    b.Navigation("StickyNotes");
+                    b.Navigation("Comments");
 
                     b.Navigation("SubTasks");
                 });
@@ -742,9 +775,11 @@ namespace MoxBackEnd.Migrations
 
                     b.Navigation("AssignedTasks");
 
+                    b.Navigation("Comments");
+
                     b.Navigation("CreatedMeetings");
 
-                    b.Navigation("StickyNotes");
+                    b.Navigation("ProjectUsers");
                 });
 #pragma warning restore 612, 618
         }

@@ -28,6 +28,29 @@ public class ProjectController(IProjects projectService) : ControllerBase
         return Ok(project);
     }
 
+    [HttpGet("{projectId}/members")]
+    public async Task<IActionResult> GetMembers(int projectId)
+    {
+        var members = await _projectService.GetProjectMembersAsync(projectId);
+        return Ok(members);
+    }
+
+    [HttpPost("{projectId}/assign")]
+    public async Task<IActionResult> AssignMember(int projectId, [FromBody] string userId)
+    {
+        var success = await _projectService.AssignUserToProjectAsync(projectId, userId);
+        if (!success) return BadRequest("User already assigned.");
+        return Ok();
+    }
+
+    [HttpPost("{projectId}/unassign")]
+    public async Task<IActionResult> UnassignMember(int projectId, [FromBody] string userId)
+    {
+        var success = await _projectService.UnassignUserFromProjectAsync(projectId, userId);
+        if (!success) return NotFound("User not assigned.");
+        return Ok();
+    }
+
     [HttpPost]
     public async Task<IActionResult> CreateProject([FromBody] ProjectCreateDto projectDto)
     {

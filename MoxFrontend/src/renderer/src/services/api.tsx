@@ -14,9 +14,9 @@ export const fetchAllTasks = async () => {
   return data.$values ?? [];
 };
 
-export const fetchAllStickyNotes = async () => {
-  const response = await fetch("http://localhost:5183/api/StickyNote");
-  if (!response.ok) throw new Error("Failed to fetch sticky notes");
+export const fetchAllComments = async () => {
+  const response = await fetch("http://localhost:5183/api/Comment");
+  if (!response.ok) throw new Error("Failed to fetch comments");
 
   const data = await response.json();
   return data.$values ?? [];

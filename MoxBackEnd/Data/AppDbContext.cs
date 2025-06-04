@@ -20,8 +20,9 @@ public class AppDbContext : IdentityDbContext<Users>
     public DbSet<Tasks> Tasks { get; set; }
     public DbSet<SubTasks> SubTasks { get; set; }
     public DbSet<FileUpload> FileUploads{ get; set; }
-    public DbSet<StickyNote> StickyNotes { get; set; }
+    public DbSet<Comment> Comments { get; set; }
     public DbSet<EmergencyMeeting> EmergencyMeetings { get; set; }
+    public DbSet<ProjectUser> ProjectUsers { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
 {
@@ -50,7 +51,8 @@ public class AppDbContext : IdentityDbContext<Users>
     modelBuilder.Entity<Projects>()
         .HasMany(p => p.Users)
         .WithMany(u => u.Projects)
-        .UsingEntity(j => j.ToTable("ProjectUsers"));
+        .UsingEntity(j => j.ToTable("ProjectAssignments"));
+
 
     modelBuilder.Entity<FileUpload>()
         .HasOne(f => f.Project)
@@ -68,31 +70,87 @@ public class AppDbContext : IdentityDbContext<Users>
         .HasForeignKey(em => em.ProjectID)
         .OnDelete(DeleteBehavior.SetNull);
 
-   modelBuilder.Entity<EmergencyMeeting>()
-    .HasOne(em => em.CreatedBy)
-    .WithMany(u => u.CreatedMeetings)
-    .HasForeignKey(em => em.CreatedByUserId)
-    .OnDelete(DeleteBehavior.Restrict);
+    modelBuilder.Entity<EmergencyMeeting>()
+        .HasOne(em => em.CreatedBy)
+        .WithMany(u => u.CreatedMeetings)
+        .HasForeignKey(em => em.CreatedByUserId)
+        .OnDelete(DeleteBehavior.Restrict);
 
     modelBuilder.Entity<EmergencyMeeting>()
         .HasMany(em => em.Attendees)
         .WithMany(u => u.Meetings);
 
-    modelBuilder.Entity<StickyNote>()
+    modelBuilder.Entity<Comment>()
         .HasOne(sn => sn.Task)
-        .WithMany(t => t.StickyNotes)
+        .WithMany(t => t.Comments)
         .HasForeignKey(sn => sn.TaskId);
 
-    modelBuilder.Entity<StickyNote>()
-        .HasOne(sn => sn.Project)
-        .WithMany(p => p.StickyNotes)
-        .HasForeignKey(sn => sn.ProjectID)
+    modelBuilder.Entity<Comment>()
+        .HasOne(c => c.Task)
+        .WithMany(t => t.Comments)
+        .HasForeignKey(c => c.TaskId);
+
+    modelBuilder.Entity<Comment>()
+        .HasOne(c => c.Project)
+        .WithMany(p => p.Comments)
+        .HasForeignKey(c => c.ProjectID)
         .OnDelete(DeleteBehavior.SetNull);
 
-    modelBuilder.Entity<StickyNote>()
-        .HasOne(sn => sn.CreatedBy)
-        .WithMany(u => u.StickyNotes)
-        .HasForeignKey(sn => sn.CreatedByUserId)
+    modelBuilder.Entity<Comment>()
+        .HasOne(c => c.CreatedBy)
+        .WithMany(u => u.Comments)
+        .HasForeignKey(c => c.CreatedByUserId)
         .OnDelete(DeleteBehavior.SetNull);
+
+    modelBuilder.Entity<ProjectUser>()
+        .HasKey(pu => new { pu.ProjectID, pu.UserID });
+
+    modelBuilder.Entity<ProjectUser>()
+        .HasOne(pu => pu.Project)
+        .WithMany(p => p.ProjectUsers)
+        .HasForeignKey(pu => pu.ProjectID);
+
+    modelBuilder.Entity<ProjectUser>()
+        .HasOne(pu => pu.User)
+        .WithMany(u => u.ProjectUsers)
+        .HasForeignKey(pu => pu.UserID);
+    }
+
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        foreach (var entry in ChangeTracker.Entries<Projects>())
+        {
+            if ((entry.State == EntityState.Added || entry.State == EntityState.Modified) && entry.Entity.Users != null)
+            {
+                var project = entry.Entity;
+
+                var updatedUserIds = project.Users.Select(u => u.Id).ToHashSet();
+
+                var existingUserIds = await ProjectUsers
+                    .Where(pu => pu.ProjectID == project.ProjectID)
+                    .Select(pu => pu.UserID)
+                    .ToListAsync(cancellationToken);
+
+                foreach (var userId in updatedUserIds.Except(existingUserIds))
+                {
+                    ProjectUsers.Add(new ProjectUser
+                    {
+                        ProjectID = project.ProjectID,
+                        UserID = userId
+                    });
+                }
+
+                foreach (var userId in existingUserIds.Except(updatedUserIds))
+                {
+                    var toRemove = await ProjectUsers
+                        .FirstOrDefaultAsync(pu => pu.ProjectID == project.ProjectID && pu.UserID == userId, cancellationToken);
+
+                    if (toRemove != null)
+                        ProjectUsers.Remove(toRemove);
+                }
+            }
+        }
+
+        return await base.SaveChangesAsync(cancellationToken);
     }
 }

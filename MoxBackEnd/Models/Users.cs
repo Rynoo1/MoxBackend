@@ -15,8 +15,8 @@ public class Users : IdentityUser
   public ICollection<SubTasks> AssignedSubTasks { get; set; } = [];
   public ICollection<EmergencyMeeting> Meetings { get; set; } = [];
   public ICollection<EmergencyMeeting> CreatedMeetings { get; set; } = [];
-  public ICollection<StickyNote> StickyNotes { get; set; } = [];
+  public ICollection<Comment> Comments { get; set; } = [];
   public ICollection<Projects> Projects { get; set; } = [];
-  public ICollection<Tasks> AssignedTasks { get; set; } = [];
-  
+  public ICollection<Tasks> AssignedTasks { get; set; } = [];  
+  public ICollection<ProjectUser> ProjectUsers { get; set; } = new List<ProjectUser>();
 }

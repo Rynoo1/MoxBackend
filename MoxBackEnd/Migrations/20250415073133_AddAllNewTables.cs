@@ -129,7 +129,7 @@ namespace MoxBackEnd.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "StickyNotes",
+                name: "Comments",
                 columns: table => new
                 {
                     NoteID = table.Column<int>(type: "integer", nullable: false)
@@ -137,28 +137,27 @@ namespace MoxBackEnd.Migrations
                     Content = table.Column<string>(type: "text", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    ColorHex = table.Column<string>(type: "text", nullable: true),
                     TaskId = table.Column<int>(type: "integer", nullable: true),
                     ProjectID = table.Column<int>(type: "integer", nullable: true),
                     CreatedByUserId = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_StickyNotes", x => x.NoteID);
+                    table.PrimaryKey("PK_Comments", x => x.NoteID);
                     table.ForeignKey(
-                        name: "FK_StickyNotes_AspNetUsers_CreatedByUserId",
+                        name: "FK_Comments_AspNetUsers_CreatedByUserId",
                         column: x => x.CreatedByUserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.SetNull);
                     table.ForeignKey(
-                        name: "FK_StickyNotes_Projects_ProjectID",
+                        name: "FK_Comments_Projects_ProjectID",
                         column: x => x.ProjectID,
                         principalTable: "Projects",
                         principalColumn: "ProjectID",
                         onDelete: ReferentialAction.SetNull);
                     table.ForeignKey(
-                        name: "FK_StickyNotes_Tasks_TaskId",
+                        name: "FK_Comments_Tasks_TaskId",
                         column: x => x.TaskId,
                         principalTable: "Tasks",
                         principalColumn: "TaskId");
@@ -297,18 +296,18 @@ namespace MoxBackEnd.Migrations
                 column: "UsersId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_StickyNotes_CreatedByUserId",
-                table: "StickyNotes",
+                name: "IX_Comments_CreatedByUserId",
+                table: "Comments",
                 column: "CreatedByUserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_StickyNotes_ProjectID",
-                table: "StickyNotes",
+                name: "IX_Comments_ProjectID",
+                table: "Comments",
                 column: "ProjectID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_StickyNotes_TaskId",
-                table: "StickyNotes",
+                name: "IX_Comments_TaskId",
+                table: "Comments",
                 column: "TaskId");
 
             migrationBuilder.AddForeignKey(
@@ -396,7 +395,7 @@ namespace MoxBackEnd.Migrations
                 name: "ProjectsUsers");
 
             migrationBuilder.DropTable(
-                name: "StickyNotes");
+                name: "Comments");
 
             migrationBuilder.DropTable(
                 name: "EmergencyMeetings");

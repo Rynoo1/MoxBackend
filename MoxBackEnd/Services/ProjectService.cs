@@ -103,4 +103,45 @@ public class ProjectService : IProjects
 
         return project!;
     }
+
+    public async Task<IEnumerable<ProjectUserDto>> GetProjectMembersAsync(int projectId)
+    {
+        return await _context.ProjectUsers
+            .Where(pu => pu.ProjectID == projectId)
+            .Include(pu => pu.User)
+            .Select(pu => new ProjectUserDto
+            {
+                Id = pu.User.Id,
+                UserName = pu.User.UserName,
+                Email = pu.User.Email
+            })
+            .ToListAsync();
+    }
+
+    public async Task<bool> AssignUserToProjectAsync(int projectId, string userId)
+    {
+        var exists = await _context.ProjectUsers.AnyAsync(pu => pu.ProjectID == projectId && pu.UserID == userId);
+        if (exists) return false;
+
+        _context.ProjectUsers.Add(new ProjectUser
+        {
+            ProjectID = projectId,
+            UserID = userId
+        });
+
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<bool> UnassignUserFromProjectAsync(int projectId, string userId)
+    {
+        var entry = await _context.ProjectUsers
+            .FirstOrDefaultAsync(pu => pu.ProjectID == projectId && pu.UserID == userId);
+
+        if (entry == null) return false;
+
+        _context.ProjectUsers.Remove(entry);
+        await _context.SaveChangesAsync();
+        return true;
+    }
 }

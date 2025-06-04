@@ -344,16 +344,13 @@ namespace MoxBackEnd.Migrations
                     b.ToTable("Projects");
                 });
 
-            modelBuilder.Entity("MoxBackEnd.Models.StickyNote", b =>
+            modelBuilder.Entity("MoxBackEnd.Models.Comment", b =>
                 {
                     b.Property<int>("NoteID")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("NoteID"));
-
-                    b.Property<string>("ColorHex")
-                        .HasColumnType("text");
 
                     b.Property<string>("Content")
                         .IsRequired()
@@ -382,7 +379,7 @@ namespace MoxBackEnd.Migrations
 
                     b.HasIndex("TaskId");
 
-                    b.ToTable("StickyNotes");
+                    b.ToTable("Comments");
                 });
 
             modelBuilder.Entity("MoxBackEnd.Models.SubTasks", b =>
@@ -724,20 +721,20 @@ namespace MoxBackEnd.Migrations
                     b.Navigation("Group");
                 });
 
-            modelBuilder.Entity("MoxBackEnd.Models.StickyNote", b =>
+            modelBuilder.Entity("MoxBackEnd.Models.Comment", b =>
                 {
                     b.HasOne("MoxBackEnd.Models.Users", "CreatedBy")
-                        .WithMany("StickyNotes")
+                        .WithMany("Comments")
                         .HasForeignKey("CreatedByUserId")
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("MoxBackEnd.Models.Projects", "Project")
-                        .WithMany("StickyNotes")
+                        .WithMany("Comments")
                         .HasForeignKey("ProjectID")
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("MoxBackEnd.Models.Tasks", "Task")
-                        .WithMany("StickyNotes")
+                        .WithMany("Comments")
                         .HasForeignKey("TaskId");
 
                     b.Navigation("CreatedBy");
@@ -825,14 +822,14 @@ namespace MoxBackEnd.Migrations
 
                     b.Navigation("FileUploads");
 
-                    b.Navigation("StickyNotes");
+                    b.Navigation("Comments");
 
                     b.Navigation("Tasks");
                 });
 
             modelBuilder.Entity("MoxBackEnd.Models.Tasks", b =>
                 {
-                    b.Navigation("StickyNotes");
+                    b.Navigation("Comments");
 
                     b.Navigation("SubTasks");
                 });
@@ -843,7 +840,7 @@ namespace MoxBackEnd.Migrations
 
                     b.Navigation("CreatedMeetings");
 
-                    b.Navigation("StickyNotes");
+                    b.Navigation("Comments");
                 });
 #pragma warning restore 612, 618
         }
