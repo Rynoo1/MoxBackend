@@ -1,13 +1,16 @@
-import { WorkStatus, PriorityLevel } from "../src/models/TaskEnums";
+
+//src/interfaces/
+import { WorkStatus, PriorityLevel } from './TaskEnums'
 
 export interface TaskDto {
-  taskId?: number;
-  title: string;
-  description?: string;
-  projectID: number;
-  assignedTo?: string[];
-  priority: PriorityLevel;
-  status: WorkStatus;
-  deadline?: string;
-  isEmergency: boolean;
+  taskId?: number
+  title: string
+  description?: string
+  projectID: number
+  assignedTo?: string[]
+  dueDate?: string
+  priority: PriorityLevel
+  status: WorkStatus
+  deadline?: string
+  isEmergency: boolean
 }

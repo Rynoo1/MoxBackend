@@ -3,6 +3,7 @@ import { HashRouter as Router, Routes, Route, useLocation } from 'react-router-d
 import Dashboard from './pages/Dashboard';
 import KanbanBoard from './pages/KanbanBoard';
 import Projects from './pages/Projects';
+import Settings from './pages/Settings';
 import MoxAuth from './pages/MoxAuth';
 // import Login from './pages/Login';
 // import Signup from './pages/Signup';
@@ -38,6 +39,7 @@ const AppContent = () => {
           <Route path="/" element={<Dashboard />} />
           <Route path="/kanban" element={<KanbanBoard />} />
           <Route path="/projects" element={<Projects />} />
+          <Route path="/settings" element={<Settings />} />
           <Route path="/auth" element={<MoxAuth />} />
         </Routes>
       </div>

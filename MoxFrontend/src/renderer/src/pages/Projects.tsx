@@ -1,7 +1,7 @@
 import React from "react";
 import "../components/styles/Projects.css";
 import ProjectCard from "@renderer/components/Projectcard";
-import CreateProject from "@renderer/components/CreateProject"; 
+import CreateProject from "@renderer/components/CreateProject";
 
 interface Project {
   projectID: number;
@@ -15,7 +15,7 @@ const Projects: React.FC = () => {
   const [showCreateProject, setShowCreateProject] = React.useState(false);
 
   React.useEffect(() => {
-    if (showCreateProject) return; 
+    if (showCreateProject) return;
     const fetchProjects = async () => {
       try {
         const response = await fetch("http://localhost:5183/api/Project");
@@ -32,9 +32,9 @@ const Projects: React.FC = () => {
   }, [showCreateProject]);
 
   return (
-    
+
       <div className="projects-page">
-        
+
         {error && <div className="error">{error}</div>}
         {!showCreateProject && (
           <button onClick={() => setShowCreateProject(true)} className="btn btn-xs sm:btn-sm md:btn-md lg:btn-lg xl:btn-xl createprojectbutton">
@@ -58,7 +58,7 @@ const Projects: React.FC = () => {
             </div>
           )}
       </div>
-    
+
   );
 };
 

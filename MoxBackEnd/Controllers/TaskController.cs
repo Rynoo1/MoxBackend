@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using MoxBackEnd.Interfaces;
 using MoxBackEnd.Models;
 using MoxBackEnd.Services;
+using MoxBackEnd.DTOs;
 
 namespace MoxBackEnd.Controllers;
 
@@ -39,12 +40,32 @@ public class TaskController : ControllerBase
         return task == null ? NotFound() : Ok(task);
     }
 
+    // [HttpPost]
+    // public async Task<IActionResult> Create([FromBody] Tasks task)
+    // {
+    //     var created = await _service.CreateTaskAsync(task);
+    //     return CreatedAtAction(nameof(Get), new { id = created.TaskId }, created);
+    // }
+
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] Tasks task)
+    public async Task<IActionResult> Create([FromBody] TaskCreateDto taskDto)
     {
-        var created = await _service.CreateTaskAsync(task);
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        var created = await _service.CreateTaskAsync(taskDto);
+
         return CreatedAtAction(nameof(Get), new { id = created.TaskId }, created);
     }
+
+    // [HttpPost]
+    // public async Task<IActionResult> Create([FromBody] Tasks task)
+    // {
+    //     var created = await _service.CreateTaskAsync(task);
+    //     return CreatedAtAction(nameof(Get), new { id = created.TaskId }, created);
+    // }
 
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, [FromBody] Tasks task)

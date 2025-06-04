@@ -26,7 +26,7 @@ public class Tasks
         public bool IsEmergency { get; set; } = false;
 
         [Required]
-        public DateTime DueDate { get; set; } 
+        public DateTime DueDate { get; set; }
         public DateTime? CompletedAt { get; set; }
 
         [Required]
