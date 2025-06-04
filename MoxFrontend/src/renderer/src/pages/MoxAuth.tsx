@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import LoginForm from '../components/LogInForm'
 import RegisterForm from '../components/RegisterForm'
+import TwoFactorCard from '@renderer/components/TwoFactor'
 import bg from '../assets/Auth_Background.jpg'
 import logo from '../assets/logo.svg'
 import '../styles/Auth.css'
@@ -15,6 +16,16 @@ import '../styles/Auth.css'
 const MoxAuth: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('login')
   const [error, setError] = useState<string>('')
+
+  // let twofac = localStorage.getItem('twofac')
+  const twofac = false
+
+  window.addEventListener('storage', (event) => {
+    if (event.key == 'twofac') {
+      console.log('twofacupdated', event.newValue)
+    }
+  })
+
   // const [registerValues, setRegisterValues] = useState<RegisterFormValues>({
   //   email: '',
   //   username: '',
@@ -101,6 +112,14 @@ const MoxAuth: React.FC = () => {
               <span>{error}</span>
             </div>
           )}
+        </div>
+
+        <div className="flex flex-col justify-center mx-auto bg-white bg-opacity-90 rounded-lg shadow-lg">
+          {twofac === true && activeTab === 'login' ? (
+            <div className="flex justify-center items-center p-4">
+              <TwoFactorCard />
+            </div>
+          ) : null}
         </div>
 
         {/* Form + Google */}

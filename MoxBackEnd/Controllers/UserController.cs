@@ -103,6 +103,8 @@ namespace MoxBackEnd.Controllers
 
             if (succeeded)
             {
+                await _userManager.SetTwoFactorEnabledAsync(user, true);
+                
                 return Ok(new { success = true, message = "User registeered successfully", userId = user.Id });
             } else
             {

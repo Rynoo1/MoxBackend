@@ -102,7 +102,7 @@ const LoginForm: React.FC<LoginPageProps> = ({ onLoginSuccess, onSetError }) => 
       if (data.twoFactorEnabled) {
         localStorage.setItem('userEmail', data.email)
         localStorage.setItem('userId', data.userId)
-        window.location.href = '/twofactor'
+        localStorage.setItem('twofac', JSON.stringify(true))
         return
       }
 
