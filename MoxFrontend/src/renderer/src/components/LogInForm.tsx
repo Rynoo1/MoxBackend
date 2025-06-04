@@ -87,7 +87,7 @@ const LoginForm: React.FC<LoginPageProps> = ({ onLoginSuccess, onSetError }) => 
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          email: loginValues.email,
+          Email: loginValues.email,
           password: loginValues.password
         })
       })

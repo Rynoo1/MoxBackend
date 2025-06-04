@@ -104,7 +104,7 @@ namespace MoxBackEnd.Controllers
             if (succeeded)
             {
                 await _userManager.SetTwoFactorEnabledAsync(user, true);
-                
+
                 return Ok(new { success = true, message = "User registeered successfully", userId = user.Id });
             } else
             {
@@ -134,7 +134,7 @@ namespace MoxBackEnd.Controllers
                 var code = await _userManager.GenerateTwoFactorTokenAsync(user, TokenOptions.DefaultEmailProvider);
 
                 await _emailSender.SendEmailAsync(
-                    user.Email,
+                    loginDto.Email,
                     "Your 2FA Code",
                     $"Your 2FA code is: {code}");
 
@@ -188,7 +188,7 @@ namespace MoxBackEnd.Controllers
                 return Unauthorized("Invalid 2FA code");
             }
 
-            var token = _tokenservices.GenerateToken(user.Id, user.Email);
+            var token = _tokenservices.GenerateToken(user.Id, user.Email ?? string.Empty);
             return Ok(new { Token = token });
 
             // var result = await _signInManager.TwoFactorAuthenticatorSignInAsync(dto.TwoFactorCode, isPersistent: false, rememberClient: false);
