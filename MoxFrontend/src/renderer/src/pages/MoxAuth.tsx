@@ -101,8 +101,16 @@ const MoxAuth: React.FC = () => {
               <span>{error}</span>
             </div>
           )}
+        </div>
 
-x-row items-start gap-2">
+        {/* Form + Google */}
+        <div className="w-full max-w-md space-y-6">
+          {activeTab === 'login' ? (
+            <LoginForm />
+          ) : (
+            <>
+              <RegisterForm onRegister={handleRegister} />
+              <div className="form-control mt-4 flex flex-row items-start gap-2">
                 <input type="checkbox" className="checkbox validator" required id="terms" />
                 <label htmlFor="terms" className="label cursor-pointer">
                   <span className="label-text font-medium">
@@ -133,7 +141,7 @@ x-row items-start gap-2">
             Login with Google
           </button>
         </div>
-      // </div>
+      </div>
 
       {/* RIGHT SIDE */}
       <div className="grow flex items-center justify-center px-10">
@@ -141,12 +149,16 @@ x-row items-start gap-2">
           <div className="text-wrapper text-5xl font-bold text-center text-blue-900 mb-4">
             {activeTab === 'login' ? <span>Welcome Back</span> : <span>Welcome to Mox</span>}
           </div>
-          <div className="div text-2xl font-medium text-center text-gray-700">
-            {activeTab === 'login' ? <span>Sign in to continue</span> : <span>Register your account</span>}
+          <div className="text-2xl font-medium text-center text-gray-700">
+            {activeTab === 'login' ? (
+              <span>Sign in to continue</span>
+            ) : (
+              <span>Register your account</span>
+            )}
           </div>
         </div>
       </div>
-    // </div>
+    </div>
   )
 }
 
