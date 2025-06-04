@@ -1,173 +1,203 @@
-// import React, { useEffect, useState } from 'react'
-import { DayPicker } from 'react-day-picker'
-import 'react-day-picker/dist/style.css'
-import '../styles/dashboard.css'
+import React, { useEffect, useState } from 'react'
+import { WorkStatus, PriorityLevel } from '../../interfaces/TaskEnums'
+import { TaskDto } from '../../interfaces/Task'
 
-interface Project {
-  projectID: number
-  projectName: string
-  dueDate: string
-}
+const KanbanBoard = () => {
+  const columns = [
+    { title: 'To Do', status: WorkStatus.NotStarted },
+    { title: 'In Progress', status: WorkStatus.InProgress },
+    { title: 'Done', status: WorkStatus.Completed }
+  ]
 
-const Dashboard = () => {
-  const today = new Date()
-  const formattedDate = today.toLocaleDateString('en-US', {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric'
+  const [tasks, setTasks] = useState<TaskDto[]>([])
+  const [projects, setProjects] = useState<any[]>([])
+  const [selectedProjectId, setSelectedProjectId] = useState<number | null>(null)
+  const [showModal, setShowModal] = useState(false)
+
+  const [newTask, setNewTask] = useState({
+    title: '',
+    description: '',
+    priority: PriorityLevel.Low,
+    status: WorkStatus.NotStarted,
+    dueDate: new Date().toISOString().split('T')[0],
+    isEmergency: false
   })
-
-  const [date, setDate] = useState<Date | undefined>()
-  const [projects, setProjects] = useState<Project[]>([])
-  const [error, setError] = useState<string | null>(null)
-  const username = "Tebogo"
-
-  const getGreeting = () => {
-    const hour = new Date().getHours()
-    if (hour < 12) return 'Good morning'
-    if (hour < 18) return 'Good afternoon'
-    return 'Good evening'
-  }
 
   useEffect(() => {
-    const fetchProjects = async () => {
-      try {
-        const response = await fetch('http://localhost:5183/api/Project')
-        if (!response.ok) throw new Error(`Error ${response.status}`)
-        const data = await response.json()
-        const projectsArray = Array.isArray(data.$values)
-          ? data.$values
-          : Array.isArray(data)
-            ? data
-            : []
-        setProjects(projectsArray)
-      } catch (err: any) {
-        setError(err.message || 'Failed to fetch projects.')
-      }
-    }
-    fetchProjects()
+    fetch('http://localhost:5183/api/Project')
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data.$values)) {
+          setProjects(data.$values)
+          if (data.$values.length > 0) {
+            setSelectedProjectId(data.$values[0].projectID)
+          }
+        }
+      })
   }, [])
 
-  const upcomingProjects = projects.filter((project) => {
-    const due = new Date(project.dueDate)
-    return due >= new Date()
-  })
+  const handleAddTask = async () => {
+    if (!selectedProjectId) {
+      alert('Please select a project.')
+      return
+    }
+
+    try {
+      const taskDto = {
+        projectID: selectedProjectId,
+        title: newTask.title,
+        description: newTask.description,
+        priority: newTask.priority,
+        status: newTask.status,
+        dueDate: new Date(newTask.dueDate).toISOString(),
+        isEmergency: newTask.isEmergency
+        // assignedUserId: 'Tebogo' // <- add back if backend expects this as string
+      }
+
+      const response = await fetch('http://localhost:5183/api/task', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(taskDto)
+      })
+
+      if (!response.ok) {
+        const error = await response.text()
+        throw new Error(`HTTP ${response.status}: ${error}`)
+      }
+
+      const createdTask = await response.json()
+      setTasks((prev) => [...prev, createdTask])
+      setShowModal(false)
+    } catch (error) {
+      console.error('Error creating task:', error)
+    }
+  }
 
   return (
-    <div className="w-full">
-      {/* Header Section */}
-      <div className="bg-base-300 px-6 py-4 shadow-sm rounded-b-lg">
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-          <div>
-            <h1 className="text-2xl font-semibold">Home</h1>
-            <p className="text-sm text-gray-500">{formattedDate}</p>
-          </div>
+    <div className="p-6 bg-base-100 min-h-screen">
+      <header className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold">Kanban Board</h1>
+        <div className="space-x-4">
+          <select
+            className="select select-bordered"
+            value={selectedProjectId ?? ''}
+            onChange={(e) => setSelectedProjectId(Number(e.target.value))}
+          >
+            <option disabled value="">
+              Select Project
+            </option>
+            {projects.map((project) => (
+              <option key={project.projectID} value={project.projectID}>
+                {project.projectName}
+              </option>
+            ))}
+          </select>
+          <button className="btn btn-primary" onClick={() => setShowModal(true)}>
+            + Add Task
+          </button>
+        </div>
+      </header>
 
-          <div className="flex flex-wrap gap-3 items-center">
-            <input type="text" placeholder="Search projects..." className="input input-bordered input-sm w-40 md:w-56" />
-            <select className="select select-bordered select-sm w-28 md:w-32">
-              <option>All</option>
-              <option>Ongoing</option>
-              <option>Completed</option>
-            </select>
-            <div className="avatar placeholder">
-              <div className="w-10 rounded-full bg-neutral-focus text-neutral-content">
-                <span>T</span>
-              </div>
+      {showModal && (
+        <dialog id="my_modal_4" className="modal modal-open">
+          <div className="modal-box w-11/12 max-w-2xl relative">
+            <button
+              className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+              onClick={() => setShowModal(false)}
+            >
+              ✕
+            </button>
+
+            <h3 className="text-lg font-bold">Create New Task</h3>
+            <div className="py-4">
+              <input
+                type="text"
+                className="input input-bordered w-full mb-3"
+                placeholder="Task title"
+                value={newTask.title}
+                onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
+              />
+              <textarea
+                className="textarea textarea-bordered w-full mb-3"
+                placeholder="Description"
+                value={newTask.description}
+                onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
+              />
+              <input
+                type="date"
+                className="input input-bordered w-full mb-3"
+                value={newTask.dueDate}
+                onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
+              />
+              <select
+                className="select select-bordered w-full mb-3"
+                value={newTask.priority}
+                onChange={(e) => setNewTask({ ...newTask, priority: Number(e.target.value) })}
+              >
+                <option value={0}>Low</option>
+                <option value={1}>Medium</option>
+                <option value={2}>High</option>
+                <option value={3}>Critical</option>
+              </select>
+              <select
+                className="select select-bordered w-full mb-3"
+                value={newTask.status}
+                onChange={(e) => setNewTask({ ...newTask, status: Number(e.target.value) })}
+              >
+                <option value={0}>To Do</option>
+                <option value={1}>In Progress</option>
+                <option value={2}>Done</option>
+              </select>
+
+              <label className="label cursor-pointer justify-start space-x-2">
+                <input
+                  type="checkbox"
+                  className="checkbox"
+                  checked={newTask.isEmergency}
+                  onChange={(e) => setNewTask({ ...newTask, isEmergency: e.target.checked })}
+                />
+                <span className="label-text">Mark as Emergency</span>
+              </label>
+            </div>
+
+            <div className="modal-action">
+              <button className="btn" onClick={() => setShowModal(false)}>
+                Cancel
+              </button>
+              <button className="btn btn-primary" onClick={handleAddTask}>
+                Save
+              </button>
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* Greeting */}
-      {username && (
-        <div className="text-center mt-6">
-          <h2 className="text-3xl font-light">{getGreeting()}, {username}</h2>
-        </div>
+        </dialog>
       )}
 
-      {/* Stats */}
-      <div className="stats shadow w-full overflow-x-auto mt-10 mb-10">
-        <div className="stat">
-          <div className="stat-title">Tasks Completed</div>
-          <div className="stat-value text-primary">12</div>
-          <div className="stat-desc">+21% this week</div>
-        </div>
-        <div className="stat">
-          <div className="stat-title">Collaborators</div>
-          <div className="stat-value text-secondary">4</div>
-          <div className="stat-desc">+2 new this month</div>
-        </div>
-        <div className="stat">
-          <div className="stat-title">Progress</div>
-          <div className="stat-value text-primary">86%</div>
-          <div className="stat-desc text-gray-500">31 tasks remaining</div>
-        </div>
-      </div>
-
-      {/* Main Section */}
-      <main className="px-6 py-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div className="bg-white p-4 shadow rounded">
-            <h3 className="text-xl font-semibold mb-2">Activity Log</h3>
-            <p>Recent updates (placeholder)</p>
-          </div>
-
-          <div className="bg-white p-4 shadow rounded">
-            <h3 className="text-xl font-semibold mb-2">Upcoming Deadlines</h3>
-            {error && <p className="text-red-500">{error}</p>}
-            {upcomingProjects.length === 0 ? (
-              <p>No upcoming projects.</p>
-            ) : (
-              <ul className="list-disc list-inside space-y-1">
-                {upcomingProjects.slice(0, 5).map((project) => (
-                  <li key={project.projectID}>
-                    {project.projectName} – due {new Date(project.dueDate).toLocaleDateString()}
-                  </li>
+      <div className="flex flex-col lg:flex-row gap-4">
+        {columns.map((column) => (
+          <div key={column.status} className="card bg-base-300 p-4 rounded-box grow">
+            <h2 className="text-xl font-semibold mb-4">{column.title}</h2>
+            <div className="space-y-4">
+              {tasks
+                .filter((task) => task.status === column.status)
+                .map((task) => (
+                  <div key={task.taskId} className="bg-base-100 p-4 rounded shadow">
+                    <h3 className="font-bold">{task.title}</h3>
+                    {task.description && <p className="text-sm">{task.description}</p>}
+                    <p className="text-sm">
+                      Priority: {PriorityLevel[task.priority]} | Due: {task.dueDate.split('T')[0]}
+                    </p>
+                    <p className="text-sm">Emergency: {task.isEmergency ? 'Yes' : 'No'}</p>
+                  </div>
                 ))}
-              </ul>
-            )}
-          </div>
-
-          <div className="card bg-base-100 shadow-sm w-full">
-            <div className="card-body">
-              <h3 className="card-title">Calendar</h3>
-              <DayPicker
-                mode="single"
-                selected={date}
-                onSelect={setDate}
-                className="react-day-picker"
-              />
             </div>
           </div>
-
-          <div className="card bg-white shadow rounded">
-            <div className="card-body">
-              <h3 className="card-title">Weekly Progress</h3>
-              <div className="text-success text-3xl font-bold">67%</div>
-              <progress className="progress progress-success w-full" value="67" max="100"></progress>
-              <p className="text-sm text-gray-500">8 of 12 tasks done</p>
-            </div>
-          </div>
-
-          <div className="stat bg-white p-4 shadow rounded">
-            <div className="stat-title text-error">Emergency Tasks</div>
-            <div className="stat-value text-error">3</div>
-            <div className="stat-desc">Handle immediately</div>
-          </div>
-
-          <div className="stat bg-white p-4 shadow rounded">
-            <div className="stat-title">Most Active Project</div>
-            <div className="stat-value">Kanban UX</div>
-            <div className="stat-desc">14 updates this week</div>
-          </div>
-        </div>
-      </main>
+        ))}
+      </div>
     </div>
   )
 }
 
-export default Dashboard
+export default KanbanBoard
 
 
 //CODE  INCLUDES DUMMY TEXT & TESTING WORKS
