@@ -1,29 +1,68 @@
 import React, { useState } from 'react'
-import LoginForm from '../components/LoginForm'
+import LoginForm from '../components/LogInForm'
 import RegisterForm from '../components/RegisterForm'
 import bg from '../assets/Auth_Background.jpg'
 import logo from '../assets/logo.svg'
 import '../styles/Auth.css'
 
+// interface RegisterFormValues {
+//   email: string
+//   username: string
+//   password: string
+//   twofac: boolean
+// }
+
 const MoxAuth: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('login')
+  const [error, setError] = useState<string>('')
+  // const [registerValues, setRegisterValues] = useState<RegisterFormValues>({
+  //   email: '',
+  //   username: '',
+  //   password: '',
+  //   twofac: false
+  // })
 
-  const handleRegister = async (data: { email: string; username: string; password: string }) => {
+  // const handleRegisterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const { name, value } = e.target
+  //   setRegisterValues((prev) => ({ ...prev, [name]: value }))
+  // }
+
+  const handleRegister = async (data: {
+    email: string
+    username: string
+    password: string
+  }): Promise<void> => {
     try {
       const res = await fetch('http://localhost:5183/api/user/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          user: { email: data.email, username: data.username },
+          user: {
+            email: data.email,
+            username: data.username
+          },
           password: data.password
         })
       })
 
-      if (!res.ok) throw new Error('Registration failed')
-      alert('Registration successful!')
+      if (!res.ok) {
+        const errorData = await res.json()
+        throw new Error(errorData.errors || 'Registration failed')
+      }
+
+      const responseData = await res.json()
+      alert('Registration successful! Please check your email to verify your account.')
+      console.log(responseData)
+
       setActiveTab('login')
-    } catch (err) {
-      alert((err as Error).message)
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setError(error.message)
+        alert(error.message)
+      } else {
+        setError('An unexpected error occurred')
+        alert('An unexpected error occurred')
+      }
     }
   }
 
@@ -46,24 +85,24 @@ const MoxAuth: React.FC = () => {
             className={`tab w-1/2 ${activeTab === 'login' ? 'tab-active' : ''}`}
             onClick={() => setActiveTab('login')}
           >
-            Login
+            <b style={{ color: activeTab === 'login' ? 'blue' : 'gray' }}>Login</b>
           </button>
           <button
             className={`tab w-1/2 ${activeTab === 'register' ? 'tab-active' : ''}`}
             onClick={() => setActiveTab('register')}
           >
-            Register
+            <b style={{ color: activeTab === 'register' ? 'blue' : 'gray' }}>Register</b>
           </button>
         </div>
 
-        {/* Form + Google */}
-        <div className="w-full max-w-md space-y-6">
-          {activeTab === 'login' ? (
-            <LoginForm />
-          ) : (
-            <>
-              <RegisterForm onRegister={handleRegister} />
-              <div className="form-control mt-4 flex flex-row items-start gap-2">
+        <div className="flex flex-col justify-center mx-auto bg-white bg-opacity-90 rounded-lg shadow-lg">
+          {error && (
+            <div className="alert alert-error mb-4">
+              <span>{error}</span>
+            </div>
+          )}
+
+x-row items-start gap-2">
                 <input type="checkbox" className="checkbox validator" required id="terms" />
                 <label htmlFor="terms" className="label cursor-pointer">
                   <span className="label-text font-medium">
@@ -94,20 +133,20 @@ const MoxAuth: React.FC = () => {
             Login with Google
           </button>
         </div>
-      </div>
+      // </div>
 
       {/* RIGHT SIDE */}
       <div className="grow flex items-center justify-center px-10">
         <div className="welcome-message">
           <div className="text-wrapper text-5xl font-bold text-center text-blue-900 mb-4">
-            {activeTab === 'login' ? 'Welcome Back' : 'Welcome to Mox'}
+            {activeTab === 'login' ? <span>Welcome Back</span> : <span>Welcome to Mox</span>}
           </div>
           <div className="div text-2xl font-medium text-center text-gray-700">
-            {activeTab === 'login' ? 'Sign in to continue' : 'Register your account'}
+            {activeTab === 'login' ? <span>Sign in to continue</span> : <span>Register your account</span>}
           </div>
         </div>
       </div>
-    </div>
+    // </div>
   )
 }
 

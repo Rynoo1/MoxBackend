@@ -12,6 +12,7 @@ using MoxBackEnd.Services;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using QRCoder;
 using System.Text.Json;
+using System.Security.Claims;
 
 namespace MoxBackEnd.Controllers
 {
@@ -24,13 +25,15 @@ namespace MoxBackEnd.Controllers
         private readonly UserManager<Users> _userManager;
         private readonly IEmailSender _emailSender;
         private readonly ITokenServices _tokenservices;
-        public UserController(IUser user, AppDbContext context, UserManager<Users> userManager, IEmailSender emailSender, ITokenServices tokenServices)
+        private readonly SignInManager<Users> _signInManager;
+        public UserController(IUser user, AppDbContext context, UserManager<Users> userManager, IEmailSender emailSender, ITokenServices tokenServices, SignInManager<Users> signInManager)
         {
             _user = user;
             _context = context;
             _userManager = userManager;
             _emailSender = emailSender;
             _tokenservices = tokenServices;
+            _signInManager = signInManager;
         }
 
         // [Authorize]
@@ -108,6 +111,95 @@ namespace MoxBackEnd.Controllers
 
         }
 
+        //Login
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
+        {
+            var user = await _userManager.FindByEmailAsync(loginDto.Email);
+            if (user == null)
+            {
+                return Unauthorized("Invalid email or password");
+            }
+
+            var passwordValid = await _userManager.CheckPasswordAsync(user, loginDto.Password);
+            if (!passwordValid)
+            {
+                return Unauthorized("Invalid email or password");
+            }
+
+            if (await _userManager.GetTwoFactorEnabledAsync(user))
+            {
+                var code = await _userManager.GenerateTwoFactorTokenAsync(user, TokenOptions.DefaultEmailProvider);
+
+                await _emailSender.SendEmailAsync(
+                    user.Email,
+                    "Your 2FA Code",
+                    $"Your 2FA code is: {code}");
+
+                return Ok(new
+                {
+                    twoFactorRequired = true,
+                    userId = user.Id,
+                });
+            }
+
+            var token = _tokenservices.GenerateToken(user.Id, user.Email); 
+            return Ok(new { Token = token });
+
+            // var result = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, lockoutOnFailure: false);
+            // if (result.RequiresTwoFactor)
+            // {
+            //     return Ok(new { RequiresTwoFactor = true, UserId = user.Id });
+            // }
+
+            // if (!result.Succeeded)
+            // {
+            //     return Unauthorized("Invalid email or password");
+            // }
+            
+            // var token = _tokenservices.GenerateToken(user.Id, user.Email);
+            // return Ok(new { Token = token });
+
+            // if (result.Succeeded)
+            // {
+            //     return Ok("Login successful");
+            // }
+
+            // return Unauthorized("Invalid username or password");
+        }
+
+        //Login 2FA
+        [HttpPost("login/2fa")]
+        public async Task<IActionResult> Login2FA([FromBody] TwoFactorDto dto)
+        {
+            var user = await _userManager.FindByIdAsync(dto.UserId);
+            if (user == null)
+            {
+                return Unauthorized("User not found");
+            }
+
+            var isValid = await _userManager.VerifyTwoFactorTokenAsync(
+                user, TokenOptions.DefaultAuthenticatorProvider, dto.TwoFactorCode);
+
+            if (!isValid)
+            {
+                return Unauthorized("Invalid 2FA code");
+            }
+
+            var token = _tokenservices.GenerateToken(user.Id, user.Email);
+            return Ok(new { Token = token });
+
+            // var result = await _signInManager.TwoFactorAuthenticatorSignInAsync(dto.TwoFactorCode, isPersistent: false, rememberClient: false);
+
+            // if (!result.Succeeded)
+            // {
+            //     return Unauthorized("Invalid 2FA code");
+            // }
+
+            // var token = _tokenservices.GenerateToken(user.Id, user.Email);
+            // return Ok(new { Token = token });
+        }
+
         public class RegistrationRequest
         {
             [Required]
@@ -168,17 +260,98 @@ namespace MoxBackEnd.Controllers
         }
 
         //GenerateJWTToken
-        [HttpPost("generate-toke")]
-        public async Task<IActionResult> GenerateToken([FromBody] DirectTokenRequest request)
+        [HttpPost("generate-token")]
+        public async Task<IActionResult> GenerateToken([FromBody] GenerateTokenRequest request)
         {
-            var token = _tokenservices.GenerateToken(request.UserId, request.Email);
-            return await Task.FromResult(Ok(new { Token = token }));
+            var user = await _userManager.FindByEmailAsync(request.Email);
+            if (user == null)
+            {
+                return NotFound("User not found");
+            }
+
+            var token = _tokenservices.GenerateToken(user.Id, user.Email);
+            return Ok(new { Token = token });
         }
 
-        public class DirectTokenRequest
+        public class GenerateTokenRequest
         {
-            public string UserId { get; set; } = string.Empty;
+            // public string UserId { get; set; } = string.Empty;
             public string Email { get; set; } = string.Empty;
+        }
+
+                // Google Login Initiation
+        [HttpGet("external-login")]
+        public IActionResult ExternalLogin(string provider, string returnUrl = "/")
+        {
+            var redirectUrl = Url.Action(nameof(ExternalLoginCallback), "Auth",
+                new { returnUrl = returnUrl });
+
+            var properties = _signInManager.ConfigureExternalAuthenticationProperties(
+                provider, redirectUrl);
+
+            return Challenge(properties, provider);
+        }
+
+        // Google login callback
+        [HttpGet("external-login-callback")]
+        public async Task<IActionResult> ExternalLoginCallback(string? returnUrl = null)
+        {
+            var info = await _signInManager.GetExternalLoginInfoAsync();
+            if (info == null)
+            {
+                return RedirectToAction("Error loading external login information");
+            }
+
+            var result = await _signInManager.ExternalLoginSignInAsync(
+                info.LoginProvider, info.ProviderKey, isPersistent: false, bypassTwoFactor: true);
+
+            if (result.Succeeded)
+            {
+                var user = await _userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
+                var token = _tokenservices.GenerateToken(user.Id, user.Email);
+
+                return Ok(new { token });
+            }
+
+            if (result.IsLockedOut)
+            {
+                return BadRequest("User account locked out");
+            }
+
+            var email = info.Principal.FindFirstValue(ClaimTypes.Email);
+            if (email != null)
+            {
+                var user = await _userManager.FindByEmailAsync(email);
+                if (user == null)
+                {
+                    user = new Users
+                    {
+                        UserName = email,
+                        Email = email,
+                        EmailConfirmed = true
+                    };
+
+                    var createResult = await _userManager.CreateAsync(user);
+                    if (createResult.Succeeded)
+                    {
+                        await _userManager.AddLoginAsync(user, info);
+                        await _signInManager.SignInAsync(user, isPersistent: false);
+
+                        var token = _tokenservices.GenerateToken(user.Id, user.Email);
+                        return Ok(new { token });
+                    }
+                }
+                else
+                {
+                    await _userManager.AddLoginAsync(user, info);
+                    await _signInManager.SignInAsync(user, isPersistent: false);
+
+                    var token = _tokenservices.GenerateToken(user.Id, user.Email);
+                    return Redirect("redirect");
+                }
+            }
+
+            return BadRequest("Error processing external login");
         }
 
 

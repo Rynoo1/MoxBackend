@@ -24,6 +24,21 @@ public class RegisterUserDTO
     public required string Email { get; set; }
 }
 
+public class LoginDto
+{
+    public string Username { get; set; } = string.Empty;
+    public string Password { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    // public bool RememberMe { get; set; } = true;
+}
+
+public class TwoFactorDto
+{
+    public string UserId { get; set; } = string.Empty;
+    public string TwoFactorCode { get; set; } = string.Empty;
+
+}
+
 public class UserRolesDTO
 {
     public int Id { get; set; }
