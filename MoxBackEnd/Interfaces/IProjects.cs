@@ -11,4 +11,8 @@ public interface IProjects
     Task<ProjectReadDto?> UpdateProjectAsync(int id, ProjectUpdateDto projectDto);
     Task<bool> DeleteProjectAsync(int id);
     Task<Projects> AddUserAsync(Users user);
+    Task<IEnumerable<ProjectUserDto>> GetProjectMembersAsync(int projectId);
+    Task<bool> AssignUserToProjectAsync(int projectId, string userId);
+    Task<bool> UnassignUserFromProjectAsync(int projectId, string userId);
+    Task<bool> UpdateProjectWithTasksAsync(ProjectCreateDto dto);
 }

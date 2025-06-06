@@ -2,7 +2,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using MoxBackEnd.Interfaces;
 using MoxBackEnd.Models;
-using MoxBackEnd.Services;
 using MoxBackEnd.DTOs;
 
 namespace MoxBackEnd.Controllers;
@@ -19,19 +18,24 @@ public class TaskController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll() => Ok(await _service.GetAllTasksAsync());
+    public async Task<IActionResult> GetAll() =>
+        Ok(await _service.GetAllTasksAsync());
 
     [HttpGet("by-project/{projectId}")]
-    public async Task<IActionResult> GetByProject(int projectId) => Ok(await _service.GetTasksByProjectAsync(projectId));
+    public async Task<IActionResult> GetByProject(int projectId) =>
+        Ok(await _service.GetTasksByProjectAsync(projectId));
 
     [HttpGet("by-priority/{level}")]
-    public async Task<IActionResult> GetByPriority(PriorityLevel level) => Ok(await _service.GetTasksByPriorityAsync(level));
+    public async Task<IActionResult> GetByPriority(PriorityLevel level) =>
+        Ok(await _service.GetTasksByPriorityAsync(level));
 
     [HttpGet("emergency")]
-    public async Task<IActionResult> GetEmergency() => Ok(await _service.GetEmergencyTasksAsync());
+    public async Task<IActionResult> GetEmergency() =>
+        Ok(await _service.GetEmergencyTasksAsync());
 
     [HttpGet("by-status/{status}")]
-    public async Task<IActionResult> GetByStatus(WorkStatus status) => Ok(await _service.GetTasksByStatusAsync(status));
+    public async Task<IActionResult> GetByStatus(WorkStatus status) =>
+        Ok(await _service.GetTasksByStatusAsync(status));
 
     [HttpGet("{id}")]
     public async Task<IActionResult> Get(int id)

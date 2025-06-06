@@ -64,7 +64,7 @@ public class StickyNoteServiceTests
     public async Task UpdateNoteAsync_UpdatesExistingNote()
     {
         var context = GetInMemoryDbContext();
-        var note = new StickyNote { NoteID = 1, Content = "Original", ColorHex = "#000000" };
+        var note = new StickyNote { Id = 1, Content = "Original", ColorHex = "#000000" }; // Changed NoteID to Id
         context.StickyNotes.Add(note);
         await context.SaveChangesAsync();
 
@@ -83,7 +83,7 @@ public class StickyNoteServiceTests
     public async Task DeleteNoteAsync_RemovesNoteIfExists()
     {
         var context = GetInMemoryDbContext();
-        var note = new StickyNote { NoteID = 2, Content = "To be deleted" };
+        var note = new StickyNote { Id = 2, Content = "To be deleted" }; // Changed NoteID to Id
         context.StickyNotes.Add(note);
         await context.SaveChangesAsync();
 

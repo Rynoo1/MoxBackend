@@ -8,7 +8,7 @@ public class StickyNote
 {
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    public int NoteID { get; set; }
+    public int Id { get; set; }
 
     [Required]
     public string Content { get; set; } = string.Empty;

@@ -1,5 +1,3 @@
-import React from "react";
-import { Link } from "react-router-dom";
 import React from 'react'
 import { Link } from 'react-router-dom'
 import {
@@ -8,14 +6,6 @@ import {
   Sun as SunIcon,
   Moon as MoonIcon,
   BoxArrowRight as LogoutIcon,
-  Calendar as TimelineIcon,
-} from "react-bootstrap-icons";
-import "./styles/Sidebar.css";
-import logo from "../assets/logo.svg";
-
-interface SidebarProps {
-  isDarkMode: boolean;
-  toggleDarkMode: () => void;
   Calendar as TimelineIcon
 } from 'react-bootstrap-icons'
 import './styles/Sidebar.css'
@@ -28,7 +18,6 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ isDarkMode, toggleDarkMode }) => {
   return (
-    <div className={`sidebar ${isDarkMode ? "dark-mode" : ""}`}>
     <div className={`sidebar ${isDarkMode ? 'dark-mode' : ''}`}>
       <div className="logo">
         <img src={logo} alt="Logo" />
@@ -64,7 +53,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isDarkMode, toggleDarkMode }) => {
             Settings
           </Link>
         </li>
-
         {/* Light/Dark Mode Toggle */}
         <li className="nav-link w-full text-left flex items-center space-x-2">
           <button
@@ -84,9 +72,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isDarkMode, toggleDarkMode }) => {
             )}
           </button>
         </li>
-
         <li>
-          <Link to="/login" className="nav-link">
           <Link to="/auth" className="nav-link">
             <LogoutIcon className="mr-2 h-5 w-5" />
             Logout
@@ -94,10 +80,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isDarkMode, toggleDarkMode }) => {
         </li>
       </ul>
     </div>
-  );
-};
-
-export default Sidebar;
   )
 }
 

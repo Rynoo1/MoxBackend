@@ -63,21 +63,23 @@ public class ProjectController(IProjects projectService) : ControllerBase
         return CreatedAtAction(nameof(GetProjectById), new { id = createdProject.ProjectID }, createdProject);
     }
 
+
+
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateProjectAsync(int id, [FromBody] ProjectUpdateDto projectDto)
+    public async Task<IActionResult> UpdateProjectWithTasks(int id, [FromBody] ProjectCreateDto projectDto)
     {
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
         }
 
-        var updatedProject = await _projectService.UpdateProjectAsync(id, projectDto);
-        if (updatedProject == null)
+        var updated = await _projectService.UpdateProjectWithTasksAsync(projectDto);
+        if (!updated)
         {
             return NotFound();
         }
 
-        return Ok(updatedProject);
+        return NoContent();
     }
 
     [HttpDelete("{id}")]

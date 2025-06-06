@@ -40,7 +40,8 @@ public class StickyNoteController : ControllerBase
     public async Task<IActionResult> Create([FromBody] StickyNote note)
     {
         var created = await _service.CreateNoteAsync(note);
-        return CreatedAtAction(nameof(Get), new { id = created.NoteID }, created);
+        // Fix: Use Id instead of NoteID
+        return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
     }
 
     [HttpPut("{id}")]

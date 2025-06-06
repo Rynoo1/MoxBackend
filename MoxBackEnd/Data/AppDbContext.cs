@@ -23,6 +23,7 @@ public class AppDbContext : IdentityDbContext<Users>
     public DbSet<Comment> Comments { get; set; }
     public DbSet<EmergencyMeeting> EmergencyMeetings { get; set; }
     public DbSet<ProjectUser> ProjectUsers { get; set; }
+    public DbSet<StickyNote> StickyNotes { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

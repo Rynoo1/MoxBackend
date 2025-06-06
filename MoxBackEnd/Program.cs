@@ -39,7 +39,12 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
-var key = Encoding.UTF8.GetBytes(jwtSettings["Secret"]);
+var secret = jwtSettings["Secret"];
+if (string.IsNullOrEmpty(secret))
+{
+    throw new InvalidOperationException("JWT Secret is not configured. Please set 'JwtSettings:Secret' in your configuration.");
+}
+var key = Encoding.UTF8.GetBytes(secret);
 
 builder.Services.AddAuthentication(options =>
 {
