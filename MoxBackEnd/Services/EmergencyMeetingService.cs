@@ -48,10 +48,25 @@ public class EmergencyMeetingService : IEmergencyMeeting
         return true;
     }
 
+    public async Task<bool> UpdateMeetingAsync(EmergencyMeeting meeting)
+    {
+        _context.EmergencyMeetings.Update(meeting);
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
     public async Task<List<Users>> GetUsersByIdsAsync(List<string> ids)
     {
         return await _context.Users
             .Where(u => ids.Contains(u.Id))
+            .ToListAsync();
+    }
+
+    public async Task<List<Users>> GetUsersByProjectIdAsync(int projectId)
+    {
+        return await _context.Users
+            .Where(u => u.AssignedSubTasks.Any(st => st.ProjectID == projectId))
+            .Distinct()
             .ToListAsync();
     }
 }

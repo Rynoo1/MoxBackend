@@ -20,7 +20,7 @@ builder.Services.AddScoped<IRole, RoleService>();
 builder.Services.AddScoped<ISubTask, SubTaskService>();
 builder.Services.AddScoped<IUser, UserService>();
 builder.Services.AddTransient<IEmailSender, EmailSender>();
-builder.Services.AddScoped<IStickyNote, StickyNoteService>();
+builder.Services.AddScoped<IComment, CommentService>();
 builder.Services.AddScoped<IEmergencyMeeting, EmergencyMeetingService>();
 builder.Services.AddScoped<ITask, TaskService>();
 builder.Services.AddScoped<ITokenServices, TokenServices>();
@@ -28,7 +28,8 @@ builder.Services.AddScoped<ITokenServices, TokenServices>();
 
 
 builder.Services.AddControllers()
-    .AddJsonOptions(Options => {
+    .AddJsonOptions(Options =>
+    {
         Options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
     });
 
@@ -57,12 +58,24 @@ builder.Services.AddAuthentication(options =>
          ValidAudience = jwtSettings["Audience"],
          IssuerSigningKey = new SymmetricSecurityKey(key)
      };
+ })
+ .AddGoogle(GoogleOptions =>
+ {
+     GoogleOptions.ClientId = builder.Configuration["Authentication:Google:ClientId"] ?? string.Empty;
+     GoogleOptions.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"] ?? string.Empty;
+     GoogleOptions.CallbackPath = "/signin-google"; // Ensure this matches your Google API settings
+
+     GoogleOptions.Scope.Add("email");
+     GoogleOptions.Scope.Add("profile");
+
+     GoogleOptions.SaveTokens = true;
  });
 
 builder.Services.AddAuthorization();
 // builder.Services.AddAuthentication().Add
 
-builder.Services.AddIdentity<Users, IdentityRole>(Options => {
+builder.Services.AddIdentity<Users, IdentityRole>(Options =>
+{
 
     Options.SignIn.RequireConfirmedAccount = true;
     Options.SignIn.RequireConfirmedEmail = true;

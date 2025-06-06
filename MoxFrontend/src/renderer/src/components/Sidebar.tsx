@@ -1,5 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import React from 'react'
+import { Link } from 'react-router-dom'
 import {
   HouseDoor as HomeIcon,
   Folder as FolderIcon,
@@ -14,11 +16,20 @@ import logo from "../assets/logo.svg";
 interface SidebarProps {
   isDarkMode: boolean;
   toggleDarkMode: () => void;
+  Calendar as TimelineIcon
+} from 'react-bootstrap-icons'
+import './styles/Sidebar.css'
+import logo from '../assets/logo.svg'
+
+interface SidebarProps {
+  isDarkMode: boolean
+  toggleDarkMode: () => void
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ isDarkMode, toggleDarkMode }) => {
   return (
     <div className={`sidebar ${isDarkMode ? "dark-mode" : ""}`}>
+    <div className={`sidebar ${isDarkMode ? 'dark-mode' : ''}`}>
       <div className="logo">
         <img src={logo} alt="Logo" />
       </div>
@@ -76,6 +87,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isDarkMode, toggleDarkMode }) => {
 
         <li>
           <Link to="/login" className="nav-link">
+          <Link to="/auth" className="nav-link">
             <LogoutIcon className="mr-2 h-5 w-5" />
             Logout
           </Link>
@@ -86,3 +98,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isDarkMode, toggleDarkMode }) => {
 };
 
 export default Sidebar;
+  )
+}
+
+export default Sidebar

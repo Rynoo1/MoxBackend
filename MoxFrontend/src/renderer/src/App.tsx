@@ -1,39 +1,37 @@
-import React, { useState, useEffect } from 'react';
-import { HashRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import Dashboard from './pages/Dashboard';
-import KanbanBoard from './pages/KanbanBoard';
-import Projects from './pages/Projects';
-import Settings from './pages/Settings';
-import MoxAuth from './pages/MoxAuth';
+import React, { useState, useEffect } from 'react'
+import { HashRouter as Router, Routes, Route, useLocation } from 'react-router-dom'
+import Dashboard from './pages/Dashboard'
+import KanbanBoard from './pages/KanbanBoard'
+import Projects from './pages/Projects'
+import Settings from './pages/Settings'
+import MoxAuth from './pages/MoxAuth'
 // import Login from './pages/Login';
 // import Signup from './pages/Signup';
-import Sidebar from './components/Sidebar';
-import './styles/main.css';
+import Sidebar from './components/Sidebar'
+import './styles/main.css'
 
 const AppContent = () => {
-  const location = useLocation();
-  const hideSidebar = location.pathname === '/auth';
+  const location = useLocation()
+  const hideSidebar = location.pathname === '/auth'
 
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false)
 
   const toggleDarkMode = () => {
-    setIsDarkMode((prev) => !prev);
-  };
+    setIsDarkMode((prev) => !prev)
+  }
 
   useEffect(() => {
-    const root = document.documentElement;
+    const root = document.documentElement
     if (isDarkMode) {
-      root.classList.add('dark');
+      root.classList.add('dark')
     } else {
-      root.classList.remove('dark');
+      root.classList.remove('dark')
     }
-  }, [isDarkMode]);
+  }, [isDarkMode])
 
   return (
     <div className="flex min-h-screen">
-      {!hideSidebar && (
-        <Sidebar isDarkMode={isDarkMode} toggleDarkMode={toggleDarkMode} />
-      )}
+      {!hideSidebar && <Sidebar isDarkMode={isDarkMode} toggleDarkMode={toggleDarkMode} />}
       <div className={`${!hideSidebar ? 'ml-64' : ''} flex-1 p-4`}>
         <Routes>
           <Route path="/" element={<Dashboard />} />
@@ -44,15 +42,15 @@ const AppContent = () => {
         </Routes>
       </div>
     </div>
-  );
-};
+  )
+}
 
 function App() {
   return (
     <Router>
       <AppContent />
     </Router>
-  );
+  )
 }
 
-export default App;
+export default App

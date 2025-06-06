@@ -79,14 +79,13 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Greeting */}
+
       {username && (
         <div className="text-center mt-6">
           <h2 className="text-3xl font-light">{getGreeting()}, {username}</h2>
         </div>
       )}
 
-      {/* Stats */}
       <div className="stats shadow w-full overflow-x-auto mt-10 mb-10">
         <div className="stat">
           <div className="stat-title">Tasks Completed</div>
@@ -105,7 +104,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Main Section */}
+
       <main className="px-6 py-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div className="bg-white p-4 shadow rounded">

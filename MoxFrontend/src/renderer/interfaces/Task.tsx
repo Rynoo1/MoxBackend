@@ -1,5 +1,3 @@
-
-//src/interfaces/
 import { WorkStatus, PriorityLevel } from './TaskEnums'
 
 export interface TaskDto {

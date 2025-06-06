@@ -3,17 +3,20 @@ import React, { useState } from 'react'
 const TwoFactorCard: React.FC = () => {
   const [code, setCode] = useState<string>('')
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault()
 
+    const userId = localStorage.getItem('userId') || ''
+
     try {
-      const response = await fetch('http://localhost:5183/api/login/', {
+      const response = await fetch('http://localhost:5183/api/login/2fa', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          code
+          userId: userId,
+          twoFactorCode: code
         })
       })
 
@@ -21,9 +24,11 @@ const TwoFactorCard: React.FC = () => {
         throw new Error('Invalid code')
       }
 
-      alert('2FA Successful! You are now logged in.')
+      const data = await response.json()
+      localStorage.setItem('token', data.token)
       localStorage.setItem('isLoggedIn', 'true')
-      localStorage.setItem('userId:', '1')
+
+      alert('2FA Successful! You are now logged in')
       window.location.href = '/home'
     } catch (error) {
       const handleError = (error: unknown): string => {
