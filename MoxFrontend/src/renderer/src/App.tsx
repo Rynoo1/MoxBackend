@@ -8,7 +8,7 @@ import MoxAuth from './pages/MoxAuth'
 import EditProject from './components/EditProject'
 // import Login from './pages/Login';
 // import Signup from './pages/Signup';
-import { Sidebar } from './components/Sidebar'
+import Sidebar from './components/Sidebar'
 import './styles/main.css'
 import TaskDetails from './pages/TaskDetails'
 

@@ -22,7 +22,7 @@ public class TaskCreateDto
     public int TaskId { get; set; }
     public string Title { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
-    public int Priority { get; set; } // <-- changed to int
+    public int Priority { get; set; } 
     public DateTime? DueDate { get; set; }
     public List<SubTaskCreateDto> SubTasks { get; set; } = new();
 }
@@ -32,7 +32,7 @@ public class SubTaskCreateDto
     public int SubTaskID { get; set; }
     public string Title { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
-    public int Priority { get; set; } // <-- changed to int
+    public int Priority { get; set; } 
     public DateTime? DueDate { get; set; }
     public List<string> AssignedUserIds { get; set; } = new();
 }

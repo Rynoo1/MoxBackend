@@ -12,6 +12,7 @@ interface SubTask {
 }
 
 interface Task {
+  taskId: number
   id: number
   title: string
   status: string
@@ -35,14 +36,13 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
 }) => {
   const [tasks, setTasks] = React.useState<Task[]>([])
   const [error, setError] = React.useState<string | null>(null)
-  const [selectedTask, setSelectedTask] = React.useState<Task | null>(null)
+
   const [expandedTaskId, setExpandedTaskId] = React.useState<number | null>(null)
   const allSubtasks = tasks.flatMap((task) => task.subTasks || [])
   const completed = allSubtasks.filter((st) => st.completed).length
   const total = allSubtasks.length
   const progress = total > 0 ? Math.round((completed / total) * 100) : 0
   const navigate = useNavigate()
-  const location = useLocation()
 
   React.useEffect(() => {
     const fetchTasks = async () => {
@@ -52,7 +52,6 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
         const data = await response.json()
         const parsed = Array.isArray(data.$values) ? data.$values : data
 
-        // Fetch users for each subtask
         const normalized = await Promise.all(
           parsed.map(async (task) => {
             const subTasks =
@@ -136,8 +135,6 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
     })
   }
 
-  const handleBack = () => setSelectedTask(null)
-
   const toggleExpand = (taskId: number) => {
     setExpandedTaskId(expandedTaskId === taskId ? null : taskId)
   }
@@ -171,124 +168,126 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           ⚠️ Project overdue and not complete!
         </div>
       )}
-      <div className="error">{error}</div>
-      {selectedTask ? (
-        <TaskDetails task={selectedTask} onBack={handleBack} />
-      ) : (
-        <div className="overflow-x-auto">
-          {sortedTasks.length === 0 ? (
-            <div className="text-center bg-[#3f51b5] text-white font-bold rounded-xl py-4">
-              No tasks for this project.
-            </div>
-          ) : (
-            <table className="task-table">
-              <thead>
-                <tr>
-                  <th>Tasks</th>
-                  <th>Users</th>
-                  <th>Priority</th>
-                  <th>Timeline</th>
-                  <th>Date</th>
-                  <th>Details</th>
-                </tr>
-              </thead>
-              <tbody style={{ cursor: 'pointer' }}>
-                {sortedTasks.map((task) => (
-                  <React.Fragment key={task.id}>
+
+      <div className="overflow-x-auto">
+        {sortedTasks.length === 0 ? (
+          <div className="text-center bg-[#3f51b5] text-white font-bold rounded-xl py-4">
+            No tasks for this project.
+          </div>
+        ) : (
+          <table className="task-table">
+            <thead>
+              <tr>
+                <th>Tasks</th>
+                <th>Users</th>
+                <th>Priority</th>
+                <th>Timeline</th>
+                <th>Date</th>
+                <th>Details</th>
+              </tr>
+            </thead>
+            <tbody style={{ cursor: 'pointer' }}>
+              {sortedTasks.map((task) => (
+                <React.Fragment key={task.id}>
+                  <tr>
+                    <td>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          toggleExpand(task.id)
+                        }}
+                        style={{
+                          marginRight: 8,
+                          cursor: 'pointer',
+                          background: 'none',
+                          border: 'none',
+                          fontWeight: 'bold',
+                          color: '#1E3A8A'
+                        }}
+                        title={expandedTaskId === task.id ? 'Hide subtasks' : 'Show subtasks'}
+                      >
+                        {expandedTaskId === task.id ? '▼' : '▶'}
+                      </button>
+                      {task.title}
+                    </td>
+                    <td>{task.status}</td>
+                    <td>{getPriorityLabel(Number(task.priority))}</td>
+                    <td>
+                      <Progressbar
+                        progress={
+                          task.subTasks && task.subTasks.length > 0
+                            ? Math.round(
+                                (task.subTasks.filter((st) => st.completed).length /
+                                  task.subTasks.length) *
+                                  100
+                              )
+                            : 0
+                        }
+                      />
+                    </td>
+                    <td>
+                      <span>{formatDate(task.dueDate)}</span>
+                    </td>
+                    <td>
+                      <button
+                        className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-700"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          navigate(`/task/${task.id ?? task.taskId}`, {
+                            state: {
+                              task,
+                              subtasks: task.subTasks || [],
+                              project: { ProjectID, ProjectName, ProjectDueDate }
+                            }
+                          })
+                        }}
+                      >
+                        View
+                      </button>
+                    </td>
+                  </tr>
+                  {expandedTaskId === task.id && task.subTasks && task.subTasks.length > 0 && (
                     <tr>
-                      <td>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            toggleExpand(task.id)
-                          }}
-                          style={{
-                            marginRight: 8,
-                            cursor: 'pointer',
-                            background: 'none',
-                            border: 'none',
-                            fontWeight: 'bold',
-                            color: '#1E3A8A'
-                          }}
-                          title={expandedTaskId === task.id ? 'Hide subtasks' : 'Show subtasks'}
-                        >
-                          {expandedTaskId === task.id ? '▼' : '▶'}
-                        </button>
-                        {task.title}
-                      </td>
-                      <td>{task.status}</td>
-                      <td>{getPriorityLabel(Number(task.priority))}</td>
-                      <td>
-                        <Progressbar
-                          progress={
-                            task.subTasks && task.subTasks.length > 0
-                              ? Math.round(
-                                  (task.subTasks.filter((st) => st.completed).length /
-                                    task.subTasks.length) *
-                                    100
-                                )
-                              : 0
-                          }
-                        />
-                      </td>
-                      <td>
-                        <span>{formatDate(task.dueDate)}</span>
-                      </td>
-                      <td>
-                        <button
-                          className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-700"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            navigate(`/task/${task.id}`)
-                          }}
-                        >
-                          View
-                        </button>
+                      <td colSpan={6} style={{ background: '#f3f4f6', padding: 0 }}>
+                        <table className="subtask-table w-full">
+                          <thead>
+                            <tr>
+                              <th>Subtask</th>
+                              <th>Status</th>
+                              <th>Users</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {task.subTasks.map((sub) => (
+                              <tr key={sub.id}>
+                                <td>{sub.title}</td>
+                                <td>
+                                  {sub.completed ? (
+                                    <span className="text-green-600 font-bold">Completed</span>
+                                  ) : (
+                                    <span className="text-red-600 font-bold">Incomplete</span>
+                                  )}
+                                </td>
+                                <td>
+                                  {sub.assignedUsers && sub.assignedUsers.length > 0 ? (
+                                    sub.assignedUsers.map((u) => u.userName).join(', ')
+                                  ) : (
+                                    <span className="text-gray-400">No users</span>
+                                  )}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
                       </td>
                     </tr>
-                    {expandedTaskId === task.id && task.subTasks && task.subTasks.length > 0 && (
-                      <tr>
-                        <td colSpan={6} style={{ background: '#f3f4f6', padding: 0 }}>
-                          <table className="subtask-table w-full">
-                            <thead>
-                              <tr>
-                                <th>Subtask</th>
-                                <th>Status</th>
-                                <th>Users</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {task.subTasks.map((sub) => (
-                                <tr key={sub.id}>
-                                  <td>{sub.title}</td>
-                                  <td>
-                                    {sub.completed ? (
-                                      <span className="text-green-600 font-bold">Completed</span>
-                                    ) : (
-                                      <span className="text-red-600 font-bold">Incomplete</span>
-                                    )}
-                                  </td>
-                                  <td>
-                                    {sub.assignedUsers && sub.assignedUsers.length > 0 ? (
-                                      sub.assignedUsers.map((u) => u.userName).join(', ')
-                                    ) : (
-                                      <span className="text-gray-400">No users</span>
-                                    )}
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </td>
-                      </tr>
-                    )}
-                  </React.Fragment>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-      )}
+                  )}
+                </React.Fragment>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
 
       <div className="overall-progress mt-4">
         <strong>Project Progress:</strong>
