@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using QRCoder;
 using System.Text.Json;
 using System.Security.Claims;
+using Microsoft.DotNet.Scaffolding.Shared.Messaging;
 
 namespace MoxBackEnd.Controllers
 {
@@ -106,8 +107,7 @@ namespace MoxBackEnd.Controllers
                 await _userManager.SetTwoFactorEnabledAsync(user, true);
 
                 return Ok(new { success = true, message = "User registeered successfully", userId = user.Id });
-            }
-            else
+            } else
             {
                 return BadRequest(new { success = false, errors = errors });
             }
@@ -143,6 +143,7 @@ namespace MoxBackEnd.Controllers
                 {
                     twoFactorRequired = true,
                     userId = user.Id,
+                    message = "2FA code sent to your email"
                 });
             }
 
@@ -189,7 +190,7 @@ namespace MoxBackEnd.Controllers
                 return Unauthorized("Invalid 2FA code");
             }
 
-            var token = _tokenservices.GenerateToken(user.Id, user.Email ?? string.Empty);
+            var token = _tokenservices.GenerateToken(user.Id, user.Email);
             return Ok(new { Token = token });
 
             // var result = await _signInManager.TwoFactorAuthenticatorSignInAsync(dto.TwoFactorCode, isPersistent: false, rememberClient: false);
@@ -211,6 +212,56 @@ namespace MoxBackEnd.Controllers
             [Required]
             [StringLength(50, MinimumLength = 6)]
             public string Password { get; set; } = string.Empty;
+        }
+
+        [HttpGet("profile")]
+        public async Task<IActionResult> GetProfile()
+        {
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized(new ApiResponse<object>
+                    {
+                        Success = false,
+                        Message = "User not authenticated"
+                    });
+                }
+
+                var user = await _userManager.FindByIdAsync(userId);
+
+                if (user == null)
+                {
+                    return NotFound(new ApiResponse<object>
+                    {
+                        Success = false,
+                        Message = "User not found"
+                    });
+                }
+
+                var userProfile = new UserProfileDto
+                {
+                    UserName = user.UserName!,
+                    Email = user.Email!,
+                    ProfilePicture = user.ProfilePicture!
+                };
+
+                return Ok(new ApiResponse<UserProfileDto>
+                {
+                    Success = true,
+                    Data = userProfile
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = "An error occured while retrieving the profile"
+                });
+            }
         }
 
         //Get with ID

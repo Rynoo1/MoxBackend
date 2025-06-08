@@ -11,6 +11,7 @@ import EditProject from './components/EditProject'
 import Sidebar from './components/Sidebar'
 import './styles/main.css'
 import TaskDetails from './pages/TaskDetails'
+import ProfilePage from './pages/Profile'
 
 const AppContent = () => {
   const location = useLocation()
@@ -43,6 +44,7 @@ const AppContent = () => {
           <Route path="/auth" element={<MoxAuth />} />
           <Route path="/edit-project" element={<EditProject />} />
           <Route path="/task/:taskId" element={<TaskDetails />} />
+          <Route path="/profile" element={<ProfilePage />} />
         </Routes>
       </div>
     </div>

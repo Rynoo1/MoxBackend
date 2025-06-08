@@ -16,7 +16,7 @@ public class TokenServices : ITokenServices
         _config = configuration;
     }
 
-    public string GenerateToken(string userId, string userEmail)
+    public string GenerateToken(string userId, string userEmail, string userName)
     {
         var jwtSettings = _config.GetSection("JwtSettings");
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Secret"]));
@@ -25,7 +25,9 @@ public class TokenServices : ITokenServices
         {
             new Claim(JwtRegisteredClaimNames.Sub, userId),
             new Claim(JwtRegisteredClaimNames.Email, userEmail),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            new Claim("username", userName),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new Claim(JwtRegisteredClaimNames.Iat, DateTime.UtcNow.ToString(), ClaimValueTypes.Integer64)
         };
 
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

@@ -16,6 +16,21 @@ public class UserDTO
 
 }
 
+public class ApiResponse<T>
+{
+    public bool Success { get; set; }
+    public T Data { get; set; } = default!;
+    public string Message { get; set; } = string.Empty;
+}
+
+public class UserProfileDto
+{
+    public string UserName { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public string ProfilePicture { get; set; } = string.Empty;
+}
+
+
 public class RegisterUserDTO
 {
     public required string Username { get; set; }
