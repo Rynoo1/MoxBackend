@@ -12,6 +12,7 @@ public class FileUpload
     public int FileUploadID { get; set; }
     [Required]
     public int ProjectID { get; set; } //FK
+    public int? SubTaskID { get; set; }
     [Required]
     public string FilePath { get; set; } = string.Empty;
     [Required]

@@ -3,6 +3,7 @@ import '../components/styles/Projects.css'
 import ProjectCard from '@renderer/components/Projectcard'
 import CreateProject from '@renderer/components/CreateProject'
 import moxLoadingGif from '../assets/mox-loading.gif'
+import { HiX } from 'react-icons/hi'
 
 interface Project {
   projectID: number
@@ -154,7 +155,7 @@ const Projects: React.FC = () => {
           </button>
           <div style={{ marginLeft: 'auto' }}>
             <select
-              className="select select-bordered !shadow-md shadow-black/30"
+              className="select select-bordered  !shadow-md shadow-black/30"
               value={sortMode}
               onChange={(e) => setSortMode(e.target.value as typeof sortMode)}
             >
@@ -164,13 +165,12 @@ const Projects: React.FC = () => {
             </select>
           </div>
           <dialog id="create_project_modal" className="modal" ref={modalRef}>
-            <div className="modal-box relative bg-[#EDF2F7]">
+            <div className="modal-box relative bg-[#EDF2F7] w-full max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-3xl xl:max-w-4xl">
               <button
-                className="btn btn-sm btn-square btn-ghost border-2 text-center border-red-500 bg-red-500 hover:bg-white hover:text-red-500 font-light absolute right-2 top-2"
-                style={{ fontSize: 30 }}
+                className="btn btn-sm btn-square btn-ghost border-2 text-center border-red-500 bg-red-500 hover:bg-white hover:text-red-500 font-light absolute right-2 top-2 text-[30px]"
                 onClick={handleCreateClose}
               >
-                ×
+                <HiX />
               </button>
               <CreateProject key={createKey} onClose={handleCreateClose} />
             </div>

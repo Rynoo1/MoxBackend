@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import '../components/styles/Projectcard.css'
-import { HiTrash } from 'react-icons/hi'
+import { HiPencilAlt, HiTrash, HiX } from 'react-icons/hi'
 
 type User = { id: number; userName: string; profilePicUrl: string }
 type Subtask = {
@@ -67,6 +67,9 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose }) => {
     users: []
   })
   const [userSearch, setUserSearch] = useState('')
+  const [editingSubtask, setEditingSubtask] = useState<{ taskIdx: number; subIdx: number } | null>(
+    null
+  )
 
   useEffect(() => {
     fetch('http://localhost:5183/api/User')
@@ -113,9 +116,17 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose }) => {
       setTaskNameError(false)
       setTaskDueDateError(false)
       setTaskPriorityError(false)
-      const newTasks = [...tasks, currentTask]
-      setTasks(newTasks)
-      setEditingTaskIndex(newTasks.length - 1)
+      if (editingTaskIndex !== null) {
+        // Edit existing task
+        const updatedTasks = [...tasks]
+        updatedTasks[editingTaskIndex] = currentTask
+        setTasks(updatedTasks)
+        setEditingTaskIndex(null)
+      } else {
+        // Add new task
+        setTasks([...tasks, currentTask])
+        setEditingTaskIndex(tasks.length)
+      }
       setCurrentTask({
         name: '',
         description: '',
@@ -123,7 +134,7 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose }) => {
         priority: '',
         subtasks: []
       })
-      setStep(4)
+      setStep(2)
     }
   }
 
@@ -149,13 +160,19 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose }) => {
     setSubtaskNameError(false)
     if (editingTaskIndex === null) return
     const updatedTasks = [...tasks]
-    const updatedTask = {
-      ...updatedTasks[editingTaskIndex],
-      subtasks: [...updatedTasks[editingTaskIndex].subtasks, currentSubtask]
+    if (editingSubtask) {
+      // Edit existing subtask
+      const { taskIdx, subIdx } = editingSubtask
+      const updatedSubtasks = [...updatedTasks[taskIdx].subtasks]
+      updatedSubtasks[subIdx] = currentSubtask
+      updatedTasks[taskIdx].subtasks = updatedSubtasks
+      setEditingSubtask(null)
+    } else {
+      // Add new subtask
+      updatedTasks[editingTaskIndex].subtasks.push(currentSubtask)
     }
-    updatedTasks[editingTaskIndex] = updatedTask
     setTasks(updatedTasks)
-    setCurrentTask(updatedTask)
+    setCurrentTask(updatedTasks[editingTaskIndex])
     setCurrentSubtask({ name: '', description: '', dueDate: '', priority: '', users: [] })
     setUserSearch('')
     setStep(4)
@@ -180,12 +197,12 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose }) => {
       Tasks: tasks.map((task) => ({
         Title: task.name,
         Description: task.description,
-        Priority: priorityMap[task.priority] ?? 2, // <-- integer
+        Priority: priorityMap[task.priority] ?? 2,
         DueDate: task.dueDate,
         SubTasks: task.subtasks.map((subtask) => ({
           Title: subtask.name,
           Description: subtask.description,
-          Priority: priorityMap[subtask.priority || 'Normal'] ?? 2, // <-- integer
+          Priority: priorityMap[subtask.priority || 'Normal'] ?? 2,
           DueDate: subtask.dueDate || task.dueDate,
           AssignedUserIds: subtask.users ? subtask.users.map((u) => u.id) : []
         }))
@@ -218,12 +235,14 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose }) => {
   }
 
   return (
-    <div className="max-w-lg mx-auto p-6 ">
+    <div className="max-w-3xl mx-auto p-10">
+      {' '}
+      {/* Increased max width and padding */}
       {step === 1 && (
         <>
-          <h1 className="text-center text-black font-bold text-2xl mb-6">New Project</h1>
+          <h1 className="text-center text-black font-bold text-4xl mb-10">New Project</h1>
           <input
-            className={`input input-bordered w-full my-2 text-black placeholder-black ${projectNameError ? 'input-error placeholder-error' : ''}`}
+            className={`input input-bordered w-full my-4 text-black text-xl placeholder-black py-4 ${projectNameError ? 'input-error placeholder-error' : ''}`}
             placeholder="Project name"
             value={projectName}
             onChange={(e) => {
@@ -233,7 +252,7 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose }) => {
           />
           <input
             type="datetime-local"
-            className={`input input-bordered w-full my-2 !text-black placeholder-black ${projectDueDateError ? 'input-error placeholder-error' : ''}`}
+            className={`input input-bordered w-full my-4 text-black text-xl placeholder-black py-4 ${projectDueDateError ? 'input-error placeholder-error' : ''}`}
             value={projectDueDate}
             onChange={(e) => {
               setProjectDueDate(e.target.value)
@@ -241,9 +260,9 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose }) => {
             }}
             placeholder="Due date and time"
           />
-          <div className="flex justify-between mt-4">
+          <div className="flex justify-between mt-8">
             <button
-              className="btn text-white border-2 border-white bg-[#6D28D9] hover:bg-white hover:border-[#6D28D9] hover:text-[#1E3A8A] shadow-none"
+              className="btn text-white border-2 border-white bg-[#6D28D9] hover:bg-white hover:border-[#6D28D9] hover:text-[#1E3A8A] shadow-none text-xl px-8 py-3"
               onClick={() => {
                 if (step === 1 && onClose) onClose()
                 else back()
@@ -252,7 +271,7 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose }) => {
               Back
             </button>
             <button
-              className="btn text-white border-2 border-white bg-[#1E3A8A] hover:bg-white hover:border-[#1E3A8A] hover:text-[#1E3A8A] shadow-none"
+              className="btn text-white border-2 border-white bg-[#1E3A8A] hover:bg-white hover:border-[#1E3A8A] hover:text-[#1E3A8A] shadow-none text-xl px-8 py-3"
               onClick={handleProjectNext}
             >
               Next
@@ -260,21 +279,20 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose }) => {
           </div>
         </>
       )}
-
       {step === 2 && (
         <>
-          <h1 className="text-center text-black font-bold text-2xl mb-6">Add Tasks</h1>
-          <div className="mb-4">
+          <h1 className="text-center text-black font-bold text-3xl mb-10">Add Tasks</h1>
+          <div className="mb-6">
             {tasks.length === 0 ? (
-              <div className="w-full bg-gray-200 rounded-full px-4 py-2 mb-2 text-gray-500 text-center select-none">
+              <div className="w-full bg-gray-200 rounded-full px-6 py-4 mb-4 text-gray-500 text-center select-none text-lg">
                 No tasks have been added yet
               </div>
             ) : (
-              <ul className="mb-2">
+              <ul className="mb-4">
                 {tasks.map((task, idx) => (
                   <li
                     key={idx}
-                    className="bg-gray-100 rounded px-4 py-2 mb-2 text-black flex flex-col"
+                    className="bg-gray-100 rounded px-6 py-4 mb-4 text-black flex flex-col text-lg"
                   >
                     <span className="font-semibold bg-[#1E3A8A] text-white rounded-t-lg px-2 py-1 text-center border-b-2 border-[#e0e0e9] ">
                       <span className="flex items-center w-full justify-center relative">
@@ -298,23 +316,35 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose }) => {
                         >
                           <HiTrash />
                         </button>
+                        {/* --- EDIT TASK BUTTON --- */}
+                        <button
+                          className="absolute left-0 ml-2 px-1 py-0.5 bg-[#1e3a8a] text-white rounded border-1 border-[#1e3a8a] hover:text-red-500 text-s flex items-center !shadow-md !shadow-black/30"
+                          onClick={() => {
+                            setCurrentTask(task)
+                            setEditingTaskIndex(idx)
+                            setStep(3)
+                          }}
+                          type="button"
+                        >
+                          <HiPencilAlt />
+                        </button>
                       </span>
                     </span>
-                    <div className=" p-3 bg-white rounded-b-lg !shadow-lg !shadow-black/20">
+                    <div className=" p-5 bg-white rounded-b-lg !shadow-lg !shadow-black/20">
                       <div className="flex justify-between items-start">
                         <div className="flex-1 mb-1">
-                          <span className="block text-m font-semibold mb-1">
+                          <span className="block text-lg font-semibold mb-1">
                             <span>Description:</span>
                           </span>
-                          <span className="block px-1 text-xs text-gray-800">
+                          <span className="block px-1 text-base text-gray-800">
                             {task.description}
                           </span>
                         </div>
                         <div className="flex flex-col items-end ml-4 min-w-[180px] ">
-                          <div className="flex flex-col text-black mb-1 shadow-md rounded px-6 py-1 bg-white">
+                          <div className="flex flex-col text-black mb-1 shadow-md rounded px-8 py-2 bg-white">
                             <span className="mb-5">
-                              <span className="font-semibold text-m">Due:</span>{' '}
-                              <span className="text-xs">{task.dueDate}</span>
+                              <span className="font-semibold text-lg">Due:</span>{' '}
+                              <span className="text-base">{task.dueDate}</span>
                             </span>
                             <span>
                               <span className="font-semibold">Priority:</span>{' '}
@@ -329,12 +359,12 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose }) => {
                       </div>
                       <div className="w-full flex justify-center text-center items-end mt-2">
                         {task.subtasks.length > 0 ? (
-                          <div className="text-xs text-black text-center">
+                          <div className="text-base text-black text-center">
                             <span className="font-semibold text-black">Subtasks:</span>{' '}
                             {task.subtasks.length}
                           </div>
                         ) : (
-                          <div className="text-xs text-black italic text-center">
+                          <div className="text-base text-black italic text-center">
                             No subtasks added yet
                           </div>
                         )}
@@ -345,24 +375,34 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose }) => {
               </ul>
             )}
             <button
-              className="btn ml-4 border-2 border-[#1e3a8a] bg-[#1E3A8A] text-white rounded-lg px-3 py-1.5 font-semibold hover:bg-white hover:text-[#1e3a8a] shadow-none h-7 min-h-0"
-              onClick={handleAddTaskToList}
+              className="btn ml-4 border-2 border-[#1e3a8a] bg-[#1E3A8A] text-white rounded-lg px-8 py-3 font-semibold hover:bg-white hover:text-[#1e3a8a] shadow-none text-lg"
+              onClick={() => {
+                setCurrentTask({
+                  name: '',
+                  description: '',
+                  dueDate: '',
+                  priority: '',
+                  subtasks: []
+                })
+                setEditingTaskIndex(null) // <--- Reset to null for "Add Task"
+                setStep(3)
+              }}
               type="button"
             >
               ADD
             </button>
           </div>
-          <div className="flex justify-between items-center mt-8">
+          <div className="flex justify-between items-center mt-12">
             <button
-              className="text-blue-700 underline ml-5 text-xs bg-transparent border-none shadow-none"
+              className="text-blue-700 underline ml-5 text-lg bg-transparent border-none shadow-none"
               onClick={() => setStep(6)}
               type="button"
             >
               Skip
             </button>
-            <div className="flex gap-1">
+            <div className="flex gap-2">
               <button
-                className="btn text-white border-2 border-white bg-[#6D28D9] hover:bg-white hover:border-[#6D28D9] hover:text-[#1E3A8A] shadow-none"
+                className="btn text-white border-2 border-white bg-[#6D28D9] hover:bg-white hover:border-[#6D28D9] hover:text-[#1E3A8A] shadow-none text-lg px-8 py-3"
                 onClick={() => setStep(1)}
                 type="button"
               >
@@ -370,7 +410,7 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose }) => {
               </button>
               {tasks.length > 0 ? (
                 <button
-                  className="btn text-white border-2 border-white bg-[#1E3A8A] hover:bg-white hover:border-[#1E3A8A] hover:text-[#1E3A8A] shadow-none"
+                  className="btn text-white border-2 border-white bg-[#1E3A8A] hover:bg-white hover:border-[#1E3A8A] hover:text-[#1E3A8A] shadow-none text-lg px-8 py-3"
                   onClick={() => setStep(6)}
                   type="button"
                 >
@@ -378,7 +418,7 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose }) => {
                 </button>
               ) : (
                 <button
-                  className="btn text-white border-2 border-white bg-[#1E3A8A] hover:bg-white hover:border-[#1E3A8A] hover:text-[#1E3A8A] shadow-none"
+                  className="btn text-white border-2 border-white bg-[#1E3A8A] hover:bg-white hover:border-[#1E3A8A] hover:text-[#1E3A8A] shadow-none text-lg px-8 py-3"
                   onClick={next}
                   type="button"
                 >
@@ -389,10 +429,11 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose }) => {
           </div>
         </>
       )}
-
       {step === 3 && (
         <>
-          <h2 className="text-center text-black font-bold text-2xl mb-6">Add Task</h2>
+          <h2 className="text-center text-black font-bold text-3xl mb-8">
+            {editingTaskIndex !== null ? 'Edit Task' : 'Add Task'}
+          </h2>
           <input
             placeholder="Task name"
             value={currentTask.name}
@@ -400,13 +441,13 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose }) => {
               setCurrentTask({ ...currentTask, name: e.target.value })
               if (taskNameError) setTaskNameError(false)
             }}
-            className={`input input-bordered w-full my-2 text-black placeholder-black ${taskNameError ? 'input-error placeholder-error' : ''}`}
+            className={`input input-bordered w-full my-4 text-black text-lg placeholder-black py-3 ${taskNameError ? 'input-error placeholder-error' : ''}`}
           />
           <textarea
             placeholder="Task description"
             value={currentTask.description}
             onChange={(e) => setCurrentTask({ ...currentTask, description: e.target.value })}
-            className="textarea textarea-bordered w-full my-2 text-black placeholder-black"
+            className="textarea textarea-bordered w-full my-4 text-black text-lg placeholder-black py-3"
           />
           <input
             type="datetime-local"
@@ -415,7 +456,7 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose }) => {
               setCurrentTask({ ...currentTask, dueDate: e.target.value })
               if (taskDueDateError) setTaskDueDateError(false)
             }}
-            className={`input input-bordered w-full my-2 text-black placeholder-black ${taskDueDateError ? 'input-error placeholder-error' : ''}`}
+            className={`input input-bordered w-full my-4 text-black text-lg placeholder-black py-3 ${taskDueDateError ? 'input-error placeholder-error' : ''}`}
           />
           <select
             value={currentTask.priority}
@@ -423,7 +464,7 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose }) => {
               setCurrentTask({ ...currentTask, priority: e.target.value })
               if (taskPriorityError) setTaskPriorityError(false)
             }}
-            className={`select select-bordered w-full my-2 text-black placeholder-black ${taskPriorityError ? 'input-error placeholder-error' : ''}`}
+            className={`select select-bordered w-full my-4 text-black text-lg placeholder-black ${taskPriorityError ? 'input-error placeholder-error' : ''}`}
           >
             <option value="">Priority</option>
             <option value="Low">Low</option>
@@ -431,40 +472,76 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose }) => {
             <option value="High">High</option>
             <option value="Critical">Critical</option>
           </select>
-          <div className="flex justify-between mt-4">
+          <div className="flex justify-between mt-8">
             <button
-              className="btn text-white border-2 border-white bg-[#6D28D9] hover:bg-white hover:border-[#6D28D9] hover:text-[#1E3A8A] shadow-none"
+              className="btn text-white border-2 border-white bg-[#6D28D9] hover:bg-white hover:border-[#6D28D9] hover:text-[#1E3A8A] shadow-none text-lg px-8 py-3"
               onClick={back}
             >
               Back
             </button>
             <button
-              className="btn text-white border-2 border-white bg-[#1E3A8A] hover:bg-white hover:border-[#1E3A8A] hover:text-[#1E3A8A] shadow-none"
-              onClick={handleTaskNext}
+              className="btn text-white border-2 border-white bg-[#1E3A8A] hover:bg-white hover:border-[#1E3A8A] hover:text-[#1E3A8A] shadow-none text-lg px-8 py-3"
+              onClick={() => {
+                // Validate fields
+                let hasError = false
+                if (!currentTask.name) {
+                  setTaskNameError(true)
+                  hasError = true
+                }
+                if (!currentTask.dueDate) {
+                  setTaskDueDateError(true)
+                  hasError = true
+                }
+                if (!currentTask.priority) {
+                  setTaskPriorityError(true)
+                  hasError = true
+                }
+                if (hasError) return
+
+                let idx = editingTaskIndex
+                let updatedTasks = [...tasks]
+                if (editingTaskIndex === null) {
+                  // Add new task
+                  updatedTasks.push(currentTask)
+                  idx = updatedTasks.length - 1
+                } else {
+                  // Edit existing task
+                  updatedTasks[editingTaskIndex] = currentTask
+                }
+                setTasks(updatedTasks)
+                setEditingTaskIndex(idx)
+                setCurrentTask({
+                  name: '',
+                  description: '',
+                  dueDate: '',
+                  priority: '',
+                  subtasks: []
+                })
+                setStep(4)
+              }}
             >
               Next
             </button>
           </div>
         </>
       )}
-
       {step === 4 && editingTaskIndex !== null && (
         <>
-          <h1 className="text-center text-black font-bold text-2xl mb-6">Add Subtasks</h1>
-          <h2 className="ml-4 text-black font-bold text-xl mb-1">
+          <h1 className="text-center text-black font-bold text-3xl mb-8">Add Subtasks</h1>
+          <h2 className="ml-4 text-black font-bold text-2xl mb-2">
             {tasks[editingTaskIndex]?.name || 'Unnamed Task'}
           </h2>
-          <div className="mb-4">
+          <div className="mb-6">
             {tasks[editingTaskIndex]?.subtasks.length === 0 ? (
-              <div className="w-full bg-gray-200 rounded-full px-4 py-2 mb-2 text-gray-500 text-center select-none">
+              <div className="w-full bg-gray-200 rounded-full px-6 py-4 mb-4 text-gray-500 text-center select-none text-lg">
                 No subtasks have been added yet
               </div>
             ) : (
-              <ul className="mb-2">
+              <ul className="mb-4">
                 {tasks[editingTaskIndex].subtasks.map((subtask, idx) => (
                   <li
                     key={idx}
-                    className="bg-gray-100 rounded px-4 py-2 mb-2 text-black flex flex-col"
+                    className="bg-gray-100 rounded px-6 py-4 mb-4 text-black flex flex-col text-lg"
                   >
                     <span className="font-semibold bg-[#1E3A8A] text-white rounded-t-lg px-2 py-1 text-center border-b-2 border-[#e0e0e9] ">
                       <span className="flex items-center w-full justify-center relative">
@@ -488,16 +565,28 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose }) => {
                         >
                           <HiTrash />
                         </button>
+                        {/* --- EDIT SUBTASK BUTTON --- */}
+                        <button
+                          className="absolute left-0 ml-2 px-1 py-0.5 bg-[#1e3a8a] text-white rounded border-1 border-[#1e3a8a] hover:text-red-500 text-s flex items-center !shadow-md !shadow-black/30"
+                          onClick={() => {
+                            setCurrentSubtask(subtask)
+                            setEditingSubtask({ taskIdx: editingTaskIndex, subIdx: idx })
+                            setStep(5)
+                          }}
+                          type="button"
+                        >
+                          <HiPencilAlt />
+                        </button>
                       </span>
                     </span>
-                    <div className="p-3 bg-white rounded-b-lg !shadow-lg !shadow-black/20">
-                      <span className="block text-m font-semibold mb-1">Description:</span>
-                      <span className="block px-1 text-xs text-gray-800">
+                    <div className="p-5 bg-white rounded-b-lg !shadow-lg !shadow-black/20">
+                      <span className="block text-lg font-semibold mb-1">Description:</span>
+                      <span className="block px-1 text-base text-gray-800">
                         {subtask.description}
                         <span className="block mt-2">
                           Priority:{' '}
                           <span
-                            className={`inline-block px-3 py-1 rounded-lg text-sm font-medium ${priorityColor[subtask.priority || ''] || ''}`}
+                            className={`inline-block px-4 py-2 rounded-lg text-base font-medium ${priorityColor[subtask.priority || ''] || ''}`}
                           >
                             {subtask.priority || 'None'}
                           </span>
@@ -509,9 +598,9 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose }) => {
                                 <img
                                   src={user.profilePicUrl}
                                   alt={user.userName}
-                                  className="w-8 h-8 rounded-full border-2 border-white shadow"
+                                  className="w-12 h-12 rounded-full border-2 border-white shadow"
                                 />
-                                <span className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover:block bg-black text-white text-xs rounded px-2 py-1 z-10 whitespace-nowrap">
+                                <span className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover:block bg-black text-white text-base rounded px-2 py-1 z-10 whitespace-nowrap">
                                   {user.userName}
                                 </span>
                               </div>
@@ -525,31 +614,41 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose }) => {
               </ul>
             )}
             <button
-              className="btn ml-4 border-2 border-[#1e3a8a] bg-[#1E3A8A] text-white rounded-lg px-3 py-1.5 font-semibold hover:bg-white hover:text-[#1e3a8a] shadow-none h-7 min-h-0"
-              onClick={() => setStep(5)}
+              className="btn ml-4 border-2 border-[#1e3a8a] bg-[#1E3A8A] text-white rounded-lg px-8 py-3 font-semibold hover:bg-white hover:text-[#1e3a8a] shadow-none text-lg"
+              onClick={() => {
+                setCurrentSubtask({
+                  name: '',
+                  description: '',
+                  dueDate: '',
+                  priority: '',
+                  users: []
+                })
+                setEditingSubtask(null) // <--- Reset to null for "Add Subtask"
+                setStep(5)
+              }}
               type="button"
             >
               ADD
             </button>
           </div>
-          <div className="flex justify-between items-center mt-8">
+          <div className="flex justify-between items-center mt-12">
             <button
-              className="text-blue-700 underline ml-5 text-xs bg-transparent border-none shadow-none"
+              className="text-blue-700 underline ml-5 text-lg bg-transparent border-none shadow-none"
               onClick={() => setStep(6)}
               type="button"
             >
               Skip
             </button>
-            <div className="flex gap-1">
+            <div className="flex gap-2">
               <button
-                className="btn text-white border-2 border-white bg-[#6D28D9] hover:bg-white hover:border-[#6D28D9] hover:text-[#1E3A8A] shadow-none"
+                className="btn text-white border-2 border-white bg-[#6D28D9] hover:bg-white hover:border-[#6D28D9] hover:text-[#1E3A8A] shadow-none text-lg px-8 py-3"
                 onClick={() => setStep(2)}
                 type="button"
               >
                 Back
               </button>
               <button
-                className="btn text-white border-2 border-white bg-[#1E3A8A] hover:bg-white hover:border-[#1E3A8A] hover:text-[#1E3A8A] shadow-none"
+                className="btn text-white border-2 border-white bg-[#1E3A8A] hover:bg-white hover:border-[#1E3A8A] hover:text-[#1E3A8A] shadow-none text-lg px-8 py-3"
                 onClick={() => setStep(2)}
                 type="button"
               >
@@ -559,10 +658,11 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose }) => {
           </div>
         </>
       )}
-
       {step === 5 && (
         <>
-          <h2 className="text-center text-black font-bold text-2xl mb-6">Add Subtask</h2>
+          <h2 className="text-center text-black font-bold text-3xl mb-8">
+            {editingSubtask ? 'Edit Subtask' : 'Add Subtask'}
+          </h2>
           <input
             placeholder="Subtask name"
             value={currentSubtask.name}
@@ -570,13 +670,13 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose }) => {
               setCurrentSubtask({ ...currentSubtask, name: e.target.value })
               if (subtaskNameError) setSubtaskNameError(false)
             }}
-            className={`input input-bordered w-full my-2 text-black placeholder-black ${subtaskNameError ? 'input-error placeholder-error' : ''}`}
+            className={`input input-bordered w-full my-4 text-black text-lg placeholder-black py-3 ${subtaskNameError ? 'input-error placeholder-error' : ''}`}
           />
           <textarea
             placeholder="Subtask description"
             value={currentSubtask.description}
             onChange={(e) => setCurrentSubtask({ ...currentSubtask, description: e.target.value })}
-            className="textarea textarea-bordered w-full my-2 text-black placeholder-black"
+            className="textarea textarea-bordered w-full my-4 text-black text-lg placeholder-black py-3"
           />
           <input
             type="datetime-local"
@@ -585,13 +685,13 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose }) => {
               setCurrentSubtask({ ...currentSubtask, dueDate: e.target.value })
               if (subtaskDueDateError) setSubtaskDueDateError(false)
             }}
-            className={`input input-bordered w-full my-2 text-black placeholder-black ${subtaskDueDateError ? 'input-error placeholder-error' : ''}`}
+            className={`input input-bordered w-full my-4 text-black text-lg placeholder-black py-3 ${subtaskDueDateError ? 'input-error placeholder-error' : ''}`}
             placeholder="Due date and time"
           />
           <select
             value={currentSubtask.priority || ''}
             onChange={(e) => setCurrentSubtask({ ...currentSubtask, priority: e.target.value })}
-            className={`select select-bordered w-full my-2 text-black placeholder-black ${subtaskPriorityError ? 'input-error placeholder-error' : ''}`}
+            className={`select select-bordered w-full my-4 text-black text-lg placeholder-black ${subtaskPriorityError ? 'input-error placeholder-error' : ''}`}
           >
             <option value="">Priority</option>
             <option value="Low">Low</option>
@@ -599,16 +699,16 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose }) => {
             <option value="High">High</option>
             <option value="Critical">Critical</option>
           </select>
-          <label className="block mb-1 font-semibold">Assign users</label>
+          <label className="block mb-2 font-semibold text-lg">Assign users</label>
           <input
             type="text"
-            className="input input-bordered w-full text-base bg-white text-black"
+            className="input input-bordered w-full text-lg bg-white text-black py-3"
             placeholder="Type to search users..."
             value={userSearch}
             onChange={(e) => setUserSearch(e.target.value)}
           />
           {userSearch && (
-            <div className="bg-white border rounded shadow w-full mt-1 max-h-48 overflow-auto z-40">
+            <div className="bg-white border rounded shadow w-full mt-2 max-h-56 overflow-auto z-40">
               {allUsers
                 .filter(
                   (u) =>
@@ -618,7 +718,7 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose }) => {
                 .map((user) => (
                   <div
                     key={user.id}
-                    className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
+                    className="px-4 py-3 hover:bg-gray-100 cursor-pointer text-lg"
                     onClick={() => {
                       setCurrentSubtask({
                         ...currentSubtask,
@@ -634,16 +734,21 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose }) => {
                 (u) =>
                   u.userName.toLowerCase().includes(userSearch.toLowerCase()) &&
                   !(currentSubtask.users || []).some((sel) => sel.id === u.id)
-              ).length === 0 && <div className="px-3 py-2 text-gray-400">No users found</div>}
+              ).length === 0 && (
+                <div className="px-4 py-3 text-gray-400 text-lg">No users found</div>
+              )}
             </div>
           )}
-          <div className="flex flex-wrap gap-2 mt-2 mb-2">
+          <div className="flex flex-wrap gap-3 mt-3 mb-3">
             {(currentSubtask.users || []).map((user) => (
-              <span key={user.id} className="badge badge-primary gap-2 flex items-center">
+              <span
+                key={user.id}
+                className="badge badge-primary gap-2 flex items-center text-lg px-4 py-2"
+              >
                 {user.userName}
                 <button
                   type="button"
-                  className="ml-1 text-white bg-red-500 rounded-full px-2"
+                  className="ml-2 text-white bg-red-500 rounded-full px-3 py-1"
                   onClick={() => {
                     setCurrentSubtask({
                       ...currentSubtask,
@@ -651,20 +756,20 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose }) => {
                     })
                   }}
                 >
-                  ×
+                  <HiX />
                 </button>
               </span>
             ))}
           </div>
-          <div className="flex justify-between mt-4">
+          <div className="flex justify-between mt-8">
             <button
-              className="btn text-white border-2 border-white bg-[#6D28D9] hover:bg-white hover:border-[#6D28D9] hover:text-[#1E3A8A] shadow-none"
+              className="btn text-white border-2 border-white bg-[#6D28D9] hover:bg-white hover:border-[#6D28D9] hover:text-[#1E3A8A] shadow-none text-lg px-8 py-3"
               onClick={back}
             >
               Back
             </button>
             <button
-              className="btn text-white border-2 border-white bg-[#1E3A8A] hover:bg-white hover:border-[#1E3A8A] hover:text-[#1E3A8A] shadow-none"
+              className="btn text-white border-2 border-white bg-[#1E3A8A] hover:bg-white hover:border-[#1E3A8A] hover:text-[#1E3A8A] shadow-none text-lg px-8 py-3"
               onClick={handleSubtaskNext}
             >
               Next
@@ -672,15 +777,14 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose }) => {
           </div>
         </>
       )}
-
       {step === 6 && (
         <>
-          <h1 className="text-center text-black font-bold text-3xl mb-6">Review Project</h1>
-          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-            <div className="mb-4 flex flex-col">
+          <h1 className="text-center text-black font-bold text-4xl mb-10">Review Project</h1>
+          <div className="bg-white rounded-lg shadow-md p-10 mb-10">
+            <div className="mb-6 flex flex-col">
               <div className="flex flex-col items-start">
                 <span
-                  className="text-black ml-2 text-3xl font-bold"
+                  className="text-black ml-2 text-4xl font-bold"
                   style={{
                     display: 'inline-block',
                     width: `calc(${projectName.length}ch * 1.15)`,
@@ -701,16 +805,16 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose }) => {
                   }}
                 />
               </div>
-              <span className="mt-1 ml-4  text-black">
+              <span className="mt-2 ml-4 text-black text-2xl">
                 Due: <span className="font-semibold">{projectDueDate}</span>
               </span>
             </div>
-            <div className="flex flex-col mt-5">
-              <span className="font-semibold text-center bg-[#1e3a8a] border-b-2 border-gray-300 rounded-t-lg py-1 text-white">
+            <div className="flex flex-col mt-8">
+              <span className="font-semibold text-center bg-[#1e3a8a] border-b-2 border-gray-300 rounded-t-lg py-2 text-white text-2xl">
                 Tasks
               </span>
               {tasks.length === 0 ? (
-                <div className="w-full bg-gray-200 rounded-full px-4 py-2 mt-2 text-gray-500 text-center select-none">
+                <div className="w-full bg-gray-200 rounded-full px-6 py-4 mt-4 text-gray-500 text-center select-none text-lg">
                   No tasks added
                 </div>
               ) : (
@@ -718,68 +822,68 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose }) => {
                   {tasks.map((task, i) => (
                     <li
                       key={i}
-                      className="rounded-b-lg px-4 py-3 text-black !shadow-lg !shadow-black/20 bg-white mb-2"
+                      className="rounded-b-lg px-6 py-5 text-black !shadow-lg !shadow-black/20 bg-white mb-4"
                     >
                       <div className="flex flex-col md:flex-row md:items-start md:justify-between">
                         <div className="flex flex-col flex-1">
-                          <span className="font-bold text-xl text-[#1e3a8a]">{task.name}</span>
-                          <span className="text-l text-black mt-2 font-semibold">
+                          <span className="font-bold text-2xl text-[#1e3a8a]">{task.name}</span>
+                          <span className="text-xl text-black mt-3 font-semibold">
                             Due:{' '}
-                            <span className="text-black text-s font-light ">{task.dueDate}</span>
+                            <span className="text-black text-lg font-light ">{task.dueDate}</span>
                           </span>
-                          <span className="text-l font-semibold mt-2">
+                          <span className="text-xl font-semibold mt-3">
                             Priority:{' '}
                             <span
-                              className={`inline-block px-4 py-2 rounded-lg text-base font-medium ${priorityColor[task.priority] || ''}`}
+                              className={`inline-block px-5 py-2 rounded-lg text-lg font-medium ${priorityColor[task.priority] || ''}`}
                             >
                               {task.priority || 'None'}
                             </span>
                           </span>
                         </div>
-                        <div className="mt-2 md:mt-0 md:ml-6 flex-1">
-                          <span className="font-semibold text-l">Description:</span>
-                          <span className="ml-2 text-xs text-black">{task.description}</span>
+                        <div className="mt-3 md:mt-0 md:ml-8 flex-1">
+                          <span className="font-semibold text-xl">Description:</span>
+                          <span className="ml-3 text-lg text-black">{task.description}</span>
                         </div>
                       </div>
-                      <div className="mt-5 ">
-                        <span className="font-semibold text-center px-33 bg-[#6D28D9] border-b-2 border-gray-300 rounded-t-lg py-1 text-white">
+                      <div className="mt-8 ">
+                        <span className="font-semibold text-center px-33 bg-[#6D28D9] border-b-2 border-gray-300 rounded-t-lg py-2 text-white text-xl">
                           Subtasks
                         </span>
                         {task.subtasks.length === 0 ? (
-                          <span className="block ml-2 italic text-center text-xs text-gray-500 mt-1">
+                          <span className="block ml-2 italic text-center text-lg text-gray-500 mt-2">
                             No subtasks
                           </span>
                         ) : (
-                          <ul className=" rounded-b-lg px-4 py-3 text-black !shadow-lg !shadow-black/20 bg-white mb-2">
+                          <ul className="rounded-b-lg px-6 py-4 text-black !shadow-lg !shadow-black/20 bg-white mb-4">
                             {task.subtasks.map((sub, j) => (
                               <li
                                 key={j}
-                                className="bg-gray-50 rounded px-2 py-1 mb-1 flex flex-col"
+                                className="bg-gray-50 rounded px-4 py-3 mb-2 flex flex-col"
                               >
-                                <span className="font-semibold text-l text-[#6D28D9]">
+                                <span className="font-semibold text-xl text-[#6D28D9]">
                                   {sub.name}
                                 </span>
-                                <span className="flex flex-col text-xs">
-                                  <span className="font-semibold mt-2">Description:</span>
+                                <span className="flex flex-col text-lg">
+                                  <span className="font-semibold mt-3">Description:</span>
                                   {sub.description}
-                                  <span className="mt-1">
+                                  <span className="mt-2">
                                     Priority:{' '}
                                     <span
-                                      className={`inline-block px-3 py-1 rounded-lg text-sm font-medium ${priorityColor[sub.priority || ''] || ''}`}
+                                      className={`inline-block px-4 py-2 rounded-lg text-lg font-medium ${priorityColor[sub.priority || ''] || ''}`}
                                     >
                                       {sub.priority || 'None'}
                                     </span>
                                   </span>
                                   {sub.users && sub.users.length > 0 && (
-                                    <div className="flex gap-2 mt-1">
+                                    <div className="flex gap-3 mt-2">
                                       {sub.users.map((user) => (
                                         <div key={user.id} className="relative group">
                                           <img
                                             src={user.profilePicUrl}
                                             alt={user.userName}
-                                            className="w-8 h-8 rounded-full border-2 border-white shadow"
+                                            className="w-12 h-12 rounded-full border-2 border-white shadow"
                                           />
-                                          <span className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover:block bg-black text-white text-xs rounded px-2 py-1 z-10 whitespace-nowrap">
+                                          <span className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover:block bg-black text-white text-base rounded px-2 py-1 z-10 whitespace-nowrap">
                                             {user.userName}
                                           </span>
                                         </div>
@@ -798,15 +902,15 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose }) => {
               )}
             </div>
           </div>
-          <div className="flex justify-between mt-4">
+          <div className="flex justify-between mt-8">
             <button
-              className="btn text-white border-2 border-white bg-[#6D28D9] hover:bg-white hover:border-[#6D28D9] hover:text-[#1E3A8A] shadow-none"
+              className="btn text-white border-2 border-white bg-[#6D28D9] hover:bg-white hover:border-[#6D28D9] hover:text-[#1E3A8A] shadow-none text-xl px-8 py-3"
               onClick={() => setStep(2)}
             >
               Back
             </button>
             <button
-              className="btn text-white border-2 border-white bg-[#059669] hover:bg-white hover:border-[#059669] hover:text-[#059669] shadow-none"
+              className="btn text-white border-2 border-white bg-[#059669] hover:bg-white hover:border-[#059669] hover:text-[#059669] shadow-none text-xl px-8 py-3"
               onClick={handleSubmit}
             >
               Finish
