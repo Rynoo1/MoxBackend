@@ -47,6 +47,13 @@ public class LoginDto
     // public bool RememberMe { get; set; } = true;
 }
 
+public class UpdateUserProfileDto
+{
+    public string? UserName { get; set; } = string.Empty;
+    public string? Email { get; set; } = string.Empty;
+    public string? ProfilePicture { get; set; } = string.Empty;
+}
+
 public class TwoFactorDto
 {
     public string UserId { get; set; } = string.Empty;

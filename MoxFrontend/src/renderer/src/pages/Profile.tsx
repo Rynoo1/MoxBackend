@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react'
 import 'react-day-picker/dist/style.css'
 import '../styles/dashboard.css'
 import { useAuth } from './useAuth'
+import { storage } from '../firebase'
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 
 interface User {
   Username: string
@@ -21,6 +23,36 @@ const ProfilePage: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
   const [edit, setEdit] = useState(false)
+  const [uploading, setUploading] = useState(false)
+
+  const handleProfilePicChange = async (e: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
+    const file = e.target.files ? e.target.files[0] : null
+    // if (!files || files.length === 0) return
+    // const file = files[0]
+    setUploading(true)
+    try {
+      if (!file) {
+        setUploading(false)
+        return
+      }
+      const storageRef = ref(storage, `profile-pics/${user?.Username}_${file.name}`)
+      await uploadBytes(storageRef, file)
+      const url = await getDownloadURL(storageRef)
+
+      setUser((prev) => (prev ? { ...prev, ProfilePic: url } : prev))
+      await fetch('http://localhost:5183/api/user/updateProfilePic', {
+        method: 'PUT',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ profilePic: url })
+      })
+    } catch (error) {
+      alert('Failed to upload profile picture')
+    }
+    setUploading(false)
+  }
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -75,13 +107,13 @@ const ProfilePage: React.FC = () => {
   }, [isAuthenticated, getAuthHeaders, logout])
 
   //TODO: HANDLE SAVE
-  const handleSave = async() => {
+  const handleSave = async () => {
     console.log('Saving user profile:', user)
     setEdit(false)
   }
 
   //TODO: HANDLE CANCEL
-  const handleCancel = () => {
+  const handleCancel = (): void => {
     setEdit(false)
   }
 
@@ -273,7 +305,14 @@ const ProfilePage: React.FC = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-100 mb-10 mt-5">
             <p className="text-4xl font-bold text-blue-600">Profile Picture</p>
-            <input type="file" className="file-input file-input-ghost" />
+            <input
+              type="file"
+              accept="image/*"
+              className="file-input file-input-ghost"
+              onChange={handleProfilePicChange}
+              disabled={uploading}
+            />
+            {uploading && <span>Uploading...</span>}
           </div>
 
           <div className="divider divider-neutral"></div>

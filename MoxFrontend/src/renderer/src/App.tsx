@@ -12,6 +12,8 @@ import Sidebar from './components/Sidebar'
 import './styles/main.css'
 import TaskDetails from './pages/TaskDetails'
 import ProfilePage from './pages/Profile'
+import UserManagement from './pages/UserManagement'
+import { AuthProvider } from './pages/AuthContext'
 
 const AppContent = () => {
   const location = useLocation()
@@ -45,17 +47,20 @@ const AppContent = () => {
           <Route path="/edit-project" element={<EditProject />} />
           <Route path="/task/:taskId" element={<TaskDetails />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/userman" element={<UserManagement />} />
         </Routes>
       </div>
     </div>
   )
 }
 
-function App() {
+function App(): React.ReactElement {
   return (
-    <Router>
-      <AppContent />
-    </Router>
+    <AuthProvider>
+      <Router>
+        <AppContent />
+      </Router>
+    </AuthProvider>
   )
 }
 

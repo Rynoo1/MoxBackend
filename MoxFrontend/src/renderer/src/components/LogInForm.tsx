@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 // Define interfaces for our component
 interface LoginFormValues {
@@ -38,6 +39,7 @@ const LoginForm: React.FC<LoginPageProps> = ({ onLoginSuccess, onSetError }) => 
     code: '',
     userId: ''
   })
+  const navigate = useNavigate()
 
   // const [registerValues, setRegisterValues] = useState<RegisterFormValues>({
   //   email: '',
@@ -114,20 +116,19 @@ const LoginForm: React.FC<LoginPageProps> = ({ onLoginSuccess, onSetError }) => 
 
       const data = await response.json()
 
-      if (data.twoFactorEnabled) {
-        localStorage.setItem('userEmail', data.email)
+      if (data.twoFactorRequired) {
+        localStorage.setItem('userEmail', loginValues.email) // Use loginValues.email instead
         localStorage.setItem('userId', data.userId)
-        localStorage.setItem('twofac', JSON.stringify(true))
-        if (data.twoFactorRequired) {
-          setTwoFactorValues((prev) => ({ ...prev, userId: data.userId }))
-          setShowTwoFactor(true)
-          alert('2FA code was sent to your email!')
-          return
-        }
+        setTwoFactorValues((prev) => ({ ...prev, userId: data.userId }))
+        setShowTwoFactor(true)
+        alert('2FA code was sent to your email!')
+        return
       }
 
-      if (data.token) {
-        localStorage.setItem('jwt', data.token)
+      // Handle successful login with token
+      if (data.Token || data.token) {
+        // Handle both cases
+        localStorage.setItem('token', data.Token || data.token)
         localStorage.setItem('userEmail', loginValues.email)
         alert('Login successful!')
         console.log(data)
@@ -214,7 +215,7 @@ const LoginForm: React.FC<LoginPageProps> = ({ onLoginSuccess, onSetError }) => 
         },
         body: JSON.stringify({
           userId: TwoFactorValues.userId,
-          code: TwoFactorValues.code
+          TwoFactorCode: TwoFactorValues.code
         })
       })
 
@@ -226,8 +227,9 @@ const LoginForm: React.FC<LoginPageProps> = ({ onLoginSuccess, onSetError }) => 
       const data = await response.json()
 
       if (data.token) {
-        localStorage.setItem('jwt', data.token)
+        localStorage.setItem('token', data.token)
         alert('Login Successful!')
+        navigate('/')
         console.log(data)
 
         if (onLoginSuccess && loginValues.username) {

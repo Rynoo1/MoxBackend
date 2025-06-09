@@ -147,7 +147,10 @@ namespace MoxBackEnd.Controllers
                 });
             }
 
-            var token = _tokenservices.GenerateToken(user.Id, user.Email);
+            var token = _tokenservices.GenerateToken(
+                user.Id,
+                user.Email ?? string.Empty,
+                user.UserName ?? string.Empty);
             return Ok(new { Token = token });
 
             // var result = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, lockoutOnFailure: false);
@@ -183,14 +186,17 @@ namespace MoxBackEnd.Controllers
             }
 
             var isValid = await _userManager.VerifyTwoFactorTokenAsync(
-                user, TokenOptions.DefaultAuthenticatorProvider, dto.TwoFactorCode);
+                user, TokenOptions.DefaultEmailProvider, dto.TwoFactorCode);
 
             if (!isValid)
             {
                 return Unauthorized("Invalid 2FA code");
             }
 
-            var token = _tokenservices.GenerateToken(user.Id, user.Email);
+            var token = _tokenservices.GenerateToken(
+                user.Id,
+                user.Email ?? string.Empty,
+                user.UserName ?? string.Empty);
             return Ok(new { Token = token });
 
             // var result = await _signInManager.TwoFactorAuthenticatorSignInAsync(dto.TwoFactorCode, isPersistent: false, rememberClient: false);
@@ -264,6 +270,39 @@ namespace MoxBackEnd.Controllers
             }
         }
 
+        [Authorize]
+        [HttpPut("profile")]
+        public async Task<IActionResult> UpdateProfile([FromBody] UpdateUserProfileDto dto)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+                return NotFound(new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = "User not found"
+                });
+
+            user.UserName = dto.UserName ?? user.UserName;
+            user.Email = dto.Email ?? user.Email;
+            user.ProfilePicture = dto.ProfilePicture ?? user.ProfilePicture;
+
+            var result = await _userManager.UpdateAsync(user);
+            if (!result.Succeeded)
+                return BadRequest(new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = "Failed to update profile",
+                    Data = result.Errors.Select(e => e.Description).ToList()
+                });
+            
+            return Ok(new { success = true, message = "Profile updated successfully" });
+        }
+
+
         //Get with ID
         [HttpGet("{id}")]
         public async Task<ActionResult<UserDTO>> GetUserWithId(string id)
@@ -323,7 +362,10 @@ namespace MoxBackEnd.Controllers
                 return NotFound("User not found");
             }
 
-            var token = _tokenservices.GenerateToken(user.Id, user.Email);
+            var token = _tokenservices.GenerateToken(
+                user.Id,
+                user.Email ?? string.Empty,
+                user.UserName ?? string.Empty);
             return Ok(new { Token = token });
         }
 
@@ -362,8 +404,11 @@ namespace MoxBackEnd.Controllers
             if (result.Succeeded)
             {
                 var user = await _userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
-                var token = _tokenservices.GenerateToken(user.Id, user.Email);
 
+                var token = _tokenservices.GenerateToken(
+                    user.Id,
+                    user.Email ?? string.Empty,
+                    user.UserName ?? string.Empty);
                 return Ok(new { token });
             }
 
@@ -391,7 +436,10 @@ namespace MoxBackEnd.Controllers
                         await _userManager.AddLoginAsync(user, info);
                         await _signInManager.SignInAsync(user, isPersistent: false);
 
-                        var token = _tokenservices.GenerateToken(user.Id, user.Email);
+                        var token = _tokenservices.GenerateToken(
+                            user.Id,
+                            user.Email ?? string.Empty,
+                            user.UserName ?? string.Empty);
                         return Ok(new { token });
                     }
                 }
@@ -400,7 +448,10 @@ namespace MoxBackEnd.Controllers
                     await _userManager.AddLoginAsync(user, info);
                     await _signInManager.SignInAsync(user, isPersistent: false);
 
-                    var token = _tokenservices.GenerateToken(user.Id, user.Email);
+                    var token = _tokenservices.GenerateToken(
+                        user.Id,
+                        user.Email ?? string.Empty,
+                        user.UserName ?? string.Empty);
                     return Redirect("redirect");
                 }
             }

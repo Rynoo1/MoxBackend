@@ -59,6 +59,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isDarkMode, toggleDarkMode }) => {
             Profile
           </Link>
         </li>
+        <li>
+          <Link to="/userman" className="nav-link">
+            <TimelineIcon className="mr-2 h-5 w-5" />
+            User Management
+          </Link>
+        </li>
         {/* Light/Dark Mode Toggle */}
         <li className="nav-link w-full text-left flex items-center space-x-2">
           <button
