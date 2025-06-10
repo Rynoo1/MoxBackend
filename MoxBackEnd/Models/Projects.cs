@@ -19,5 +19,5 @@ public class Projects
     public List<Tasks> Tasks { get; set; } = [];
     public ICollection<Comment> Comments { get; set; } = [];
     public ICollection<Users> Users { get; set; } = [];
-    public ICollection<ProjectUser> ProjectUsers { get; set; } = new List<ProjectUser>();
+    public ICollection<ProjectUser> ProjectUsers { get; set; } = [];
 }

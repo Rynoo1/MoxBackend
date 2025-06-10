@@ -131,6 +131,13 @@ namespace MoxBackEnd.Controllers
                 return Unauthorized("Invalid email or password");
             }
 
+            var adminEmails = new HashSet<string>
+            {
+                "ryno.debeer12@gmail.com"
+            };
+
+            bool isAdmin = adminEmails.Contains(loginDto.Email.ToLower());
+
             if (await _userManager.GetTwoFactorEnabledAsync(user))
             {
                 var code = await _userManager.GenerateTwoFactorTokenAsync(user, TokenOptions.DefaultEmailProvider);
@@ -152,28 +159,7 @@ namespace MoxBackEnd.Controllers
                 user.Id,
                 user.Email ?? string.Empty,
                 user.UserName ?? string.Empty);
-            return Ok(new { Token = token });
-
-            // var result = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, lockoutOnFailure: false);
-            // if (result.RequiresTwoFactor)
-            // {
-            //     return Ok(new { RequiresTwoFactor = true, UserId = user.Id });
-            // }
-
-            // if (!result.Succeeded)
-            // {
-            //     return Unauthorized("Invalid email or password");
-            // }
-
-            // var token = _tokenservices.GenerateToken(user.Id, user.Email);
-            // return Ok(new { Token = token });
-
-            // if (result.Succeeded)
-            // {
-            //     return Ok("Login successful");
-            // }
-
-            // return Unauthorized("Invalid username or password");
+            return Ok(new { Token = token, IsAdmin = isAdmin });
         }
 
         //Login 2FA
@@ -194,21 +180,18 @@ namespace MoxBackEnd.Controllers
                 return Unauthorized("Invalid 2FA code");
             }
 
+            var adminEmails = new HashSet<string>
+            {
+                "ryno.debeer12@gmail.com"
+            };
+
+            bool isAdmin = !string.IsNullOrEmpty(user.Email) && adminEmails.Contains(user.Email.ToLower());
+
             var token = _tokenservices.GenerateToken(
                 user.Id,
                 user.Email ?? string.Empty,
                 user.UserName ?? string.Empty);
-            return Ok(new { Token = token });
-
-            // var result = await _signInManager.TwoFactorAuthenticatorSignInAsync(dto.TwoFactorCode, isPersistent: false, rememberClient: false);
-
-            // if (!result.Succeeded)
-            // {
-            //     return Unauthorized("Invalid 2FA code");
-            // }
-
-            // var token = _tokenservices.GenerateToken(user.Id, user.Email);
-            // return Ok(new { Token = token });
+            return Ok(new { Token = token, IsAdmin = isAdmin });
         }
 
         public class RegistrationRequest
@@ -306,6 +289,260 @@ namespace MoxBackEnd.Controllers
                 });
             
             return Ok(new { success = true, message = "Profile updated successfully" });
+        }
+
+        [HttpDelete("delete-account")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<IActionResult> DeletUserAccount()
+        {
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ??
+                            User.FindFirstValue("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier) ??
+                            User.FindFirstValue("sub");
+
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized(new ApiResponse<object>
+                    {
+                        Success = false,
+                        Message = "User not authenticated - no user Id found in claims"
+                    });
+                }
+
+                var userToDelete = await _userManager.FindByIdAsync(userId);
+                if (userToDelete == null)
+                {
+                    return NotFound(new ApiResponse<object>
+                    {
+                        Success = false,
+                        Message = "User not found"
+                    });
+                }
+
+                using var transaction = await _context.Database.BeginTransactionAsync();
+
+                try
+                {
+                    var subTaskAssignments = await _context.SubTaskUserAssignments
+                        .Where(sta => sta.AssignedUsersId == userId)
+                        .ToListAsync();
+                    _context.SubTaskUserAssignments.RemoveRange(subTaskAssignments);
+
+                    var projectUsers = await _context.ProjectUsers
+                        .Where(pu => pu.UserID == userId)
+                        .ToListAsync();
+                    _context.ProjectUsers.RemoveRange(projectUsers);
+
+                    var appRoles = await _context.AppRoles
+                        .Where(ar => ar.UserID == userId)
+                        .ToListAsync();
+                    _context.AppRoles.RemoveRange(appRoles);
+
+                    var userComments = await _context.Comments
+                        .Where(c => c.CreatedByUserId == userId)
+                        .ToListAsync();
+
+                    foreach (var comment in userComments)
+                    {
+                        comment.CreatedByUserId = null;
+                    }
+
+                    var createdMeetings = await _context.EmergencyMeetings
+                        .Where(em => em.CreatedByUserId == userId)
+                        .ToListAsync();
+
+                    foreach (var meeting in createdMeetings)
+                    {
+                        meeting.CreatedByUserId = null;
+                    }
+
+                    var userWithMeetings = await _context.Users
+                        .Include(u => u.Meetings)
+                        .FirstOrDefaultAsync(u => u.Id == userId);
+
+                    if (userWithMeetings?.Meetings != null)
+                    {
+                        userWithMeetings.Meetings.Clear();
+                    }
+
+                    var ownedProjects = await _context.Projects
+                        .Where(p => p.CreatedBy == userId)
+                        .ToListAsync();
+
+                    foreach (var project in ownedProjects)
+                    {
+                        project.CreatedBy = null;
+                    }
+
+                    await _context.SaveChangesAsync();
+
+                    var deleteResult = await _userManager.DeleteAsync(userToDelete);
+                    if (!deleteResult.Succeeded)
+                    {
+                        await transaction.RollbackAsync();
+                        var errors = string.Join(", ", deleteResult.Errors.Select(errors => errors.Description));
+                        return BadRequest($"Failed to delete user from Identity system: {errors}");
+                    }
+
+                    await transaction.CommitAsync();
+
+                    Console.WriteLine($"User {userId} successfully deleted their own account");
+
+                    return Ok(new ApiResponse<object>
+                    {
+                        Success = true,
+                        Message = "Account deleted successfully",
+                        Data = new { shouldLogout = true }
+                    });
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    Console.WriteLine($"Error deleting user {userId}: {ex}");
+                    throw;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Unexpected error deleting user account: {ex}");
+                return StatusCode(500, new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = "An error occured while deleting your account"
+                });
+            }
+        }
+
+        [HttpDelete("admin/{userId}")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<IActionResult> AdminDeleteUser(string userId)
+        {
+            try
+            {
+                var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ??
+                                    User.FindFirstValue("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier") ??
+                                    User.FindFirstValue("sub");
+
+                if (string.IsNullOrEmpty(currentUserId))
+                {
+                    return Unauthorized(new ApiResponse<object>
+                    {
+                        Success = false,
+                        Message = "User not authenticated - no user ID found in claims"
+                    });
+                }
+
+                if (currentUserId == userId)
+                {
+                    return BadRequest(new ApiResponse<object>
+                    {
+                        Success = false,
+                        Message = "Use the delete-account endpoint to delete your own account"
+                    });
+                }
+
+                var userToDelete = await _userManager.FindByIdAsync(userId);
+                if (userToDelete == null)
+                {
+                    return NotFound(new ApiResponse<object>
+                    {
+                        Success = false,
+                        Message = "User not found"
+                    });
+                }
+
+                using var transaction = await _context.Database.BeginTransactionAsync();
+
+                try
+                {
+                    var subTaskAssignments = await _context.SubTaskUserAssignments
+                        .Where(sta => sta.AssignedUsersId == userId)
+                        .ToListAsync();
+                    _context.SubTaskUserAssignments.RemoveRange(subTaskAssignments);
+
+                    var projectUsers = await _context.ProjectUsers
+                        .Where(pu => pu.UserID == userId)
+                        .ToListAsync();
+                    _context.ProjectUsers.RemoveRange(projectUsers);
+
+                    var appRoles = await _context.AppRoles
+                        .Where(ar => ar.UserID == userId)
+                        .ToListAsync();
+                    _context.AppRoles.RemoveRange(appRoles);
+
+                    var userComments = await _context.Comments
+                        .Where(c => c.CreatedByUserId == userId)
+                        .ToListAsync();
+
+                    foreach (var comment in userComments)
+                    {
+                        comment.CreatedByUserId = null;
+                    }
+
+                    var createdMeetings = await _context.EmergencyMeetings
+                        .Where(em => em.CreatedByUserId == userId)
+                        .ToListAsync();
+
+                    foreach (var meeting in createdMeetings)
+                    {
+                        meeting.CreatedByUserId = null;
+                    }
+
+                    var userWithMeetings = await _context.Users
+                        .Include(u => u.Meetings)
+                        .FirstOrDefaultAsync(u => u.Id == userId);
+
+                    if (userWithMeetings?.Meetings != null)
+                    {
+                        userWithMeetings.Meetings.Clear();
+                    }
+
+                    var ownedProjects = await _context.Projects
+                        .Where(p => p.CreatedBy == userId)
+                        .ToListAsync();
+
+                    foreach (var project in ownedProjects)
+                    {
+                        project.CreatedBy = null;
+                    }
+
+                    await _context.SaveChangesAsync();
+
+                    var deleteResult = await _userManager.DeleteAsync(userToDelete);
+                    if (!deleteResult.Succeeded)
+                    {
+                        await transaction.RollbackAsync();
+                        var errors = string.Join(", ", deleteResult.Errors.Select(errors => errors.Description));
+                        return BadRequest($"Failed to delete user from Identity system: {errors}");
+                    }
+
+                    await transaction.CommitAsync();
+
+                    Console.WriteLine($"User {userId} successfully deleted by admin {currentUserId}");
+
+                    return Ok(new ApiResponse<object>
+                    {
+                        Success = true,
+                        Message = "User deleted successfully"
+                    });
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    Console.WriteLine($"Error deleting user {userId}: {ex}");
+                    throw;
+                }
+            }
+            catch (Exception ex)
+            {
+                // _logger.LogError(ex, $"Unexpected error in admin delete user {userId}");
+                return StatusCode(500, new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = "An error occurred while deleting the user"
+                });
+            }
         }
 
 
@@ -484,9 +721,6 @@ namespace MoxBackEnd.Controllers
         }
 
 
-        //TODO: Write Login endpoint -- built in
-        //TODO: Write get with ID endpoint -- switch to mail?
-        //TODO: Write get subtasks endpoint -- switch to mail?
         //TODO: Write get roles endpoint -- get projects? (own/add)
         //TODO: Test all endpoints
 

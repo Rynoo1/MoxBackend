@@ -117,7 +117,7 @@ const LoginForm: React.FC<LoginPageProps> = ({ onLoginSuccess, onSetError }) => 
       const data = await response.json()
 
       if (data.twoFactorRequired) {
-        localStorage.setItem('userEmail', loginValues.email) // Use loginValues.email instead
+        localStorage.setItem('userEmail', loginValues.email)
         localStorage.setItem('userId', data.userId)
         setTwoFactorValues((prev) => ({ ...prev, userId: data.userId }))
         setShowTwoFactor(true)
@@ -133,6 +133,15 @@ const LoginForm: React.FC<LoginPageProps> = ({ onLoginSuccess, onSetError }) => 
         localStorage.setItem('userId', data.userId || '')
         localStorage.setItem('userRole', data.role || 'basic')
         alert('Login successful!')
+
+        localStorage.setItem('isAdmin', data.IsAdmin?.toString() || 'false')
+
+        if (data.IsAdmin) {
+          alert('Welcome Admin!')
+        } else {
+          alert('Login successful!')
+        }
+
         console.log(data)
         if (onLoginSuccess && loginValues.username) {
           onLoginSuccess(loginValues.username)
@@ -234,6 +243,17 @@ const LoginForm: React.FC<LoginPageProps> = ({ onLoginSuccess, onSetError }) => 
         localStorage.setItem('userId', data.userId || '')
         localStorage.setItem('userRole', data.role || 'basic')
         alert('Login Successful!')
+
+        localStorage.setItem('token', data.Token || data.token)
+
+        localStorage.setItem('isAdmin', data.IsAdmin?.toString() || 'false')
+
+        if (data.IsAdmin) {
+          alert('Welcome Admin!')
+        } else {
+          alert('Login successful!')
+        }
+
         navigate('/')
         console.log(data)
 
