@@ -163,10 +163,11 @@ const Analytics: React.FC<AnalyticsProps> = ({ userRole, userId }) => {
     // eslint-disable-next-line
   }, [userRole, userId])
 
-  // Calculate overdue tasks across all projects
+  // --- Analytics Calculations ---
+
+  // Overdue Tasks
   const overdueTasks: { task: string; dueDate: string }[] = []
   const now = new Date()
-
   for (const project of projects) {
     if (!project.tasks) continue
     for (const task of project.tasks) {
@@ -188,9 +189,8 @@ const Analytics: React.FC<AnalyticsProps> = ({ userRole, userId }) => {
     }
   }
 
-  // Calculate user workload across all projects
+  // User Workload
   const userWorkloadMap: Record<string, number> = {}
-
   for (const project of projects) {
     if (!project.tasks) continue
     for (const task of project.tasks) {
@@ -206,19 +206,16 @@ const Analytics: React.FC<AnalyticsProps> = ({ userRole, userId }) => {
       }
     }
   }
-
   const userWorkload = Object.entries(userWorkloadMap).map(([user, taskCount]) => ({
     user,
     taskCount
   }))
 
-  // Calculate task status distribution across all projects
+  // Task Status Distribution
   const statusCountMap: Record<string, number> = {}
-
   for (const project of projects) {
     if (!project.tasks) continue
     for (const task of project.tasks) {
-      // You can customize status grouping here
       let statusLabel = 'Unknown'
       if (typeof task.status === 'number') {
         statusLabel = task.status >= 100 ? 'Completed' : 'In Progress'
@@ -228,33 +225,32 @@ const Analytics: React.FC<AnalyticsProps> = ({ userRole, userId }) => {
       statusCountMap[statusLabel] = (statusCountMap[statusLabel] || 0) + 1
     }
   }
-
   const statusData = Object.entries(statusCountMap).map(([status, count]) => ({
     status,
     count
   }))
 
-  // Extract and map all task priorities
+  // Task Priorities
   const allTaskPriorities: string[] = []
   for (const project of projects) {
     if (!project.tasks) continue
     for (const task of project.tasks) {
-      if (typeof (task as any).priority === 'number') {
-        const label = priorityLabels[(task as any).priority] ?? 'Unknown'
+      if (typeof task.priority === 'number') {
+        const label = priorityLabels[task.priority] ?? 'Unknown'
         allTaskPriorities.push(label)
       }
     }
   }
 
-  // Extract and map all subtask priorities
+  // Subtask Priorities
   const allSubTaskPriorities: string[] = []
   for (const project of projects) {
     if (!project.tasks) continue
     for (const task of project.tasks) {
       if (Array.isArray(task.subTasks)) {
         for (const subTask of task.subTasks) {
-          if (typeof (subTask as any).priority === 'number') {
-            const label = priorityLabels[(subTask as any).priority] ?? 'Unknown'
+          if (typeof subTask.priority === 'number') {
+            const label = priorityLabels[subTask.priority] ?? 'Unknown'
             allSubTaskPriorities.push(label)
           }
         }
@@ -262,13 +258,11 @@ const Analytics: React.FC<AnalyticsProps> = ({ userRole, userId }) => {
     }
   }
 
-  // Collect all completed tasks and subtasks with their completion dates
+  // Tasks Completed Over Time
   const completedByDate: Record<string, number> = {}
-
   for (const project of projects) {
     if (!project.tasks) continue
     for (const task of project.tasks) {
-      // Task is complete if status is 100 or above
       if (
         typeof task.status === 'number' &&
         task.status >= 100 &&
@@ -287,8 +281,6 @@ const Analytics: React.FC<AnalyticsProps> = ({ userRole, userId }) => {
       }
     }
   }
-
-  // Ensure correct format for TasksOverTimeChart: completed is a number
   const tasksOverTimeData = Object.entries(completedByDate)
     .map(([date, completed]) => ({
       date,
@@ -296,7 +288,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ userRole, userId }) => {
     }))
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
 
-  // Log the data that will be passed to TasksOverTimeChart
+  // Debug logs
   useEffect(() => {
     console.log('TasksOverTimeChart data:', tasksOverTimeData)
     console.log('TaskStatusChart data:', statusData)
@@ -323,39 +315,47 @@ const Analytics: React.FC<AnalyticsProps> = ({ userRole, userId }) => {
   }
 
   return (
-    <div className="projects-page min-h-screen overflow-y-auto mt-20 bg-red-500 px-4 pb-8">
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-        <div className="w-full">
-          <TaskStatusChart data={statusData} />
-        </div>
-        <div className="w-full">
-          <TasksOverTimeChart data={tasksOverTimeData} />
-        </div>
-        <div className="w-full">
-          <PriorityBreakdownChart
-            taskPriorities={allTaskPriorities}
-            subTaskPriorities={allSubTaskPriorities}
-          />
-        </div>
-        {userRole === 'admin' && (
+    <div className="projects-page min-h-screen overflow-y-auto mt-20 px-8 pr-20 pb-8">
+      <h1 className="text-3xl font-bold text-center mb-8 text-blue-900">Analytics Dashboard</h1>
+      {userRole === 'admin' ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+          <div className="w-full">
+            <TaskStatusChart data={statusData} />
+            <div className="w-full">
+              <OverdueTasksChart
+                overdueTasks={overdueTasks}
+                allTasks={projects.flatMap((project) =>
+                  (project.tasks || []).map((task: any) => ({
+                    ...task,
+                    projectName: (project as any).projectName || project.title || 'Unknown Project'
+                  }))
+                )}
+              />
+            </div>
+          </div>
+          <div className="w-full">
+            <PriorityBreakdownChart
+              taskPriorities={allTaskPriorities}
+              subTaskPriorities={allSubTaskPriorities}
+            />
+          </div>
           <div className="w-full">
             <UserWorkloadChart data={userWorkload.sort((a, b) => b.taskCount - a.taskCount)} />
           </div>
-        )}
-        {userRole === 'admin' && (
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="w-full">
-            <OverdueTasksChart
-              overdueTasks={overdueTasks}
-              allTasks={projects.flatMap((project) =>
-                (project.tasks || []).map((task: any) => ({
-                  ...task,
-                  projectName: (project as any).projectName || project.title || 'Unknown Project'
-                }))
-              )}
+            <TaskStatusChart data={statusData} />
+          </div>
+          <div className="w-full">
+            <PriorityBreakdownChart
+              taskPriorities={allTaskPriorities}
+              subTaskPriorities={allSubTaskPriorities}
             />
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   )
 }
