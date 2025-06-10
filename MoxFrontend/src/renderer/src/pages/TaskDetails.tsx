@@ -4,6 +4,9 @@ import ProgressBar from '../components/ProgressBar'
 import FileUpload from '../components/FileUpload'
 import { useLocation, useParams, useNavigate } from 'react-router-dom'
 import { FaFileAlt } from 'react-icons/fa'
+import { storage } from '../firebase'
+import { ref, deleteObject } from 'firebase/storage'
+import { Console } from 'console'
 
 interface TaskDto {
   taskId?: number
@@ -31,7 +34,6 @@ const TaskDetails: React.FC = () => {
   const location = useLocation()
   const navigate = useNavigate()
 
-  // Always fetch from backend for reliability
   const [task, setTask] = useState<any>(null)
   const [subtasks, setSubtasks] = useState<any[]>(location.state?.subTasks || [])
   const [comments, setComments] = useState<Comment[]>([])
@@ -52,7 +54,6 @@ const TaskDetails: React.FC = () => {
       fetch(`http://localhost:5183/api/Task/${taskId}`)
         .then((res) => res.json())
         .then((data) => {
-          console.log('API response:', data)
           setTask(data)
           setSubtasks(data.subTasks?.$values || [])
         })
@@ -87,7 +88,6 @@ const TaskDetails: React.FC = () => {
           if (!id) continue
           const res = await fetch(`http://localhost:5183/api/FileUpload/by-subtask/${id}`)
           const data = await res.json()
-          // Fix: Unpack files from data.values.$values
           const files = data.values?.$values || []
           filesMap[id] = files
         }
@@ -194,6 +194,83 @@ const TaskDetails: React.FC = () => {
         </span>
       </>
     )
+  }
+
+  // Delete file from both backend and Firebase Storage, and update subtask/task status if needed
+  const handleDeleteFile = async (file: any, subtask: any) => {
+    if (!window.confirm('Are you sure you want to delete this file?')) return
+    try {
+      // 1. Delete from backend
+      const res = await fetch(`http://localhost:5183/api/FileUpload/${file.fileUploadID}`, {
+        method: 'DELETE'
+      })
+      if (!res.ok) throw new Error('Failed to delete file from database.')
+
+      // 2. Delete from Firebase Storage
+      if (file.filePath) {
+        const storageRef = ref(storage, file.filePath)
+        await deleteObject(storageRef)
+      }
+
+      // 3. Wait for backend to update, then check if all files for this subtask are now deleted
+      const wait = (ms: number) => new Promise((res) => setTimeout(res, ms))
+      let files = []
+      for (let i = 0; i < 5; i++) {
+        // Try up to 5 times
+        const filesRes = await fetch(
+          `http://localhost:5183/api/FileUpload/by-subtask/${subtask.subTaskID}`
+        )
+        const filesData = await filesRes.json()
+        files = filesData.values?.$values || filesData.$values || filesData || []
+        if (files.length === 0) break
+        await wait(200)
+      }
+      if (files.length === 0) {
+        // Subsubtask status to 0 (incomplete)
+        const subStatusRes = await fetch(
+          `http://localhost:5183/api/SubTask/${subtask.subTaskID}/status`,
+          {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ SubTStatus: 0 })
+          }
+        )
+
+        if (!subStatusRes.ok) {
+          const errText = await subStatusRes.text()
+          alert('Failed to update subtask status: ' + errText)
+          return
+        }
+
+        // Recalculate and update parent task status
+        const subtasksRes = await fetch(
+          `http://localhost:5183/api/SubTask/by-task/${subtask.taskId}`
+        )
+        const subtasksData = await subtasksRes.json()
+        const subtasks = Array.isArray(subtasksData) ? subtasksData : subtasksData.$values || []
+
+        const completedCount = subtasks.filter((st: any) => Number(st.subTStatus) >= 1).length
+        const totalCount = subtasks.length
+        const newStatus = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0
+
+        const taskStatusRes = await fetch(
+          `http://localhost:5183/api/Task/${subtask.taskId}/status`,
+          {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: newStatus })
+          }
+        )
+        if (!taskStatusRes.ok) {
+          const errText = await taskStatusRes.text()
+          alert('Failed to update task status: ' + errText)
+          return
+        }
+      }
+      window.location.reload()
+    } catch (err) {
+      alert('Failed to delete file.')
+    }
   }
 
   return (
@@ -349,9 +426,13 @@ const TaskDetails: React.FC = () => {
                     <div className="flex justify-between items-center">
                       <span className="font-semibold">{subtask.title || subtask.name}</span>
                       <span
-                        className={`text-xs px-2 py-1 rounded-full ${subtask.status === 100 ? 'bg-green-200 text-green-800' : 'bg-gray-200'}`}
+                        className={`text-xs px-2 py-1 rounded-full ${Number(subtask.subTStatus) >= 1 ? 'bg-green-200 text-green-800' : 'bg-gray-200'}`}
                       >
-                        {subtask.status === 100 ? 'Complete' : 'Incomplete'}
+                        {Number(subtask.subTStatus) >= 1
+                          ? 'Complete'
+                          : Number(subtask.subTStatus) === 0
+                            ? 'Incomplete'
+                            : 'Not Started'}
                       </span>
                     </div>
                     <div className="mt-2 text-sm text-gray-700">
@@ -373,7 +454,6 @@ const TaskDetails: React.FC = () => {
                           {subtask.priority}
                         </div>
                       )}
-                      {/* Remove or guard users if not present */}
                       {subtask.users && subtask.users.length > 0 && (
                         <div>
                           <span className="font-semibold">Assigned: </span>
@@ -385,28 +465,60 @@ const TaskDetails: React.FC = () => {
                     <div className="mt-2 flex flex-col items-center">
                       {(() => {
                         const files = subtaskFiles[subtask.subTaskID] || []
-                        if (!files.length || !files[0]) {
+                        if (!files.length) {
                           return (
                             <span className="text-xs text-gray-400 italic">No file uploaded</span>
                           )
                         }
-                        const file = files[0]
-                        if (/\.(jpg|jpeg|png|gif|bmp|webp)$/i.test(file.fileName)) {
-                          return (
-                            <img
-                              src={file.filePath}
-                              alt={file.fileName}
-                              className="w-24 h-24 object-cover rounded border mb-1"
-                            />
-                          )
-                        }
                         return (
-                          <>
-                            <FaFileAlt className="w-12 h-12 text-gray-400 mb-1" />
-                            <span className="text-xs text-gray-700 max-w-[120px] truncate text-center">
-                              {file.fileName}
-                            </span>
-                          </>
+                          <div className="flex flex-wrap gap-2 justify-center">
+                            {files.map((file: any, idx: number) => (
+                              <div key={idx} className="relative group">
+                                {/\.(jpg|jpeg|png|gif|bmp|webp)$/i.test(file.fileName) ? (
+                                  <a
+                                    href={file.filePath}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="block"
+                                    title={file.fileName}
+                                  >
+                                    <img
+                                      src={file.filePath}
+                                      alt={file.fileName}
+                                      className="w-24 h-24 object-cover rounded border mb-1"
+                                    />
+                                    <div className="text-xs text-gray-700 max-w-[96px] truncate text-center">
+                                      {file.fileName}
+                                    </div>
+                                  </a>
+                                ) : (
+                                  <a
+                                    href={file.filePath}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex flex-col items-center"
+                                    title={file.fileName}
+                                  >
+                                    <FaFileAlt className="w-12 h-12 text-gray-400 mb-1" />
+                                    <span className="text-xs text-gray-700 max-w-[96px] truncate text-center">
+                                      {file.fileName}
+                                    </span>
+                                  </a>
+                                )}
+                                {/* Delete button (top right corner, only visible on hover) */}
+                                <button
+                                  className="absolute top-0 right-0 bg-red-600 text-white rounded-full p-1 text-xs opacity-80 hover:opacity-100 group-hover:block hidden"
+                                  title="Delete file"
+                                  onClick={async (e) => {
+                                    e.preventDefault()
+                                    await handleDeleteFile(file, subtask)
+                                  }}
+                                >
+                                  ✕
+                                </button>
+                              </div>
+                            ))}
+                          </div>
                         )
                       })()}
                     </div>
@@ -449,6 +561,7 @@ const TaskDetails: React.FC = () => {
                 </button>
                 <FileUpload
                   projectId={task.projectID}
+                  taskId={task.taskId}
                   subTaskId={activeSubtask.subTaskID}
                   onFileUploaded={() => {
                     setShowUploadModal(false)

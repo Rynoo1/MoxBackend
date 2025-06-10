@@ -401,7 +401,8 @@ namespace MoxBackEnd.Controllers
             var info = await _signInManager.GetExternalLoginInfoAsync();
             if (info == null)
             {
-                return RedirectToAction("Error loading external login information");
+                // Redirect to an error page or return a proper error response
+                return BadRequest("Error loading external login information");
             }
 
             var result = await _signInManager.ExternalLoginSignInAsync(
@@ -448,6 +449,10 @@ namespace MoxBackEnd.Controllers
                             user.UserName ?? string.Empty);
                         return Ok(new { token });
                     }
+                    else
+                    {
+                        return BadRequest("Failed to create user from external login");
+                    }
                 }
                 else
                 {
@@ -458,7 +463,7 @@ namespace MoxBackEnd.Controllers
                         user.Id,
                         user.Email ?? string.Empty,
                         user.UserName ?? string.Empty);
-                    return Redirect("redirect");
+                    return Ok(new { token });
                 }
             }
 

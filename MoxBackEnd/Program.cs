@@ -26,7 +26,7 @@ builder.Services.AddScoped<IComment, CommentService>();
 builder.Services.AddScoped<IEmergencyMeeting, EmergencyMeetingService>();
 builder.Services.AddScoped<ITask, TaskService>();
 builder.Services.AddScoped<ITokenServices, TokenServices>();
-
+builder.Services.AddScoped<IFirebaseStorageService, FirebaseStorageService>();
 
 
 builder.Services.AddControllers()

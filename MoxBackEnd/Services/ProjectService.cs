@@ -5,6 +5,7 @@ using MoxBackEnd.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 
+
 namespace MoxBackEnd.Services;
 
 public class ProjectService : IProjects
@@ -246,14 +247,22 @@ public class ProjectService : IProjects
                         
                         if (subDto.AssignedUserIds != null)
                         {
-                            sub.AssignedUsers.Clear();
-                            foreach (var userId in subDto.AssignedUserIds)
+                            // Remove all existing assignments for this subtask from the join table
+                            var existingAssignments = _context.SubTaskUserAssignments
+                                .Where(a => a.AssignedSubTasksSubTaskID == sub.SubTaskID);
+                            _context.SubTaskUserAssignments.RemoveRange(existingAssignments);
+
+                            // Save changes to ensure deletes are executed before inserts
+                            await _context.SaveChangesAsync();
+
+                            // Add new assignments (deduplicated)
+                            foreach (var userId in subDto.AssignedUserIds.Distinct())
                             {
-                                var user = await _context.Users.FindAsync(userId);
-                                if (user != null)
+                                _context.SubTaskUserAssignments.Add(new SubTaskUserAssignment
                                 {
-                                    sub.AssignedUsers.Add(user);
-                                }
+                                    AssignedSubTasksSubTaskID = sub.SubTaskID,
+                                    AssignedUsersId = userId
+                                });
                             }
                         }
                     }

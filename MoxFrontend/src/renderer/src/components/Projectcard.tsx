@@ -8,15 +8,19 @@ interface SubTask {
   id: number
   title: string
   completed: boolean
-  assignedUsers?: { id: string; userName: string }[]
+  assignedUsers?: {
+    ProfilePicture: string
+    id: string
+    userName: string
+  }[]
 }
 
 interface Task {
   taskId: number
   id: number
   title: string
-  status: string
-  priority: string
+  status: number
+  priority: number
   dueDate: string
   subTasks?: SubTask[]
 }
@@ -41,7 +45,6 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   const allSubtasks = tasks.flatMap((task) => task.subTasks || [])
   const completed = allSubtasks.filter((st) => st.completed).length
   const total = allSubtasks.length
-  const progress = total > 0 ? Math.round((completed / total) * 100) : 0
   const navigate = useNavigate()
 
   React.useEffect(() => {
@@ -103,7 +106,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
       const incompleteSubtasks = Array.isArray(task.subTasks)
         ? task.subTasks.some((st) => !st.completed)
         : false
-      const incompleteTask = task.status !== 'Completed'
+      const incompleteTask = task.status !== 2
       return due < now && (incompleteSubtasks || incompleteTask)
     })
   }
@@ -138,6 +141,12 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   const toggleExpand = (taskId: number) => {
     setExpandedTaskId(expandedTaskId === taskId ? null : taskId)
   }
+
+  // Project Completion = (Sum of status values of all tasks) / (Total number of tasks)
+  const progress =
+    tasks.length > 0
+      ? Math.round(tasks.reduce((sum, t) => sum + Number(t.status), 0) / tasks.length)
+      : 0
 
   return (
     <div className="project-card w-full p-4 sm:p-6">
@@ -210,20 +219,47 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
                       </button>
                       {task.title}
                     </td>
-                    <td>{task.status}</td>
+                    <td>
+                      {task.subTasks && task.subTasks.length > 0 ? (
+                        (() => {
+                          // Flatten all assigned users from all subtasks, deduplicate by user.id
+                          const allUsers = task.subTasks.flatMap((sub) => sub.assignedUsers || [])
+                          const uniqueUsers = Array.from(
+                            new Map(allUsers.map((u) => [u.id, u])).values()
+                          )
+                          return uniqueUsers.length > 0 ? (
+                            <div style={{ display: 'flex', gap: '0.25rem' }}>
+                              {uniqueUsers.map((user) => (
+                                <img
+                                  key={user.id}
+                                  src={
+                                    user.ProfilePicture ||
+                                    `https://ui-avatars.com/api/?name=${encodeURIComponent(user.userName)}`
+                                  }
+                                  alt={user.userName}
+                                  title={user.userName}
+                                  style={{
+                                    width: 32,
+                                    height: 32,
+                                    borderRadius: '50%',
+                                    objectFit: 'cover',
+                                    border: '2px solid #fff',
+                                    boxShadow: '0 0 2px #888'
+                                  }}
+                                />
+                              ))}
+                            </div>
+                          ) : (
+                            <span className="text-gray-400">No users</span>
+                          )
+                        })()
+                      ) : (
+                        <span className="text-gray-400">No users</span>
+                      )}
+                    </td>
                     <td>{getPriorityLabel(Number(task.priority))}</td>
                     <td>
-                      <Progressbar
-                        progress={
-                          task.subTasks && task.subTasks.length > 0
-                            ? Math.round(
-                                (task.subTasks.filter((st) => st.completed).length /
-                                  task.subTasks.length) *
-                                  100
-                              )
-                            : 0
-                        }
-                      />
+                      <Progressbar progress={task.status} />
                     </td>
                     <td>
                       <span>{formatDate(task.dueDate)}</span>

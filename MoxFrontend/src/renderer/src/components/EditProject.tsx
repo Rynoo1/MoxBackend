@@ -241,7 +241,7 @@ export default function EditProject() {
       tasks: [
         ...prev.tasks,
         {
-          id: 0, // <-- Use 0 for new tasks
+          id: 0,
           title: currentTask.name,
           description: currentTask.description,
           dueDate: currentTask.dueDate,
@@ -309,10 +309,18 @@ export default function EditProject() {
   }
 
   async function saveProject() {
+    // If a subtask is being edited, save it first
+    if (editingSubtaskId !== null && subtaskParentTaskId !== null) {
+      saveEditSubtask(subtaskParentTaskId, editingSubtaskId)
+    }
+
+    // Wait a tick to ensure state is updated
+    await new Promise((resolve) => setTimeout(resolve, 0))
+
     const dto = {
       ProjectID: project.id,
       ProjectName: project.name,
-      DueDate: project.dueDate,
+      DueDate: project.dueDate ? project.dueDate : null,
       Tasks: project.tasks.map((t) => ({
         TaskId: t.id,
         Title: t.title,
@@ -325,11 +333,11 @@ export default function EditProject() {
           Description: s.description,
           DueDate: s.dueDate,
           Priority: s.priority ? (priorityReverseMap[s.priority as string] ?? 1) : 1,
-          AssignedUserIds: (s.users || []).map((u) => u.id)
+          AssignedUserIds: Array.from(new Set((s.users || []).map((u) => u.id)))
         }))
       }))
     }
-    alert(JSON.stringify(dto, null, 2))
+
     const res = await fetch(`http://localhost:5183/api/Project/${project.id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -406,9 +414,9 @@ export default function EditProject() {
   }, [])
 
   return (
-    <div className="min-h-screen w-416  mt-15 flex flex-col overflow-x-hidden overflow-y-auto scrollbar-hide">
+    <div className="min-h-screen w-full mt-4 flex flex-col overflow-x-hidden overflow-y-auto scrollbar-hide bg-gray-50">
       <div
-        className="w-full max-w-410 mx-auto p-6 flex-1 overflow-auto scrollbar-hide"
+        className="w-full max-w-5xl mx-auto p-4 sm:p-6 flex-1 overflow-auto scrollbar-hide"
         style={{ maxHeight: 'calc(100vh - 4rem)' }}
       >
         <div className="mb-6 flex flex-wrap items-center gap-4 scrollbar-hide">
@@ -443,10 +451,12 @@ export default function EditProject() {
           ) : (
             <>
               <div>
-                <h2 className="text-4xl md:text-6xl font-bold break-words">{project.name}</h2>
+                <h2 className="text-3xl sm:text-4xl md:text-6xl font-bold break-words">
+                  {project.name}
+                </h2>
                 {project.dueDate && (
                   <div className="ml-1 mt-5 text-lg font-semibold text-xl ">
-                    <span className="text-3xl font-bold"> Due: </span>
+                    <span className="text-2xl sm:text-3xl font-bold"> Due: </span>
                     {new Date(project.dueDate).toLocaleString()}
                   </div>
                 )}
@@ -470,18 +480,18 @@ export default function EditProject() {
           )}
         </div>
         <button
-          className="btn btn-primary btn-lg bg-[#1e3a8a] mb-6 text-lg hover:bg-white hover:text-[#1e3a8a] border-2 border-[#1e3a8a] !shadow-md shadow-black/30"
+          className="btn btn-primary btn-lg bg-[#1e3a8a] mb-6 text-lg hover:bg-white hover:text-[#1e3a8a] border-2 border-[#1e3a8a] !shadow-md shadow-black/30 w-full sm:w-auto"
           onClick={openAddTaskModal}
         >
           Add Task
         </button>
 
         {/* Task Cards */}
-        <div className="grid gap-10 md:grid-cols-2 items-start">
+        <div className="grid gap-8 md:grid-cols-2 items-start">
           {project.tasks.map((task) => (
             <div
               key={task.id}
-              className="bg-[#1e3a8a] rounded-2xl !shadow-md shadow-black/30 border border-[#1e3a8a] p-8 flex flex-col scrollbar-hide"
+              className="bg-[#1e3a8a] rounded-2xl !shadow-md shadow-black/30 border border-[#1e3a8a] p-4 sm:p-8 flex flex-col scrollbar-hide"
               style={{ height: 'auto' }}
             >
               <div className="flex justify-between items-start mb-4">
@@ -709,11 +719,15 @@ export default function EditProject() {
                                       key={user.id}
                                       className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
                                       onClick={() => {
-                                        setSubtaskEdit({
-                                          ...subtaskEdit,
-                                          users: [...(subtaskEdit.users || []), user],
-                                          userSearch: ''
-                                        })
+                                        if (
+                                          !(subtaskEdit.users || []).some((u) => u.id === user.id)
+                                        ) {
+                                          setSubtaskEdit({
+                                            ...subtaskEdit,
+                                            users: [...(subtaskEdit.users || []), user],
+                                            userSearch: ''
+                                          })
+                                        }
                                       }}
                                     >
                                       {user.userName}
@@ -873,7 +887,7 @@ export default function EditProject() {
 
       {/* DaisyUI Add Task Modal */}
       <dialog ref={taskModalRef} id="add_task_modal" className="modal">
-        <div className="modal-box bg-[#EDF2F7]">
+        <div className="modal-box bg-[#EDF2F7] w-full max-w-lg">
           <form method="dialog">
             <button
               className="btn btn-sm btn-square btn-ghost border-2 text-center border-red-500 bg-red-500 hover:bg-white hover:text-red-500 font-light absolute right-2 top-2"
@@ -943,7 +957,7 @@ export default function EditProject() {
 
       {/* DaisyUI Add Subtask Modal */}
       <dialog ref={subtaskModalRef} id="add_subtask_modal" className="modal">
-        <div className="modal-box bg-[#EDF2F7]">
+        <div className="modal-box bg-[#EDF2F7] w-full max-w-lg">
           <form method="dialog">
             <button
               className="btn btn-sm btn-square btn-ghost border-2 text-center border-red-500 bg-red-500 hover:bg-white hover:text-red-500 font-light absolute right-2 top-2"
@@ -1009,11 +1023,14 @@ export default function EditProject() {
                       key={user.id}
                       className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
                       onClick={() => {
-                        setCurrentSubtask({
-                          ...currentSubtask,
-                          users: [...(currentSubtask.users || []), user],
-                          userSearch: ''
-                        })
+                        // Prevent duplicate user assignment
+                        if (!(currentSubtask.users || []).some((u) => u.id === user.id)) {
+                          setCurrentSubtask({
+                            ...currentSubtask,
+                            users: [...(currentSubtask.users || []), user],
+                            userSearch: ''
+                          })
+                        }
                       }}
                     >
                       {user.userName}

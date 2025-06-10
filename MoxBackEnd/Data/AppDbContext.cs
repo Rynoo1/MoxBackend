@@ -1,8 +1,6 @@
 using System;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.General;
 using MoxBackEnd.Models;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace MoxBackEnd.Data;
@@ -24,6 +22,7 @@ public class AppDbContext : IdentityDbContext<Users>
     public DbSet<EmergencyMeeting> EmergencyMeetings { get; set; }
     public DbSet<ProjectUser> ProjectUsers { get; set; }
     public DbSet<StickyNote> StickyNotes { get; set; }
+    public DbSet<SubTaskUserAssignment> SubTaskUserAssignments { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -54,16 +53,16 @@ public class AppDbContext : IdentityDbContext<Users>
             .WithMany(u => u.Projects)
             .UsingEntity(j => j.ToTable("ProjectAssignments"));
 
-
         modelBuilder.Entity<FileUpload>()
             .HasOne(f => f.Project)
             .WithMany(p => p.FileUploads)
             .HasForeignKey(f => f.ProjectID);
 
-        modelBuilder.Entity<SubTasks>()
-            .HasMany(s => s.AssignedUsers)
-            .WithMany(u => u.AssignedSubTasks)
-            .UsingEntity(j => j.ToTable("SubTaskUserAssignments"));
+        // REMOVE this block to avoid table mapping conflict:
+        // modelBuilder.Entity<SubTasks>()
+        //     .HasMany(s => s.AssignedUsers)
+        //     .WithMany(u => u.AssignedSubTasks)
+        //     .UsingEntity(j => j.ToTable("SubTaskUserAssignments"));
 
         modelBuilder.Entity<EmergencyMeeting>()
             .HasOne(em => em.Project)
@@ -115,6 +114,10 @@ public class AppDbContext : IdentityDbContext<Users>
             .HasOne(pu => pu.User)
             .WithMany(u => u.ProjectUsers)
             .HasForeignKey(pu => pu.UserID);
+
+        // Explicit join entity for SubTaskUserAssignments
+        modelBuilder.Entity<SubTaskUserAssignment>()
+            .HasKey(x => new { x.AssignedSubTasksSubTaskID, x.AssignedUsersId });
     }
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
@@ -155,3 +158,4 @@ public class AppDbContext : IdentityDbContext<Users>
         return await base.SaveChangesAsync(cancellationToken);
     }
 }
+

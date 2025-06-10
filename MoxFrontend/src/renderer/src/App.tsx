@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { HashRouter as Router, Routes, Route, useLocation, useParams } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom'
 import Dashboard from './pages/Dashboard'
 import KanbanBoard from './pages/KanbanBoard'
 import Projects from './pages/Projects'
@@ -14,6 +14,7 @@ import TaskDetails from './pages/TaskDetails'
 import ProfilePage from './pages/Profile'
 import UserManagement from './pages/UserManagement'
 import { AuthProvider } from './pages/AuthContext'
+import Analytics from './pages/Analytics'
 
 const AppContent = () => {
   const location = useLocation()
@@ -48,6 +49,7 @@ const AppContent = () => {
           <Route path="/task/:taskId" element={<TaskDetails />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/userman" element={<UserManagement />} />
+          <Route path="/analytics" element={<Analytics userRole="admin" userId={''} />} />
         </Routes>
       </div>
     </div>

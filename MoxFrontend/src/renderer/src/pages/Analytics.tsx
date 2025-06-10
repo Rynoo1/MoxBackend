@@ -1,162 +1,363 @@
-import OverdueTasksChart from '@renderer/components/charts/OverdueTasksChart';
-import PriorityBreakdownChart from '@renderer/components/charts/PriorityBreakdownChart';
-import UserWorkloadChart from '@renderer/components/charts/UserWorkloadChart';
-import ProjectCompletionChart from '@renderer/components/charts/ProjectCompletionChart';
-import UpcomingDeadlinesChart from '@renderer/components/charts/UpcomingDeadlinesChart';
-import TasksOverTimeChart from '@renderer/components/charts/TasksOverTimeChart';
-import React, { useEffect, useState } from 'react';
-import TaskStatusChart from '@renderer/components/charts/TaskStatusChart';
+import OverdueTasksChart from '@renderer/components/charts/OverdueTasksChart'
+import PriorityBreakdownChart from '@renderer/components/charts/PriorityBreakdownChart'
+import UserWorkloadChart from '@renderer/components/charts/UserWorkloadChart'
+import ProjectCompletionChart from '@renderer/components/charts/ProjectCompletionChart'
+import TasksOverTimeChart from '@renderer/components/charts/TasksOverTimeChart'
+import React, { useEffect, useState } from 'react'
+import TaskStatusChart from '@renderer/components/charts/TaskStatusChart'
+import '../components/styles/Projects.css'
+import moxLoadingGif from '../assets/mox-loading.gif'
 
 const chartOptionsAdmin = [
   { value: 'completion', label: 'Project Completion Overview' },
   { value: 'status', label: 'Task Status Distribution' },
   { value: 'overTime', label: 'Tasks Completed Over Time' },
-  { value: 'deadlines', label: 'Upcoming Deadlines' },
   { value: 'priority', label: 'Priority Breakdown' },
   { value: 'workload', label: 'User Workload' },
-  { value: 'overdue', label: 'Overdue Tasks' },
-];
+  { value: 'overdue', label: 'Overdue Tasks' }
+]
 
 const chartOptionsBasic = [
   { value: 'completion', label: 'Project Completion Overview' },
   { value: 'status', label: 'Task Status Distribution' },
   { value: 'overTime', label: 'Tasks Completed Over Time' },
-  { value: 'deadlines', label: 'Upcoming Deadlines' },
-  { value: 'priority', label: 'Priority Breakdown' },
-];
+  { value: 'priority', label: 'Priority Breakdown' }
+]
 
-interface AnalyticsProps {
-  userRole: 'admin' | 'basic';
-  userId: string;
+interface User {
+  Id: string
+  UserName: string
+  Email?: string
 }
 
+interface SubTask {
+  subTaskID: number | string
+  title?: string
+  dueDate?: string
+  SubTStatus?: number
+  priority?: number
+  assignedUsers?: User[]
+  completedDate?: string
+}
+
+interface Task {
+  completedDate?: string
+  id: number
+  title?: string
+  name?: string
+  dueDate?: string
+  status?: number
+  priority?: number
+  subTasks?: SubTask[]
+}
+
+interface Project {
+  id: number | string
+  title?: string
+  projectID?: number | string
+  tasks?: Task[]
+}
+
+interface AnalyticsProps {
+  userRole: 'admin' | 'basic'
+  userId: string
+}
+
+const priorityLabels = ['', 'Low', 'Medium', 'High', 'Critical'] // index 0 is unused
+
 const Analytics: React.FC<AnalyticsProps> = ({ userRole, userId }) => {
-  const [projects, setProjects] = useState<any[]>([]);
-  const [selectedProject, setSelectedProject] = useState<any>(null);
-  const [chartType, setChartType] = useState<string>('');
-  const chartOptions = userRole === 'admin' ? chartOptionsAdmin : chartOptionsBasic;
+  const [loading, setLoading] = useState(false)
+  const [projects, setProjects] = useState<Project[]>([])
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null)
+  const chartOptions = userRole === 'admin' ? chartOptionsAdmin : chartOptionsBasic
 
+  // Fetch projects, tasks, subtasks, and assigned users (with user names)
   useEffect(() => {
-    // Fetch projects based on user role
-    fetch(userRole === 'admin'
-      ? 'http://localhost:5183/api/projects'
-      : `http://localhost:5183/api/projects?userId=${userId}`)
-      .then(res => res.json())
-      .then(data => {
-        // Handle $values serialization if present
-        const projectsArray = Array.isArray(data.$values) ? data.$values : Array.isArray(data) ? data : [];
-        setProjects(projectsArray);
-        if (projectsArray.length > 0) {
-          // Randomly select a project
-          const randomProject = projectsArray[Math.floor(Math.random() * projectsArray.length)];
-          setSelectedProject(randomProject);
+    setLoading(true)
+    fetch(
+      userRole === 'admin'
+        ? 'http://localhost:5183/api/Project'
+        : `http://localhost:5183/api/projects?userId=${userId}`
+    )
+      .then((res) => res.json())
+      .then(async (data) => {
+        const projectsArray = Array.isArray(data.$values)
+          ? data.$values
+          : Array.isArray(data)
+            ? data
+            : []
+
+        const projectsWithTasks = await Promise.all(
+          projectsArray.map(async (project: any) => {
+            const res = await fetch(
+              `http://localhost:5183/api/Task/by-project/${project.projectID}`
+            )
+            const tasksData = await res.json()
+            const parsedTasks = Array.isArray(tasksData.$values) ? tasksData.$values : tasksData
+
+            const tasks = await Promise.all(
+              parsedTasks.map(async (task: any) => {
+                let subTasks =
+                  task.subTasks && Array.isArray(task.subTasks.$values) ? task.subTasks.$values : []
+
+                subTasks = await Promise.all(
+                  subTasks
+                    .filter(
+                      (sub: any) => sub && sub.subTaskID !== undefined && sub.subTaskID !== null
+                    )
+                    .map(async (sub: any) => {
+                      // Fetch assigned user IDs for this subtask
+                      const usersRes = await fetch(
+                        `http://localhost:5183/api/SubTask/${sub.subTaskID}/users`
+                      )
+                      let userIds = await usersRes.json()
+                      userIds = Array.isArray(userIds.$values) ? userIds.$values : userIds
+
+                      // Fetch user details for each user ID to get the UserName
+                      const assignedUsers = await Promise.all(
+                        userIds.map(async (userId: any) => {
+                          let id = userId
+                          if (typeof userId === 'object') {
+                            if ('Id' in userId) {
+                              id = userId.Id
+                            } else if ('id' in userId) {
+                              id = userId.id
+                            } else {
+                              // fallback: skip this userId if it doesn't have an id property
+                              return null
+                            }
+                          }
+                          const userRes = await fetch(`http://localhost:5183/api/User/${id}`)
+                          return await userRes.json()
+                        })
+                      )
+                      // Remove any nulls from assignedUsers
+                      return {
+                        ...sub,
+                        assignedUsers: assignedUsers.filter(Boolean)
+                      }
+                    })
+                )
+
+                return {
+                  ...task,
+                  subTasks
+                }
+              })
+            )
+
+            return { ...project, tasks }
+          })
+        )
+
+        setProjects(projectsWithTasks)
+        if (projectsWithTasks.length > 0) {
+          setSelectedProject(
+            projectsWithTasks[Math.floor(Math.random() * projectsWithTasks.length)]
+          )
         } else {
-          setSelectedProject(null);
+          setSelectedProject(null)
         }
-      });
-    setChartType(chartOptions[0].value);
+      })
+      .finally(() => setLoading(false))
     // eslint-disable-next-line
-  }, [userRole, userId]);
+  }, [userRole, userId])
 
-  // Handle project selection change
-  const handleProjectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const project = projects.find(p => p.id === Number(e.target.value));
-    setSelectedProject(project);
-  };
+  // Calculate overdue tasks across all projects
+  const overdueTasks: { task: string; dueDate: string }[] = []
+  const now = new Date()
 
-  // Handle chart type selection change
-  const handleChartTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setChartType(e.target.value);
-  };
+  for (const project of projects) {
+    if (!project.tasks) continue
+    for (const task of project.tasks) {
+      const isTaskOverdue =
+        ((typeof task.status === 'number' ? task.status < 100 : task.status !== 'Completed') &&
+          task.dueDate &&
+          new Date(task.dueDate) < now) ||
+        (Array.isArray(task.subTasks) &&
+          task.subTasks.some(
+            (st: any) => st.SubTStatus === 0 && st.dueDate && new Date(st.dueDate) < now
+          ))
+
+      if (isTaskOverdue) {
+        overdueTasks.push({
+          task: task.title || task.name || 'Untitled Task',
+          dueDate: task.dueDate ?? ''
+        })
+      }
+    }
+  }
+
+  // Calculate user workload across all projects
+  const userWorkloadMap: Record<string, number> = {}
+
+  for (const project of projects) {
+    if (!project.tasks) continue
+    for (const task of project.tasks) {
+      if (Array.isArray(task.subTasks)) {
+        for (const subTask of task.subTasks) {
+          if (Array.isArray(subTask.assignedUsers)) {
+            for (const user of subTask.assignedUsers) {
+              const userName = user.UserName || user.Email || `User ${user.Id || ''}`
+              userWorkloadMap[userName] = (userWorkloadMap[userName] || 0) + 1
+            }
+          }
+        }
+      }
+    }
+  }
+
+  const userWorkload = Object.entries(userWorkloadMap).map(([user, taskCount]) => ({
+    user,
+    taskCount
+  }))
+
+  // Calculate task status distribution across all projects
+  const statusCountMap: Record<string, number> = {}
+
+  for (const project of projects) {
+    if (!project.tasks) continue
+    for (const task of project.tasks) {
+      // You can customize status grouping here
+      let statusLabel = 'Unknown'
+      if (typeof task.status === 'number') {
+        statusLabel = task.status >= 100 ? 'Completed' : 'In Progress'
+      } else if (typeof task.status === 'string') {
+        statusLabel = task.status
+      }
+      statusCountMap[statusLabel] = (statusCountMap[statusLabel] || 0) + 1
+    }
+  }
+
+  const statusData = Object.entries(statusCountMap).map(([status, count]) => ({
+    status,
+    count
+  }))
+
+  // Extract and map all task priorities
+  const allTaskPriorities: string[] = []
+  for (const project of projects) {
+    if (!project.tasks) continue
+    for (const task of project.tasks) {
+      if (typeof (task as any).priority === 'number') {
+        const label = priorityLabels[(task as any).priority] ?? 'Unknown'
+        allTaskPriorities.push(label)
+      }
+    }
+  }
+
+  // Extract and map all subtask priorities
+  const allSubTaskPriorities: string[] = []
+  for (const project of projects) {
+    if (!project.tasks) continue
+    for (const task of project.tasks) {
+      if (Array.isArray(task.subTasks)) {
+        for (const subTask of task.subTasks) {
+          if (typeof (subTask as any).priority === 'number') {
+            const label = priorityLabels[(subTask as any).priority] ?? 'Unknown'
+            allSubTaskPriorities.push(label)
+          }
+        }
+      }
+    }
+  }
+
+  // Collect all completed tasks and subtasks with their completion dates
+  const completedByDate: Record<string, number> = {}
+
+  for (const project of projects) {
+    if (!project.tasks) continue
+    for (const task of project.tasks) {
+      // Task is complete if status is 100 or above
+      if (
+        typeof task.status === 'number' &&
+        task.status >= 100 &&
+        typeof task.completedDate === 'string'
+      ) {
+        const date = new Date(task.completedDate).toISOString().slice(0, 10)
+        completedByDate[date] = (completedByDate[date] || 0) + 1
+      }
+      if (Array.isArray(task.subTasks)) {
+        for (const subTask of task.subTasks) {
+          if (subTask.SubTStatus === 1 && typeof subTask.completedDate === 'string') {
+            const date = new Date(subTask.completedDate).toISOString().slice(0, 10)
+            completedByDate[date] = (completedByDate[date] || 0) + 1
+          }
+        }
+      }
+    }
+  }
+
+  // Ensure correct format for TasksOverTimeChart: completed is a number
+  const tasksOverTimeData = Object.entries(completedByDate)
+    .map(([date, completed]) => ({
+      date,
+      completed: Number(completed)
+    }))
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+
+  // Log the data that will be passed to TasksOverTimeChart
+  useEffect(() => {
+    console.log('TasksOverTimeChart data:', tasksOverTimeData)
+    console.log('TaskStatusChart data:', statusData)
+  }, [tasksOverTimeData, statusData])
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64" style={{ marginTop: '25%' }}>
+        <img
+          src={moxLoadingGif}
+          alt="Loading..."
+          style={{
+            width: '100%',
+            maxWidth: '700px',
+            minWidth: '200px',
+            height: 'auto',
+            maxHeight: '700px',
+            minHeight: '150px',
+            objectFit: 'contain'
+          }}
+        />
+      </div>
+    )
+  }
 
   return (
-    <div className="analytics-container">
-      <div className="dropdowns">
-        <select
-          value={selectedProject?.id || ''}
-          onChange={handleProjectChange}
-        >
-          {projects.map(project => (
-            <option key={project.id} value={project.id}>{project.title}</option>
-          ))}
-        </select>
-        <select
-          value={chartType}
-          onChange={handleChartTypeChange}
-        >
-          {chartOptions.map(opt => (
-            <option key={opt.value} value={opt.value}>{opt.label}</option>
-          ))}
-        </select>
-      </div>
-      <div className="chart-area">
-        {chartType === 'completion' && (
-          <ProjectCompletionChart
-            data={
-              selectedProject
-                ? [
-                    {
-                      name: selectedProject.title || 'Project',
-                      completion: selectedProject.completion ?? 0,
-                    },
-                  ]
-                : []
-            }
-          />
-        )}
-        {chartType === 'status' && (
-          <TaskStatusChart
-            data={
-              selectedProject && selectedProject.statusData
-                ? selectedProject.statusData
-                : []
-            }
-          />
-        )}
-        {chartType === 'overTime' && (
-          <TasksOverTimeChart
-            data={selectedProject && selectedProject.tasksOverTime ? selectedProject.tasksOverTime : []}
-          />
-        )}
-        {chartType === 'deadlines' && (
-          <UpcomingDeadlinesChart
-            data={
-              selectedProject && selectedProject.upcomingDeadlines
-                ? selectedProject.upcomingDeadlines
-                : []
-            }
-          />
-        )}
-        {chartType === 'priority' && (
+    <div className="projects-page min-h-screen overflow-y-auto mt-20 bg-red-500 px-4 pb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+        <div className="w-full">
+          <TaskStatusChart data={statusData} />
+        </div>
+        <div className="w-full">
+          <TasksOverTimeChart data={tasksOverTimeData} />
+        </div>
+        <div className="w-full">
           <PriorityBreakdownChart
-            data={
-              selectedProject && selectedProject.priorityData
-                ? selectedProject.priorityData
-                : []
-            }
+            taskPriorities={allTaskPriorities}
+            subTaskPriorities={allSubTaskPriorities}
           />
+        </div>
+        {userRole === 'admin' && (
+          <div className="w-full">
+            <UserWorkloadChart data={userWorkload.sort((a, b) => b.taskCount - a.taskCount)} />
+          </div>
         )}
-        {userRole === 'admin' && chartType === 'workload' && (
-          <UserWorkloadChart
-            data={
-              selectedProject && selectedProject.userWorkload
-                ? selectedProject.userWorkload
-                : []
-            }
-          />
-        )}
-        {userRole === 'admin' && chartType === 'overdue' && (
-          <OverdueTasksChart
-            data={
-              selectedProject && selectedProject.overdueTasks
-                ? selectedProject.overdueTasks
-                : []
-            }
-          />
+        {userRole === 'admin' && (
+          <div className="w-full">
+            <OverdueTasksChart
+              overdueTasks={overdueTasks}
+              allTasks={projects.flatMap((project) =>
+                (project.tasks || []).map((task: any) => ({
+                  ...task,
+                  projectName: (project as any).projectName || project.title || 'Unknown Project'
+                }))
+              )}
+            />
+          </div>
         )}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Analytics;
+export default Analytics

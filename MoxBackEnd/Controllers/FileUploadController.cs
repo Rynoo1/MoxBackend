@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using MoxBackEnd.Models; // Adjust namespace as needed
 using MoxBackEnd.Data;   // Adjust namespace as needed
 using System.Linq;
+using MoxBackEnd.Interfaces;
+
 
 namespace MoxBackEnd.Controllers
 {
@@ -10,10 +12,12 @@ namespace MoxBackEnd.Controllers
     public class FileUploadController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly IFirebaseStorageService _firebaseStorageService;
 
-        public FileUploadController(AppDbContext context)
+        public FileUploadController(AppDbContext context, IFirebaseStorageService firebaseStorageService)
         {
             _context = context;
+            _firebaseStorageService = firebaseStorageService;
         }
 
         [HttpPost]
@@ -29,7 +33,7 @@ namespace MoxBackEnd.Controllers
             return Ok(model);
         }
 
-        // GET: api/FileUpload/by-subtask/3
+
         [HttpGet("by-subtask/{subTaskId}")]
         public IActionResult GetFilesBySubtask(int subTaskId)
         {
@@ -46,8 +50,20 @@ namespace MoxBackEnd.Controllers
                 })
                 .ToList();
 
-            // For compatibility with values serialization
+
             return Ok(new { values = files });
         }
+
+        [HttpDelete("{id}")]
+public async Task<IActionResult> DeleteFileUpload(int id)
+{
+    var file = await _context.FileUploads.FindAsync(id);
+    if (file == null)
+        return NotFound();
+
+    _context.FileUploads.Remove(file);
+    await _context.SaveChangesAsync();
+    return NoContent();
+}
     }
 }

@@ -72,3 +72,13 @@ public class UserDto
     public string Id { get; set; } = string.Empty;
     public string UserName { get; set; } = string.Empty;
 }
+
+public class TaskStatusDto
+{
+    public int Status { get; set; }
+}
+
+public class SubTaskStatusDto
+{
+    public int SubTStatus { get; set; }
+}

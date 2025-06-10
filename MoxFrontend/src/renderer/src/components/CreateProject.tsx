@@ -237,7 +237,6 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose }) => {
   return (
     <div className="max-w-3xl mx-auto p-10">
       {' '}
-      {/* Increased max width and padding */}
       {step === 1 && (
         <>
           <h1 className="text-center text-black font-bold text-4xl mb-10">New Project</h1>
@@ -316,7 +315,7 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose }) => {
                         >
                           <HiTrash />
                         </button>
-                        {/* --- EDIT TASK BUTTON --- */}
+
                         <button
                           className="absolute left-0 ml-2 px-1 py-0.5 bg-[#1e3a8a] text-white rounded border-1 border-[#1e3a8a] hover:text-red-500 text-s flex items-center !shadow-md !shadow-black/30"
                           onClick={() => {
@@ -384,7 +383,7 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose }) => {
                   priority: '',
                   subtasks: []
                 })
-                setEditingTaskIndex(null) // <--- Reset to null for "Add Task"
+                setEditingTaskIndex(null)
                 setStep(3)
               }}
               type="button"
@@ -565,7 +564,7 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose }) => {
                         >
                           <HiTrash />
                         </button>
-                        {/* --- EDIT SUBTASK BUTTON --- */}
+
                         <button
                           className="absolute left-0 ml-2 px-1 py-0.5 bg-[#1e3a8a] text-white rounded border-1 border-[#1e3a8a] hover:text-red-500 text-s flex items-center !shadow-md !shadow-black/30"
                           onClick={() => {
@@ -623,7 +622,7 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose }) => {
                   priority: '',
                   users: []
                 })
-                setEditingSubtask(null) // <--- Reset to null for "Add Subtask"
+                setEditingSubtask(null)
                 setStep(5)
               }}
               type="button"
