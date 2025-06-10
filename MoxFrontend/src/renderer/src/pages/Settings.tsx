@@ -26,7 +26,7 @@ const Settings = () => {
     return "Good evening";
   };
 
-  const username = "Tebogo";
+  const username = "Tylor";
 
   return (
     <div className="w-full px-6 py-4">

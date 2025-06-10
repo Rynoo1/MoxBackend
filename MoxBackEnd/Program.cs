@@ -68,7 +68,7 @@ builder.Services.AddAuthentication(options =>
          ValidAudience = jwtSettings["Audience"],
          IssuerSigningKey = new SymmetricSecurityKey(key)
      };
-     
+
      options.Events = new JwtBearerEvents
      {
          OnAuthenticationFailed = context =>
@@ -84,18 +84,17 @@ builder.Services.AddAuthentication(options =>
          }
      };
  });
-//  })
-//  .AddGoogle(GoogleOptions =>
-//  {
-//      GoogleOptions.ClientId = builder.Configuration["Authentication:Google:ClientId"] ?? string.Empty;
-//      GoogleOptions.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"] ?? string.Empty;
-//      GoogleOptions.CallbackPath = "/signin-google"; // Ensure this matches your Google API settings
+ .AddGoogle(GoogleOptions =>
+ {
+     GoogleOptions.ClientId = builder.Configuration["Authentication:Google:ClientId"] ?? string.Empty;
+     GoogleOptions.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"] ?? string.Empty;
+     GoogleOptions.CallbackPath = "/signin-google"; // Ensure this matches your Google API settings
 
-//      GoogleOptions.Scope.Add("email");
-//      GoogleOptions.Scope.Add("profile");
+     GoogleOptions.Scope.Add("email");
+     GoogleOptions.Scope.Add("profile");
 
-//      GoogleOptions.SaveTokens = true;
-//  });
+     GoogleOptions.SaveTokens = true;
+ });
 
 builder.Services.AddAuthorization();
 

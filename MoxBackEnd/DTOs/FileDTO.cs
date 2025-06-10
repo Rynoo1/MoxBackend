@@ -4,9 +4,10 @@ namespace MoxBackEnd.DTOs
     {
         public int FileUploadID { get; internal set; }
         public int ProjectID { get; set; }
+        public int TaskId { get; set; }
         public string FilePath { get; set; } = string.Empty;
         public string FileName { get; set; } = string.Empty;
         public DateTime UploadDate { get; set; } = DateTime.UtcNow;
-        
+
     }
 }

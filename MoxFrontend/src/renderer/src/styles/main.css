@@ -7,7 +7,10 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Base styles */
+@plugin "daisyui" {
+  themes: light --default, dark --prefersdark;
+}
+
 html,
 body,
 #root {
@@ -30,7 +33,34 @@ body {
 html.dark body {
   background-color: #122235;
   color: #ffffff;
+  background-image: url('../assets/Dark-Mode.jpg');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
 }
+
+
+html.dark .sidebar {
+  background-color: var(--fallback-b1);
+  color: var(--fallback-bc);
+}
+
+html.dark .nav-link {
+  color: var(--fallback-bc);
+}
+
+html.dark .nav-link:hover {
+  background-color: var(--fallback-b2);
+}
+
+html.dark .upgrade-btn {
+  background-color: var(--fallback-b2);
+}
+
+html.dark .upgrade-btn:hover {
+  background-color: var(--fallback-b3);
+}
+
 
 .sidebar {
   width: 250px;

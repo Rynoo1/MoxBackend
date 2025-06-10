@@ -1,13 +1,17 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import {
-  HouseDoor as HomeIcon,
-  Folder as FolderIcon,
-  Sun as SunIcon,
-  Moon as MoonIcon,
-  BoxArrowRight as LogoutIcon,
-  Calendar as TimelineIcon
-} from 'react-bootstrap-icons'
+  HomeIcon,
+  FolderIcon,
+  Squares2X2Icon,
+  ChartBarIcon,
+  Cog6ToothIcon,
+  UserCircleIcon,
+  UsersIcon,
+  SunIcon,
+  MoonIcon,
+  ArrowRightOnRectangleIcon
+} from '@heroicons/react/24/solid'
 import './styles/Sidebar.css'
 import logo from '../assets/logo.svg'
 
@@ -37,35 +41,34 @@ const Sidebar: React.FC<SidebarProps> = ({ isDarkMode, toggleDarkMode }) => {
         </li>
         <li>
           <Link to="/kanban" className="nav-link">
-            <TimelineIcon className="mr-2 h-5 w-5" />
+            <Squares2X2Icon className="mr-2 h-5 w-5" />
             Kanban Board
           </Link>
         </li>
         <li>
           <Link to="/analytics" className="nav-link">
-            <TimelineIcon className="mr-2 h-5 w-5" />
+            <ChartBarIcon className="mr-2 h-5 w-5" />
             Analytics
           </Link>
         </li>
         <li>
           <Link to="/settings" className="nav-link">
-            <TimelineIcon className="mr-2 h-5 w-5" />
+            <Cog6ToothIcon className="mr-2 h-5 w-5" />
             Settings
           </Link>
         </li>
         <li>
           <Link to="/profile" className="nav-link">
-            <TimelineIcon className="mr-2 h-5 w-5" />
+            <UserCircleIcon className="mr-2 h-5 w-5" />
             Profile
           </Link>
         </li>
         <li>
           <Link to="/userman" className="nav-link">
-            <TimelineIcon className="mr-2 h-5 w-5" />
+            <UsersIcon className="mr-2 h-5 w-5" />
             User Management
           </Link>
         </li>
-        {/* Light/Dark Mode Toggle */}
         <li className="nav-link w-full text-left flex items-center space-x-2">
           <button
             onClick={toggleDarkMode}
@@ -86,7 +89,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isDarkMode, toggleDarkMode }) => {
         </li>
         <li>
           <Link to="/auth" className="nav-link">
-            <LogoutIcon className="mr-2 h-5 w-5" />
+            <ArrowRightOnRectangleIcon className="mr-2 h-5 w-5" />
             Logout
           </Link>
         </li>

@@ -30,7 +30,7 @@ public class ProjectService : IProjects
         _context.Projects.Add(project);
         await _context.SaveChangesAsync();
 
-       
+
         if (dto.Tasks != null)
         {
             foreach (var taskDto in dto.Tasks)
@@ -39,7 +39,7 @@ public class ProjectService : IProjects
                 {
                     Title = taskDto.Title,
                     Description = taskDto.Description,
-                    Priority = (PriorityLevel)taskDto.Priority, 
+                    Priority = (PriorityLevel)taskDto.Priority,
                     DueDate = taskDto.DueDate.HasValue
                         ? DateTime.SpecifyKind(taskDto.DueDate.Value, DateTimeKind.Utc)
                         : default(DateTime),
@@ -56,7 +56,7 @@ public class ProjectService : IProjects
                         {
                             Title = subDto.Title,
                             Description = subDto.Description,
-                            Priority = (PriorityLevel)subDto.Priority, 
+                            Priority = (PriorityLevel)subDto.Priority,
                             DueDate = subDto.DueDate.HasValue
                                 ? DateTime.SpecifyKind(subDto.DueDate.Value, DateTimeKind.Utc)
                                 : default(DateTime),
@@ -64,7 +64,7 @@ public class ProjectService : IProjects
                             ProjectID = project.ProjectID
                         };
 
-                        
+
                         if (subDto.AssignedUserIds != null)
                         {
                             foreach (var userId in subDto.AssignedUserIds)
@@ -148,7 +148,7 @@ public class ProjectService : IProjects
         }).ToList();
     }
 
-   
+
     public async Task<bool> UpdateProjectWithTasksAsync(ProjectCreateDto dto)
     {
         var project = await _context.Projects
@@ -163,7 +163,7 @@ public class ProjectService : IProjects
             ? DateTime.SpecifyKind(dto.DueDate.Value, DateTimeKind.Utc)
             : null;
 
-        
+
         var dtoTaskIds = dto.Tasks?.Select(t => t.TaskId).ToHashSet() ?? new HashSet<int>();
         var tasksToRemove = project.Tasks.Where(t => !dtoTaskIds.Contains(t.TaskId)).ToList();
         foreach (var task in tasksToRemove)
@@ -172,7 +172,7 @@ public class ProjectService : IProjects
             _context.Tasks.Remove(task);
         }
 
-        
+
         if (dto.Tasks != null)
         {
             foreach (var taskDto in dto.Tasks)
@@ -180,7 +180,7 @@ public class ProjectService : IProjects
                 var task = project.Tasks.FirstOrDefault(t => t.TaskId == taskDto.TaskId);
                 if (task == null)
                 {
-                    
+
                     task = new Tasks
                     {
                         Title = taskDto.Title,
@@ -196,7 +196,7 @@ public class ProjectService : IProjects
                 }
                 else
                 {
-                    
+
                     task.Title = taskDto.Title;
                     task.Description = taskDto.Description;
                     task.DueDate = taskDto.DueDate.HasValue
@@ -205,7 +205,7 @@ public class ProjectService : IProjects
                     task.Priority = (PriorityLevel)taskDto.Priority;
                 }
 
-                
+
                 var dtoSubIds = taskDto.SubTasks?.Select(st => st.SubTaskID).ToHashSet() ?? new HashSet<int>();
                 var subsToRemove = task.SubTasks.Where(st => !dtoSubIds.Contains(st.SubTaskID)).ToList();
                 foreach (var sub in subsToRemove)
@@ -244,7 +244,7 @@ public class ProjectService : IProjects
                             sub.Priority = (PriorityLevel)subDto.Priority;
                         }
 
-                        
+
                         if (subDto.AssignedUserIds != null)
                         {
                             // Remove all existing assignments for this subtask from the join table

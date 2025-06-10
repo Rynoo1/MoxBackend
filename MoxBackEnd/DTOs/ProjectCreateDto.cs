@@ -1,18 +1,20 @@
+
+using MoxBackEnd.DTOs;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace MoxBackEnd.DTOs
+namespace MoxBackEnd.Dtos;
+
+public class ProjectCreateDto
 {
-    public class ProjectCreateDto
-    {
-        public int ProjectID { get; set; }
+    public int ProjectID { get; set; }
 
-        [Required]
-        public string ProjectName { get; set; } = string.Empty;
+    [Required]
+    public string ProjectName { get; set; } = string.Empty;
 
-        public DateTime? DueDate { get; set; }
+    public DateTime? DueDate { get; set; }
 
-        public List<TaskCreateDto> Tasks { get; set; } = new();
-    }
+    public List<TaskCreateDto> Tasks { get; set; } = new();
 }
+

@@ -9,8 +9,6 @@ public class Tasks
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int TaskId { get; set; }
-        public ICollection<FileUpload> FileUploads { get; set; } = new List<FileUpload>();
-
 
         [Required]
         public int ProjectID { get; set; }

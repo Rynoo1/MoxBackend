@@ -9,11 +9,17 @@
   left: 0;
   color: #fff;
   transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
+  border-top-right-radius: 85px;
+  border-bottom-right-radius: 85px;
+  border-top-left-radius: 0px;
+  border-bottom-left-radius: 0px;
 }
 
 .logo img {
   width: 100%;
+  margin-top: 100px;
   margin-bottom: 20px;
+   width: 200px;
 }
 
 .sidebar-nav {
