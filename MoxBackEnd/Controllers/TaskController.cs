@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using MoxBackEnd.Interfaces;
 using MoxBackEnd.Models;
@@ -16,6 +15,65 @@ public class TaskController : ControllerBase
     {
         _service = service;
     }
+
+    [HttpPost]
+    public async Task<IActionResult> Create([FromBody] TaskCreateDto dto)
+    {
+        var task = new Tasks
+        {
+            Title = dto.Title,
+            Description = dto.Description,
+            Priority = dto.Priority,
+            Status = dto.Status,
+            DueDate = dto.DueDate,
+            // StartDate = dto.StartDate,
+            // EndDate = dto.EndDate,
+            CompletedAt = dto.CompletedAt,
+            IsEmergency = dto.IsEmergency,
+            ProjectID = dto.ProjectID,
+            AssignedUserId = dto.AssignedUserId
+        };
+
+        var created = await _service.CreateTaskAsync(task);
+        return CreatedAtAction(nameof(Get), new { id = created.TaskId }, created);
+    }
+
+    [HttpPost("{taskId}/upload")]
+    public async Task<IActionResult> UploadFile(int taskId, IFormFile file)
+    {
+        if (file == null || file.Length == 0)
+            return BadRequest("No file uploaded.");
+
+        var task = await _service.GetTaskByIdAsync(taskId);
+        if (task == null)
+            return NotFound("Task not found.");
+
+        var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", $"task_{taskId}");
+        Directory.CreateDirectory(uploadsFolder);
+
+        var uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+        var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+        using (var stream = new FileStream(filePath, FileMode.Create))
+        {
+            await file.CopyToAsync(stream);
+        }
+
+        var fileUpload = new FileUpload
+        {
+            TaskId = taskId,
+            ProjectID = task.ProjectID,
+            FileName = file.FileName,
+            FilePath = $"/uploads/task_{taskId}/{uniqueFileName}",
+            UploadDate = DateTime.UtcNow
+        };
+
+        task.FileUploads.Add(fileUpload);
+        await _service.UpdateTaskAsync(taskId, task);
+
+        return Ok(new { filePath = fileUpload.FilePath });
+    }
+
 
     [HttpGet]
     public async Task<IActionResult> GetAll() =>
@@ -44,13 +102,6 @@ public class TaskController : ControllerBase
         return task == null ? NotFound() : Ok(task);
     }
 
-    [HttpPost]
-    public async Task<IActionResult> Create([FromBody] Tasks task)
-    {
-        var created = await _service.CreateTaskAsync(task);
-        return CreatedAtAction(nameof(Get), new { id = created.TaskId }, created);
-    }
-
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, [FromBody] Tasks task)
     {
@@ -64,4 +115,11 @@ public class TaskController : ControllerBase
         var deleted = await _service.DeleteTaskAsync(id);
         return deleted ? NoContent() : NotFound();
     }
+
+    [HttpGet("overdue")]
+    public async Task<IActionResult> GetOverdueTasks() =>
+        Ok(await _service.GetOverdueTasksAsync());
+
+
 }
+

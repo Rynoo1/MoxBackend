@@ -297,12 +297,20 @@ namespace MoxBackEnd.Migrations
                     b.Property<int>("ProjectID")
                         .HasColumnType("integer");
 
+                    b.Property<int?>("SubTaskID")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TaskId")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime>("UploadDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("FileUploadID");
 
                     b.HasIndex("ProjectID");
+
+                    b.HasIndex("TaskId");
 
                     b.ToTable("FileUploads");
                 });
@@ -340,6 +348,50 @@ namespace MoxBackEnd.Migrations
                     b.HasKey("ProjectID");
 
                     b.ToTable("Projects");
+                });
+
+            modelBuilder.Entity("MoxBackEnd.Models.StickyNote", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ColorHex")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedById")
+                        .HasColumnType("text");
+
+                    b.Property<string>("CreatedByUserId")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("ProjectID")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("TaskId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedById");
+
+                    b.HasIndex("ProjectID");
+
+                    b.HasIndex("TaskId");
+
+                    b.ToTable("StickyNotes");
                 });
 
             modelBuilder.Entity("MoxBackEnd.Models.SubTasks", b =>
@@ -404,7 +456,7 @@ namespace MoxBackEnd.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("DueDate")
+                    b.Property<DateTime?>("DueDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<bool>("IsEmergency")
@@ -663,7 +715,15 @@ namespace MoxBackEnd.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("MoxBackEnd.Models.Tasks", "Task")
+                        .WithMany("FileUploads")
+                        .HasForeignKey("TaskId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Project");
+
+                    b.Navigation("Task");
                 });
 
             modelBuilder.Entity("MoxBackEnd.Models.ProjectUser", b =>
@@ -683,6 +743,27 @@ namespace MoxBackEnd.Migrations
                     b.Navigation("Project");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("MoxBackEnd.Models.StickyNote", b =>
+                {
+                    b.HasOne("MoxBackEnd.Models.Users", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById");
+
+                    b.HasOne("MoxBackEnd.Models.Projects", "Project")
+                        .WithMany()
+                        .HasForeignKey("ProjectID");
+
+                    b.HasOne("MoxBackEnd.Models.Tasks", "Task")
+                        .WithMany()
+                        .HasForeignKey("TaskId");
+
+                    b.Navigation("CreatedBy");
+
+                    b.Navigation("Project");
+
+                    b.Navigation("Task");
                 });
 
             modelBuilder.Entity("MoxBackEnd.Models.SubTasks", b =>
@@ -765,6 +846,8 @@ namespace MoxBackEnd.Migrations
             modelBuilder.Entity("MoxBackEnd.Models.Tasks", b =>
                 {
                     b.Navigation("Comments");
+
+                    b.Navigation("FileUploads");
 
                     b.Navigation("SubTasks");
                 });

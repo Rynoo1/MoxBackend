@@ -1,33 +1,24 @@
 using System;
-using MoxBackEnd.Models;
 using System.ComponentModel.DataAnnotations;
+using MoxBackEnd.Models;
 
 namespace MoxBackEnd.DTOs
 {
     public class TaskCreateDto
     {
-        [Required]
         public int ProjectID { get; set; }
-
-        [Required]
-        public string? Title { get; set; }
-
+        public string Title { get; set; }
         public string? Description { get; set; }
-
-        [Required]
         public PriorityLevel Priority { get; set; }
-
-        [Required]
-        public bool IsEmergency { get; set; }
-
-        [Required]
+        public WorkStatus Status { get; set; }
         public DateTime DueDate { get; set; }
-
+        public DateTime? StartDate { get; set; }
+        public DateTime? EndDate { get; set; }
         public DateTime? CompletedAt { get; set; }
-
-        [Required]
-        public WorkStatus Status { get; set; } = WorkStatus.NotStarted;
+        public bool IsEmergency { get; set; }
         public string? AssignedUserId { get; set; }
+        // public string? AttachmentPath { get; set; }
 
     }
+
 }

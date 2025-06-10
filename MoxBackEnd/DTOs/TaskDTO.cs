@@ -8,5 +8,9 @@ public class TaskDto
     public PriorityLevel Priority { get; set; }
     public bool IsEmergency { get; set; }
     public DateTime DueDate { get; set; }
+    public DateTime? StartDate { get; set; }
+    public DateTime? EndDate { get; set; }
+    public DateTime? CompletedAt { get; set; }
     public WorkStatus Status { get; set; }
 }
+

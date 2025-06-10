@@ -9,6 +9,14 @@ body {
     background-color: #f6f5f7;
 }
 
+body {
+  background-image: url('../assets/Background.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  min-height: 100vh;
+}
+
 .header {
   background: #fff;
   padding: 1rem 1.5rem;

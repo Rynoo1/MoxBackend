@@ -9,6 +9,8 @@ public class Tasks
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int TaskId { get; set; }
+        public ICollection<FileUpload> FileUploads { get; set; } = new List<FileUpload>();
+
 
         [Required]
         public int ProjectID { get; set; }
@@ -25,8 +27,11 @@ public class Tasks
         [Required]
         public bool IsEmergency { get; set; } = false;
 
-        [Required]
-        public DateTime DueDate { get; set; }
+
+        [Column(TypeName = "timestamp with time zone")]
+        public DateTime? DueDate { get; set; }
+
+        [Column(TypeName = "timestamp with time zone")]
         public DateTime? CompletedAt { get; set; }
 
         [Required]
@@ -38,4 +43,6 @@ public class Tasks
 
         public string? AssignedUserId { get; set; }
         public Users? AssignedUser { get; set; }
+
+
 }

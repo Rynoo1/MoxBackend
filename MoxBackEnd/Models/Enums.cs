@@ -10,10 +10,21 @@ namespace MoxBackEnd.Models
 
     public enum PriorityLevel
     {
-        VeryLow = 1,
-        Low = 2,
-        Medium = 3,
-        High = 4,
-        Critical = 5
+        Low = 1,
+        Medium = 2,
+        High = 3,
+        Critical = 4
     }
 }
+
+//     public enum PriorityLevel
+//     {
+//         VeryLow = 1,
+//         Low = 2,
+//         Medium = 3,
+//         High = 4,
+//         Critical = 5
+//     }
+// }
+
+
