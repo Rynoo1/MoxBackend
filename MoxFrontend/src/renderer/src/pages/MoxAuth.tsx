@@ -1,42 +1,24 @@
 import React, { useState } from 'react'
 import LoginForm from '../components/LogInForm'
 import RegisterForm from '../components/RegisterForm'
-import TwoFactorCard from '@renderer/components/TwoFactor'
 import bg from '../assets/Auth_Background.jpg'
 import logo from '../assets/logo.svg'
 import '../styles/Auth.css'
-
-// interface RegisterFormValues {
-//   email: string
-//   username: string
-//   password: string
-//   twofac: boolean
-// }
 
 const MoxAuth: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('login')
   const [error, setError] = useState<string>('')
 
-  // let twofac = localStorage.getItem('twofac')
-  const twofac = false
+  const loginWithGoogle = (): void => {
+    const returnUrl = encodeURIComponent(`${window.location.origin}/auth-callback`)
+    window.location.href = `http://localhost:5183/api/user/external-login?provider=Google&returnUrl=${returnUrl}`
+  }
 
   window.addEventListener('storage', (event) => {
     if (event.key == 'twofac') {
       console.log('twofacupdated', event.newValue)
     }
   })
-
-  // const [registerValues, setRegisterValues] = useState<RegisterFormValues>({
-  //   email: '',
-  //   username: '',
-  //   password: '',
-  //   twofac: false
-  // })
-
-  // const handleRegisterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   const { name, value } = e.target
-  //   setRegisterValues((prev) => ({ ...prev, [name]: value }))
-  // }
 
   const handleRegister = async (data: {
     email: string
@@ -77,11 +59,6 @@ const MoxAuth: React.FC = () => {
     }
   }
 
-  const loginWithGoogle = (): void => {
-    const returnUrl = encodeURIComponent(`${window.location.origin}/auth-callback`)
-    window.location.href = `http://localhost:5183/api/auth/external-login?provider=Google&returnUrl=${returnUrl}`
-  }
-
   return (
     <div
       className="flex w-full min-h-screen"
@@ -117,14 +94,6 @@ const MoxAuth: React.FC = () => {
               <span>{error}</span>
             </div>
           )}
-        </div>
-
-        <div className="flex flex-col justify-center mx-auto bg-white bg-opacity-90 rounded-lg shadow-lg">
-          {twofac === true && activeTab === 'login' ? (
-            <div className="flex justify-center items-center p-4">
-              <TwoFactorCard />
-            </div>
-          ) : null}
         </div>
 
         {/* Form + Google */}

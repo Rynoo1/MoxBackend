@@ -88,7 +88,7 @@ builder.Services.AddAuthentication(options =>
  {
      GoogleOptions.ClientId = builder.Configuration["Authentication:Google:ClientId"] ?? string.Empty;
      GoogleOptions.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"] ?? string.Empty;
-     GoogleOptions.CallbackPath = "/signin-google"; // Ensure this matches your Google API settings
+     GoogleOptions.CallbackPath = "/api/user/signin-google";
 
      GoogleOptions.Scope.Add("email");
      GoogleOptions.Scope.Add("profile");

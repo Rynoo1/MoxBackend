@@ -6,7 +6,7 @@ const AuthCallback: React.FC = () => {
   const navigate = useNavigate()
 
   useEffect(() => {
-    const handleCallback = () => {
+    const handleCallback = (): void => {
       const urlParams = new URLSearchParams(window.location.search)
       const token = urlParams.get('token')
       const email = urlParams.get('email')
