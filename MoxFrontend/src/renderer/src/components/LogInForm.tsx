@@ -68,11 +68,17 @@ const LoginForm: React.FC<LoginPageProps> = ({ onLoginSuccess, onSetError }) => 
       }
 
       const data = await response.json()
+      console.log(data) // Debug: see what backend returns
+
+      // Use Id, userId, or id for userId
+      const userId = data.userId || data.Id || data.id || ''
+      if (userId) {
+        localStorage.setItem('userId', userId)
+      }
 
       if (data.twoFactorRequired) {
         localStorage.setItem('userEmail', loginValues.email)
-        localStorage.setItem('userId', data.userId)
-        setTwoFactorValues((prev) => ({ ...prev, userId: data.userId }))
+        setTwoFactorValues((prev) => ({ ...prev, userId }))
         setShowTwoFactor(true)
         alert('2FA code was sent to your email!')
         return
@@ -80,10 +86,9 @@ const LoginForm: React.FC<LoginPageProps> = ({ onLoginSuccess, onSetError }) => 
 
       // Handle successful login with token
       if (data.Token || data.token) {
-        // Handle both cases
         localStorage.setItem('token', data.Token || data.token)
         localStorage.setItem('userEmail', loginValues.email)
-        localStorage.setItem('userId', data.userId || '')
+
         localStorage.setItem('userRole', data.role || 'basic')
         alert('Login successful!')
 
@@ -98,7 +103,6 @@ const LoginForm: React.FC<LoginPageProps> = ({ onLoginSuccess, onSetError }) => 
           alert('Login successful!')
         }
 
-        console.log(data)
         if (onLoginSuccess && loginValues.username) {
           onLoginSuccess(loginValues.username)
         }
@@ -141,19 +145,22 @@ const LoginForm: React.FC<LoginPageProps> = ({ onLoginSuccess, onSetError }) => 
       }
 
       const data = await response.json()
+      console.log(data) // Debug: see what backend returns
+
+      // Use Id, userId, or id for userId
 
       if (data.token) {
         localStorage.setItem('token', data.token)
-        localStorage.setItem('userId', data.userId || '')
+
         localStorage.setItem('userRole', data.role || 'basic')
         alert('Login Successful!')
 
         localStorage.setItem('token', data.Token || data.token)
 
-        // localStorage.setItem('isAdmin', data.IsAdmin?.toString() || 'false')
         if (loginValues.email === 'ryno.debeer12@gmail.com') {
           localStorage.setItem('isAdmin', 'true')
         }
+        // localStorage.setItem('isAdmin', data.IsAdmin?.toString() || 'false')
 
         if (data.IsAdmin) {
           alert('Welcome Admin!')
@@ -162,8 +169,6 @@ const LoginForm: React.FC<LoginPageProps> = ({ onLoginSuccess, onSetError }) => 
         }
 
         navigate('/')
-        console.log(data)
-
         if (onLoginSuccess && loginValues.username) {
           onLoginSuccess(loginValues.username)
         }

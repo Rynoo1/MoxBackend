@@ -21,7 +21,7 @@ const AppContent = () => {
   const location = useLocation()
   const hideSidebar = location.pathname === '/auth'
   const userRole = localStorage.getItem('userRole') || 'basic'
-  const userId = Number(localStorage.getItem('userId')) || 0
+  const userId = localStorage.getItem('userId') || ''
 
   const [isDarkMode, setIsDarkMode] = useState(false)
 
@@ -45,14 +45,22 @@ const AppContent = () => {
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/kanban" element={<KanbanBoard />} />
-          <Route path="/projects" element={<Projects userRole={userRole} userId={userId} />} />
+          <Route
+            path="/projects"
+            element={
+              <Projects isAdmin={localStorage.getItem('isAdmin') === 'true'} userId={userId} />
+            }
+          />
           <Route path="/settings" element={<Settings />} />
           <Route path="/auth" element={<MoxAuth />} />
           <Route path="/edit-project" element={<EditProject />} />
           <Route path="/task/:taskId" element={<TaskDetails />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/userman" element={<UserManagement />} />
-          <Route path="/analytics" element={<Analytics userRole="admin" userId={''} />} />
+          <Route
+            path="/analytics"
+            element={<Analytics isAdmin={localStorage.getItem('isAdmin') === 'true'} userId={''} />}
+          />
           <Route path="/auth-callback" element={<AuthCallback />} />
         </Routes>
       </div>

@@ -1,7 +1,6 @@
 import React from 'react'
 import './styles/Projectcard.css'
 import Progressbar from './ProgressBar'
-import TaskDetails from '@renderer/pages/TaskDetails'
 import { useNavigate } from 'react-router-dom'
 
 interface SubTask {
@@ -30,7 +29,7 @@ interface ProjectCardProps {
   ProjectName: string
   ProjectDueDate?: string
   isOverdue?: boolean
-  isAdmin?: boolean // <-- add this prop
+  isAdmin?: boolean
 }
 
 const ProjectCard: React.FC<ProjectCardProps> = ({
@@ -38,7 +37,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   ProjectName,
   ProjectDueDate,
   isOverdue,
-  isAdmin = false // default to false
+  isAdmin = false
 }) => {
   const [tasks, setTasks] = React.useState<Task[]>([])
   const [error, setError] = React.useState<string | null>(null)
@@ -65,10 +64,24 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
                         `http://localhost:5183/api/SubTask/${subTaskId}/users`
                       )
                       const users = usersRes.ok ? await usersRes.json() : []
+                      const userList = Array.isArray(users.$values) ? users.$values : users
+
+                      // Always fetch full user info for each assigned user to get ProfilePicture
+                      const assignedUsersWithProfile = await Promise.all(
+                        userList.map(async (u: any) => {
+                          const userRes = await fetch(`http://localhost:5183/api/user/${u.id}`)
+                          if (userRes.ok) {
+                            const userData = await userRes.json()
+                            return { ...u, ProfilePicture: userData.ProfilePicture }
+                          }
+                          return u
+                        })
+                      )
+
                       return {
                         ...sub,
                         id: subTaskId,
-                        assignedUsers: Array.isArray(users.$values) ? users.$values : users
+                        assignedUsers: assignedUsersWithProfile
                       }
                     })
                   )
@@ -82,6 +95,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
         )
 
         setTasks(normalized)
+        console.log('Normalized tasks with user info:', normalized)
       } catch (err: any) {
         setError(err.message || 'Failed to fetch tasks.')
       }
@@ -233,7 +247,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
                                   key={user.id}
                                   src={
                                     user.ProfilePicture ||
-                                    `https://ui-avatars.com/api/?name=${encodeURIComponent(user.userName)}`
+                                    `https://ui-avatars.com/api/?name=${encodeURIComponent(user.userName)}&size=32&background=random`
                                   }
                                   alt={user.userName}
                                   title={user.userName}
@@ -305,7 +319,43 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
                                 </td>
                                 <td>
                                   {sub.assignedUsers && sub.assignedUsers.length > 0 ? (
-                                    sub.assignedUsers.map((u) => u.userName).join(', ')
+                                    <div
+                                      style={{
+                                        display: 'flex',
+                                        gap: '0.5rem',
+                                        alignItems: 'center',
+                                        flexWrap: 'wrap'
+                                      }}
+                                    >
+                                      {sub.assignedUsers.map((u) => (
+                                        <div
+                                          key={u.id}
+                                          style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '0.25rem'
+                                          }}
+                                        >
+                                          <img
+                                            src={
+                                              u.ProfilePicture ||
+                                              `https://ui-avatars.com/api/?name=${encodeURIComponent(u.userName)}`
+                                            }
+                                            alt={u.userName}
+                                            title={u.userName}
+                                            style={{
+                                              width: 24,
+                                              height: 24,
+                                              borderRadius: '50%',
+                                              objectFit: 'cover',
+                                              border: '1px solid #fff',
+                                              boxShadow: '0 0 2px #888'
+                                            }}
+                                          />
+                                          <span style={{ fontSize: '0.95em' }}>{u.userName}</span>
+                                        </div>
+                                      ))}
+                                    </div>
                                   ) : (
                                     <span className="text-gray-400">No users</span>
                                   )}

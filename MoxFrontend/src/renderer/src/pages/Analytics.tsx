@@ -59,26 +59,22 @@ interface Project {
 }
 
 interface AnalyticsProps {
-  userRole: 'admin' | 'basic'
+  isAdmin: boolean
   userId: string
 }
 
 const priorityLabels = ['', 'Low', 'Medium', 'High', 'Critical'] // index 0 is unused
 
-const Analytics: React.FC<AnalyticsProps> = ({ userRole, userId }) => {
+const Analytics: React.FC<AnalyticsProps> = ({ isAdmin, userId }) => {
   const [loading, setLoading] = useState(false)
   const [projects, setProjects] = useState<Project[]>([])
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
-  const chartOptions = userRole === 'admin' ? chartOptionsAdmin : chartOptionsBasic
+  const chartOptions = isAdmin ? chartOptionsAdmin : chartOptionsBasic
 
-  // Fetch projects, tasks, subtasks, and assigned users (with user names)
+  // Fetch all projects for both admin and non-admin users
   useEffect(() => {
     setLoading(true)
-    fetch(
-      userRole === 'admin'
-        ? 'http://localhost:5183/api/Project'
-        : `http://localhost:5183/api/projects?userId=${userId}`
-    )
+    fetch('http://localhost:5183/api/Project')
       .then((res) => res.json())
       .then(async (data) => {
         const projectsArray = Array.isArray(data.$values)
@@ -161,7 +157,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ userRole, userId }) => {
       })
       .finally(() => setLoading(false))
     // eslint-disable-next-line
-  }, [userRole, userId])
+  }, [isAdmin, userId])
 
   // --- Analytics Calculations ---
 
@@ -317,7 +313,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ userRole, userId }) => {
   return (
     <div className="projects-page min-h-screen overflow-y-auto mt-20 px-8 pr-20 pb-8">
       <h1 className="text-3xl font-bold text-center mb-8 text-blue-900">Analytics Dashboard</h1>
-      {userRole === 'admin' ? (
+      {isAdmin ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
           <div className="w-full">
             <TaskStatusChart data={statusData} />

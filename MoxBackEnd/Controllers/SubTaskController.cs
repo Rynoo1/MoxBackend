@@ -77,4 +77,9 @@ namespace MoxBackEnd.Controllers
             return Ok(subtasks);
         }
     }
+
+    public class SubTaskStatusDto
+    {
+        public WorkStatus SubTStatus { get; internal set; }
+    }
 }

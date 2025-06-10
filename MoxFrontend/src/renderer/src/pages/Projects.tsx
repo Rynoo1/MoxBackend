@@ -5,10 +5,6 @@ import CreateProject from '@renderer/components/CreateProject'
 import moxLoadingGif from '../assets/mox-loading.gif'
 import { HiX } from 'react-icons/hi'
 
-// You should get these from your auth context or props
-const userRole = localStorage.getItem('userRole') || 'basic' //
-const userId = localStorage.getItem('userId') || ''
-
 interface Project {
   projectID: number
   projectName: string
@@ -19,15 +15,20 @@ interface Task {
   id: number
   status: string
   dueDate: string
-  subTasks?: { completed: boolean; users?: { id: string }[] }[]
+  subTasks?: {
+    id?: number
+    subTaskID?: number
+    completed: boolean
+    assignedUsers?: { id: string }[]
+  }[]
 }
 
 interface ProjectsProps {
-  userRole?: string
-  userId?: number
+  isAdmin?: boolean
+  userId?: string
 }
 
-const Projects: React.FC<ProjectsProps> = ({ userRole: propUserRole, userId: propUserId }) => {
+const Projects: React.FC<ProjectsProps> = ({ isAdmin: propIsAdmin, userId: propUserId }) => {
   const [projects, setProjects] = useState<Project[]>([])
   const [projectTasks, setProjectTasks] = useState<Record<number, Task[]>>({})
   const [error, setError] = useState<string | null>(null)
@@ -37,7 +38,8 @@ const Projects: React.FC<ProjectsProps> = ({ userRole: propUserRole, userId: pro
   const modalRef = useRef<HTMLDialogElement>(null)
 
   // Use prop or fallback to localStorage
-  const userRole = propUserRole || localStorage.getItem('userRole') || 'basic'
+  const isAdmin =
+    propIsAdmin !== undefined ? propIsAdmin : localStorage.getItem('isAdmin') === 'true'
   const userId = propUserId || localStorage.getItem('userId') || ''
 
   // Fetch all projects
@@ -62,7 +64,36 @@ const Projects: React.FC<ProjectsProps> = ({ userRole: propUserRole, userId: pro
     }
   }
 
-  // Fetch tasks for all projects
+  // Attach users to each subtask using the join table API
+  const attachUsersToSubTasks = async (tasks: Task[]) => {
+    return Promise.all(
+      tasks.map(async (task) => {
+        if (!Array.isArray(task.subTasks)) return task
+        const subTasksWithUsers = await Promise.all(
+          task.subTasks.map(async (sub) => {
+            if (!sub) return sub
+            const subTaskId = sub.id || sub.subTaskID
+            let assignedUsers: { id: string }[] = []
+            if (subTaskId !== undefined && subTaskId !== null) {
+              try {
+                const res = await fetch(`http://localhost:5183/api/SubTask/${subTaskId}/users`)
+                if (res.ok) {
+                  const usersData = await res.json()
+                  assignedUsers = Array.isArray(usersData.$values) ? usersData.$values : usersData
+                }
+              } catch {
+                assignedUsers = []
+              }
+            }
+            return { ...sub, assignedUsers }
+          })
+        )
+        return { ...task, subTasks: subTasksWithUsers }
+      })
+    )
+  }
+
+  // Fetch tasks for all projects and attach users to subtasks
   const fetchAllProjectTasks = async (projectsList: Project[]) => {
     const tasksMap: Record<number, Task[]> = {}
     await Promise.all(
@@ -71,7 +102,10 @@ const Projects: React.FC<ProjectsProps> = ({ userRole: propUserRole, userId: pro
           const res = await fetch(`http://localhost:5183/api/Task/by-project/${project.projectID}`)
           if (res.ok) {
             const data = await res.json()
-            tasksMap[project.projectID] = Array.isArray(data.$values) ? data.$values : data
+            let tasks = Array.isArray(data.$values) ? data.$values : data
+            // Attach users to each subtask
+            tasks = await attachUsersToSubTasks(tasks)
+            tasksMap[project.projectID] = tasks
           } else {
             tasksMap[project.projectID] = []
           }
@@ -104,19 +138,20 @@ const Projects: React.FC<ProjectsProps> = ({ userRole: propUserRole, userId: pro
   }
 
   // Filter projects for non-admin users: only show projects where user is assigned to at least one subtask
-  const filteredProjects =
-    userRole === 'admin'
-      ? projects
-      : projects.filter((project) => {
-          const tasks = projectTasks[project.projectID] || []
-          return tasks.some(
-            (task) =>
-              Array.isArray(task.subTasks) &&
-              task.subTasks.some(
-                (sub) => Array.isArray(sub.users) && sub.users.some((u) => u.id === userId)
-              )
-          )
-        })
+  const filteredProjects = isAdmin
+    ? projects
+    : projects.filter((project) => {
+        const tasks = projectTasks[project.projectID] || []
+        return tasks.some(
+          (task) =>
+            Array.isArray(task.subTasks) &&
+            task.subTasks.some(
+              (sub) =>
+                Array.isArray(sub.assignedUsers) &&
+                sub.assignedUsers.some((u) => String(u.id) === String(userId))
+            )
+        )
+      })
 
   // Sorting logic
   const sortedProjects = [...filteredProjects].sort((a, b) => {
@@ -172,15 +207,17 @@ const Projects: React.FC<ProjectsProps> = ({ userRole: propUserRole, userId: pro
           />
         </div>
       )}
-      {!loading && userRole === 'admin' && (
+      {!loading && (
         <div className="flex items-center gap-4 p-4 mb-4 mt-8" style={{ width: '80%' }}>
-          <button
-            className="btn btn-xs sm:btn-sm md:btn-md lg:btn-lg xl:btn-xl bg-[#1e3a8a] text-white hover:text-[#1e3a8a] hover:bg-white font-semibold border-2 border-[#1e3a8a] !shadow-md shadow-black/30"
-            onClick={handleOpen}
-            disabled={loading}
-          >
-            Create New Project
-          </button>
+          {isAdmin && (
+            <button
+              className="btn btn-xs sm:btn-sm md:btn-md lg:btn-lg xl:btn-xl bg-[#1e3a8a] text-white hover:text-[#1e3a8a] hover:bg-white font-semibold border-2 border-[#1e3a8a] !shadow-md shadow-black/30"
+              onClick={handleOpen}
+              disabled={loading}
+            >
+              Create New Project
+            </button>
+          )}
           <div style={{ marginLeft: 'auto' }}>
             <select
               className="select select-bordered  !shadow-md shadow-black/30"
@@ -192,17 +229,19 @@ const Projects: React.FC<ProjectsProps> = ({ userRole: propUserRole, userId: pro
               <option value="notCompleted">Not Completed</option>
             </select>
           </div>
-          <dialog id="create_project_modal" className="modal" ref={modalRef}>
-            <div className="modal-box relative bg-[#EDF2F7] w-full max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-3xl xl:max-w-4xl">
-              <button
-                className="btn btn-sm btn-square btn-ghost border-2 text-center border-red-500 bg-red-500 hover:bg-white hover:text-red-500 font-light absolute right-2 top-2 text-[30px]"
-                onClick={handleCreateClose}
-              >
-                <HiX />
-              </button>
-              <CreateProject key={createKey} onClose={handleCreateClose} />
-            </div>
-          </dialog>
+          {isAdmin && (
+            <dialog id="create_project_modal" className="modal" ref={modalRef}>
+              <div className="modal-box relative bg-[#EDF2F7] w-full max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-3xl xl:max-w-4xl">
+                <button
+                  className="btn btn-sm btn-square btn-ghost border-2 text-center border-red-500 bg-red-500 hover:bg-white hover:text-red-500 font-light absolute right-2 top-2 text-[30px]"
+                  onClick={handleCreateClose}
+                >
+                  <HiX />
+                </button>
+                <CreateProject key={createKey} onClose={handleCreateClose} />
+              </div>
+            </dialog>
+          )}
         </div>
       )}
       <div className="project-page flex flex-col gap-6" style={{ width: '80%' }}>
@@ -214,7 +253,7 @@ const Projects: React.FC<ProjectsProps> = ({ userRole: propUserRole, userId: pro
               ProjectName={project.projectName}
               ProjectDueDate={project.dueDate}
               isOverdue={isProjectOverdue(project, projectTasks[project.projectID] || [])}
-              isAdmin={userRole === 'admin'}
+              isAdmin={isAdmin}
             />
           ))}
       </div>
