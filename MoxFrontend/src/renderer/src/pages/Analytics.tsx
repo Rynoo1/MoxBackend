@@ -63,7 +63,7 @@ interface AnalyticsProps {
   userId: string
 }
 
-const priorityLabels = ['', 'Low', 'Medium', 'High', 'Critical'] // index 0 is unused
+const priorityLabels = ['', 'Low', 'Medium', 'High', 'Critical']
 
 const Analytics: React.FC<AnalyticsProps> = ({ isAdmin, userId }) => {
   const [loading, setLoading] = useState(false)
