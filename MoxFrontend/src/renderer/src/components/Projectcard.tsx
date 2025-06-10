@@ -82,7 +82,6 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
         )
 
         setTasks(normalized)
-        console.log('📦 Loaded tasks with users:', normalized)
       } catch (err: any) {
         setError(err.message || 'Failed to fetch tasks.')
       }

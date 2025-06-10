@@ -27,7 +27,7 @@ namespace MoxBackEnd.Models
 
         [Required]
         public string CreatedByUserId { get; set; } = string.Empty;
-        public Users CreatedBy { get; set; } = null!;
+        public Users? CreatedBy { get; set; } = null;
 
         public ICollection<Users> Attendees { get; set; } = new List<Users>();
 

@@ -15,6 +15,7 @@ import ProfilePage from './pages/Profile'
 import UserManagement from './pages/UserManagement'
 import { AuthProvider } from './pages/AuthContext'
 import Analytics from './pages/Analytics'
+import AuthCallback from './components/AuthCallback'
 
 const AppContent = () => {
   const location = useLocation()
@@ -52,6 +53,7 @@ const AppContent = () => {
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/userman" element={<UserManagement />} />
           <Route path="/analytics" element={<Analytics userRole="admin" userId={''} />} />
+          <Route path="/auth-callback" element={<AuthCallback />} />
         </Routes>
       </div>
     </div>

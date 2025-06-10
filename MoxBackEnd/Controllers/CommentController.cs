@@ -20,12 +20,38 @@ namespace MoxBackEnd.Controllers
             Ok(await _service.GetAllAsync());
 
         [HttpGet("by-project/{projectId}")]
-        public async Task<IActionResult> GetByProject(int projectId) =>
-            Ok(await _service.GetByProjectAsync(projectId));
+        public async Task<IActionResult> GetByProject(int projectId)
+        {
+            var comments = await _service.GetByProjectAsync(projectId);
+
+            var dtoList = comments.Select(c => new CommentDto
+            {
+                CommentID = c.CommentID,
+                Content = c.Content,
+                CreatedAt = c.CreatedAt,
+                CreatedByUserId = c.CreatedByUserId,
+                CreatedByUserName = c.CreatedBy?.UserName ?? "Anonymous"
+            });
+
+            return Ok(dtoList);
+        }
 
         [HttpGet("by-task/{taskId}")]
-        public async Task<IActionResult> GetByTask(int taskId) =>
-            Ok(await _service.GetByTaskAsync(taskId));
+        public async Task<IActionResult> GetByTask(int taskId)
+        {
+            var comments = await _service.GetByTaskAsync(taskId);
+
+            var dtoList = comments.Select(c => new CommentDto
+            {
+                CommentID = c.CommentID,
+                Content = c.Content,
+                CreatedAt = c.CreatedAt,
+                CreatedByUserId = c.CreatedByUserId,
+                CreatedByUserName = c.CreatedBy?.UserName ?? "Anonymous"
+            });
+
+            return Ok(dtoList);
+        }
 
         [HttpGet("by-user/{userId}")]
         public async Task<IActionResult> GetByUser(string userId) =>
@@ -42,14 +68,35 @@ namespace MoxBackEnd.Controllers
         public async Task<IActionResult> Create([FromBody] Comment comment)
         {
             var created = await _service.CreateAsync(comment);
-            return CreatedAtAction(nameof(Get), new { id = created.CommentID }, created);
+
+            var dto = new CommentDto
+            {
+                CommentID = created.CommentID,
+                Content = created.Content,
+                CreatedAt = created.CreatedAt,
+                CreatedByUserId = created.CreatedByUserId,
+                CreatedByUserName = created.CreatedBy?.UserName ?? "Anonymous"
+            };
+
+            return CreatedAtAction(nameof(Get), new { id = dto.CommentID }, dto);
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] Comment comment)
         {
             var updated = await _service.UpdateAsync(id, comment);
-            return updated == null ? NotFound() : Ok(updated);
+            if (updated == null) return NotFound();
+
+            var dto = new CommentDto
+            {
+                CommentID = updated.CommentID,
+                Content = updated.Content,
+                CreatedAt = updated.CreatedAt,
+                CreatedByUserId = updated.CreatedByUserId,
+                CreatedByUserName = updated.CreatedBy?.UserName ?? "Anonymous"
+            };
+
+            return Ok(dto);
         }
 
         [HttpDelete("{id}")]

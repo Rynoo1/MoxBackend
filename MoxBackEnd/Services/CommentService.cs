@@ -40,16 +40,32 @@ namespace MoxBackEnd.Services
                 .Include(c => c.CreatedBy)
                 .FirstOrDefaultAsync(c => c.CommentID == id);
 
+
         public async Task<Comment> CreateAsync(Comment comment)
         {
+            if (!string.IsNullOrEmpty(comment.CreatedByUserId))
+            {
+                comment.CreatedBy = await _context.Users
+                    .FirstOrDefaultAsync(u => u.Id == comment.CreatedByUserId);
+            }
+
+            comment.CreatedAt = DateTime.UtcNow;
+
             _context.Comments.Add(comment);
             await _context.SaveChangesAsync();
+
+            await _context.Entry(comment).Reference(c => c.CreatedBy).LoadAsync();
+
             return comment;
         }
 
+
         public async Task<Comment?> UpdateAsync(int id, Comment updatedComment)
         {
-            var existing = await _context.Comments.FindAsync(id);
+            var existing = await _context.Comments
+                .Include(c => c.CreatedBy)
+                .FirstOrDefaultAsync(c => c.CommentID == id);
+
             if (existing == null) return null;
 
             existing.Content = updatedComment.Content;

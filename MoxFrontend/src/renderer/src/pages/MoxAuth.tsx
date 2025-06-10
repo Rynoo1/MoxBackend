@@ -77,6 +77,11 @@ const MoxAuth: React.FC = () => {
     }
   }
 
+  const loginWithGoogle = (): void => {
+    const returnUrl = encodeURIComponent(`${window.location.origin}/auth-callback`)
+    window.location.href = `http://localhost:5183/api/auth/external-login?provider=Google&returnUrl=${returnUrl}`
+  }
+
   return (
     <div
       className="flex w-full min-h-screen"
@@ -141,7 +146,11 @@ const MoxAuth: React.FC = () => {
           )}
 
           {/* Google Auth Button */}
-          <button className="btn google-btn w-full flex items-center justify-center gap-2">
+          <button
+            className="btn google-btn w-full flex items-center justify-center gap-2"
+            onClick={loginWithGoogle}
+            type="button"
+          >
             <svg
               aria-label="Google logo"
               width="16"

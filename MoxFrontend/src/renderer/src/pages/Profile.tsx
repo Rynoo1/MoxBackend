@@ -25,6 +25,7 @@ const ProfilePage: React.FC = () => {
   const [error, setError] = useState<string | null>(null)
   const [edit, setEdit] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [originalUser, setOriginalUser] = useState<User | null>(null)
 
   // Handle profile picture upload to Firebase and update backend
   const handleProfilePicChange = async (e: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
@@ -151,7 +152,27 @@ const ProfilePage: React.FC = () => {
   }
 
   const handleCancel = (): void => {
+    setUser(originalUser)
     setEdit(false)
+  }
+
+  const handleDelete = async (): Promise<{ success: boolean, shouldLogout?: boolean }> => {
+    const token = localStorage.getItem('token')
+
+    const response = await fetch('http://localhost:5183/api/user/profile', {
+      method: 'Delete',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    })
+
+    if (response.ok) {
+      const result = await response.json()
+      return { success: true, shouldLogout: result.data?.shouldLogout };
+    }
+
+    return { success: false }
   }
 
   if (loading) {
@@ -204,7 +225,7 @@ const ProfilePage: React.FC = () => {
           <div className="flex items-center gap-4">
             <span className="text-gray-600">{formattedDate}</span>
             <div className="flex gap-2">
-              <button onClick={handleSave} className="btn btn-success">
+              <button onClick={handleSave} className="btn btn-primary">
                 Save
               </button>
               <button onClick={handleCancel} className="btn btn-outline">
@@ -298,8 +319,22 @@ const ProfilePage: React.FC = () => {
         <h1 className="text-4xl font-semibold">Profile</h1>
         <div className="flex items-center gap-4">
           <span className="text-gray-600">{formattedDate}</span>
-          <button onClick={() => setEdit(true)} className="btn btn-primary">
+          <button
+            onClick={() => {
+              setOriginalUser(user)
+              setEdit(true)
+            }}
+            className="btn btn-primary"
+          >
             Edit Profile
+          </button>
+          <button
+            onClick={() => {
+              handleDelete()
+            }}
+            className="btn btn-outline btn-error"
+          >
+            Delete Profile
           </button>
         </div>
       </header>

@@ -53,22 +53,22 @@ namespace MoxBackEnd.Controllers
             return Ok(subTask);
         }
 
-        [HttpPut("{id}/status")]
-        public async Task<IActionResult> UpdateStatus(int id, [FromBody] SubTaskStatusDto dto)
-        {
-            var subTask = await _context.SubTasks.FindAsync(id);
-            if (subTask == null)
-                return NotFound();
+        // [HttpPut("{id}/status")]
+        // public async Task<IActionResult> UpdateStatus(int id, [FromBody] SubTaskStatusDto dto)
+        // {
+        //     var subTask = await _context.SubTasks.FindAsync(id);
+        //     if (subTask == null)
+        //         return NotFound();
 
-            subTask.SubTStatus = (WorkStatus)dto.SubTStatus;
-            if (dto.SubTStatus == 1)
-                subTask.CompletedDate = System.DateTime.UtcNow;
-            else
-                subTask.CompletedDate = null;
+        //     subTask.SubTStatus = (WorkStatus)dto.SubTStatus;
+        //     if (dto.SubTStatus == 1)
+        //         subTask.CompletedDate = System.DateTime.UtcNow;
+        //     else
+        //         subTask.CompletedDate = null;
 
-            await _context.SaveChangesAsync();
-            return Ok(subTask);
-        }
+        //     await _context.SaveChangesAsync();
+        //     return Ok(subTask);
+        // }
 
         [HttpGet("by-task/{taskId}")]
         public IActionResult GetSubTasksByTaskId(int taskId)

@@ -58,6 +58,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isDarkMode, toggleDarkMode }) => {
           </Link>
         </li>
         <li>
+          <Link to="/emergency-meeting" className="nav-link">
+            <ChartBarIcon className="mr-2 h-5 w-5" />
+            Emergency Meeting
+          </Link>
+        </li>
+        <li>
           <Link to="/profile" className="nav-link">
             <UserCircleIcon className="mr-2 h-5 w-5" />
             Profile
