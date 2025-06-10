@@ -5,6 +5,10 @@ import CreateProject from '@renderer/components/CreateProject'
 import moxLoadingGif from '../assets/mox-loading.gif'
 import { HiX } from 'react-icons/hi'
 
+// You should get these from your auth context or props
+const userRole = localStorage.getItem('userRole') || 'basic' //
+const userId = localStorage.getItem('userId') || ''
+
 interface Project {
   projectID: number
   projectName: string
@@ -15,10 +19,15 @@ interface Task {
   id: number
   status: string
   dueDate: string
-  subTasks?: { completed: boolean }[]
+  subTasks?: { completed: boolean; users?: { id: string }[] }[]
 }
 
-const Projects: React.FC = () => {
+interface ProjectsProps {
+  userRole?: string
+  userId?: number
+}
+
+const Projects: React.FC<ProjectsProps> = ({ userRole: propUserRole, userId: propUserId }) => {
   const [projects, setProjects] = useState<Project[]>([])
   const [projectTasks, setProjectTasks] = useState<Record<number, Task[]>>({})
   const [error, setError] = useState<string | null>(null)
@@ -26,6 +35,10 @@ const Projects: React.FC = () => {
   const [createKey, setCreateKey] = useState(0)
   const [sortMode, setSortMode] = useState<'default' | 'completed' | 'notCompleted'>('default')
   const modalRef = useRef<HTMLDialogElement>(null)
+
+  // Use prop or fallback to localStorage
+  const userRole = propUserRole || localStorage.getItem('userRole') || 'basic'
+  const userId = propUserId || localStorage.getItem('userId') || ''
 
   // Fetch all projects
   const fetchProjects = async () => {
@@ -90,8 +103,23 @@ const Projects: React.FC = () => {
     return due < now && !isProjectCompleted(tasks)
   }
 
+  // Filter projects for non-admin users: only show projects where user is assigned to at least one subtask
+  const filteredProjects =
+    userRole === 'admin'
+      ? projects
+      : projects.filter((project) => {
+          const tasks = projectTasks[project.projectID] || []
+          return tasks.some(
+            (task) =>
+              Array.isArray(task.subTasks) &&
+              task.subTasks.some(
+                (sub) => Array.isArray(sub.users) && sub.users.some((u) => u.id === userId)
+              )
+          )
+        })
+
   // Sorting logic
-  const sortedProjects = [...projects].sort((a, b) => {
+  const sortedProjects = [...filteredProjects].sort((a, b) => {
     const tasksA = projectTasks[a.projectID] || []
     const tasksB = projectTasks[b.projectID] || []
     const overdueA = isProjectOverdue(a, tasksA)
@@ -144,7 +172,7 @@ const Projects: React.FC = () => {
           />
         </div>
       )}
-      {!loading && (
+      {!loading && userRole === 'admin' && (
         <div className="flex items-center gap-4 p-4 mb-4 mt-8" style={{ width: '80%' }}>
           <button
             className="btn btn-xs sm:btn-sm md:btn-md lg:btn-lg xl:btn-xl bg-[#1e3a8a] text-white hover:text-[#1e3a8a] hover:bg-white font-semibold border-2 border-[#1e3a8a] !shadow-md shadow-black/30"
@@ -186,6 +214,7 @@ const Projects: React.FC = () => {
               ProjectName={project.projectName}
               ProjectDueDate={project.dueDate}
               isOverdue={isProjectOverdue(project, projectTasks[project.projectID] || [])}
+              isAdmin={userRole === 'admin'}
             />
           ))}
       </div>

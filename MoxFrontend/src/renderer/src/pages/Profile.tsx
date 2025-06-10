@@ -3,7 +3,7 @@ import 'react-day-picker/dist/style.css'
 import '../styles/dashboard.css'
 import { useAuth } from './useAuth'
 import { storage } from '../firebase'
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
+import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage'
 import moxLoadingGif from '../assets/mox-loading.gif'
 
 interface User {
@@ -26,28 +26,51 @@ const ProfilePage: React.FC = () => {
   const [edit, setEdit] = useState(false)
   const [uploading, setUploading] = useState(false)
 
+  // Handle profile picture upload to Firebase and update backend
   const handleProfilePicChange = async (e: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
     const file = e.target.files ? e.target.files[0] : null
-    // if (!files || files.length === 0) return
-    // const file = files[0]
     setUploading(true)
     try {
-      if (!file) {
+      if (!file || !user) {
         setUploading(false)
         return
       }
-      const storageRef = ref(storage, `profile-pics/${user?.UserName}_${file.name}`)
+
+      // If user has an existing Firebase profile photo, delete it first
+      if (user.ProfilePicture && user.ProfilePicture.includes('firebase')) {
+        try {
+          // Extract the path from the URL
+          const url = new URL(user.ProfilePicture)
+          // Firebase Storage URLs have the path after '/o/', but encoded
+          const pathMatch = url.pathname.match(/\/o\/(.+)$/)
+          const encodedPath = pathMatch ? pathMatch[1] : ''
+          const filePath = decodeURIComponent(encodedPath)
+          if (filePath) {
+            const oldRef = ref(storage, filePath)
+            await deleteObject(oldRef)
+          }
+        } catch (deleteErr) {
+          // Ignore delete errors, just log
+          console.warn('Failed to delete old profile picture:', deleteErr)
+        }
+      }
+
+      // Upload new photo to Firebase Storage
+      const storageRef = ref(storage, `profile-pics/${user.UserName}_${file.name}`)
       await uploadBytes(storageRef, file)
       const url = await getDownloadURL(storageRef)
 
-      setUser((prev) => (prev ? { ...prev, ProfilePic: url } : prev))
+      // Update local state
+      setUser((prev) => (prev ? { ...prev, ProfilePicture: url } : prev))
+
+      // Update backend with new profile picture URL
       await fetch('http://localhost:5183/api/user/updateProfilePic', {
         method: 'PUT',
         headers: {
           ...getAuthHeaders(),
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ profilePic: url })
+        body: JSON.stringify({ profilePicture: url })
       })
     } catch (error) {
       alert('Failed to upload profile picture')
@@ -56,12 +79,9 @@ const ProfilePage: React.FC = () => {
   }
 
   useEffect(() => {
-    // Don't check authentication while still loading
     if (isLoading) return
-
     if (!isAuthenticated) {
-      console.log('User not authenticated')
-      // Handle redirect to login here
+      // Handle redirect to login here if needed
       return
     }
   }, [isAuthenticated, isLoading])
@@ -72,37 +92,19 @@ const ProfilePage: React.FC = () => {
       try {
         setLoading(true)
         setError(null)
-
         const headers = getAuthHeaders()
-
-        console.log('=== DEBUGGING TOKEN ===')
-        console.log('Headers being sent:', headers)
-        console.log('Token from localStorage:', localStorage.getItem('token'))
-        //console.log('Token from context:', token)
-        console.log('Is authenticated:', isAuthenticated)
-        //console.log('User from context:', user)
-
         const response = await fetch('http://localhost:5183/api/user/profile', {
           method: 'GET',
           headers
         })
-
-        console.log('Response status:', response.status)
-        console.log('Response URL:', response.url)
-
         if (response.status === 401) {
           logout()
-          console.log('Got 401 - response body:', await response.text())
-          // Don't logout yet - let's debug first
           throw new Error('Session expired. Please log in again.')
         }
-
         if (!response.ok) {
           throw new Error('Failed to fetch user profile')
         }
-
         const result: ApiResponse<User> = await response.json()
-
         if (result.success) {
           setUser({
             UserName: result.data.UserName,
@@ -114,15 +116,10 @@ const ProfilePage: React.FC = () => {
         }
       } catch (error) {
         setError(error instanceof Error ? error.message : 'An unexpected error occured')
-
-        // if (error instanceof Error && error.message.includes('Session expired')) {
-        //   logout()
-        // }
       } finally {
         setLoading(false)
       }
     }
-
     fetchUserProfile()
   }, [isAuthenticated, isLoading, getAuthHeaders, logout])
 
@@ -153,12 +150,10 @@ const ProfilePage: React.FC = () => {
     }
   }
 
-  //TODO: HANDLE CANCEL
   const handleCancel = (): void => {
     setEdit(false)
   }
 
-  //TODO: LOADING STATE
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64" style={{ marginTop: '25%' }}>
@@ -179,7 +174,6 @@ const ProfilePage: React.FC = () => {
     )
   }
 
-  //TODO: ERROR STATE
   if (error) {
     return (
       <div className="w-full flex justify-center items-center min-h-screen">

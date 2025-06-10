@@ -2,7 +2,7 @@ import React from 'react'
 import './styles/Projectcard.css'
 import Progressbar from './ProgressBar'
 import TaskDetails from '@renderer/pages/TaskDetails'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 interface SubTask {
   id: number
@@ -30,21 +30,19 @@ interface ProjectCardProps {
   ProjectName: string
   ProjectDueDate?: string
   isOverdue?: boolean
+  isAdmin?: boolean // <-- add this prop
 }
 
 const ProjectCard: React.FC<ProjectCardProps> = ({
   ProjectID,
   ProjectName,
   ProjectDueDate,
-  isOverdue
+  isOverdue,
+  isAdmin = false // default to false
 }) => {
   const [tasks, setTasks] = React.useState<Task[]>([])
   const [error, setError] = React.useState<string | null>(null)
-
   const [expandedTaskId, setExpandedTaskId] = React.useState<number | null>(null)
-  const allSubtasks = tasks.flatMap((task) => task.subTasks || [])
-  const completed = allSubtasks.filter((st) => st.completed).length
-  const total = allSubtasks.length
   const navigate = useNavigate()
 
   React.useEffect(() => {
@@ -157,20 +155,22 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
             <div className="text-sm font-bold">Due: {formatDate(ProjectDueDate)}</div>
           )}
         </div>
-        <button
-          className="bg-[#EFB917] text-white font-semibold py-1 px-2 rounded-xl text-lg border-2 border-[#EFB917] hover:!border-[#1E3A8A] hover:bg-[#1E3A8A] transition"
-          onClick={() =>
-            navigate('/edit-project/', {
-              state: {
-                project: { ProjectID, ProjectName, ProjectDueDate },
-                tasks,
-                subtasks: tasks.flatMap((task) => task.subTasks || [])
-              }
-            })
-          }
-        >
-          Edit Project
-        </button>
+        {isAdmin && (
+          <button
+            className="bg-[#EFB917] text-white font-semibold py-1 px-2 rounded-xl text-lg border-2 border-[#EFB917] hover:!border-[#1E3A8A] hover:bg-[#1E3A8A] transition"
+            onClick={() =>
+              navigate('/edit-project/', {
+                state: {
+                  project: { ProjectID, ProjectName, ProjectDueDate },
+                  tasks,
+                  subtasks: tasks.flatMap((task) => task.subTasks || [])
+                }
+              })
+            }
+          >
+            Edit Project
+          </button>
+        )}
       </div>
       {isOverdue && (
         <div className="bg-red-600 text-white font-bold px-4 py-2 rounded mb-2">

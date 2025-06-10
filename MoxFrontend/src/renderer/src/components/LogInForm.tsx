@@ -130,11 +130,14 @@ const LoginForm: React.FC<LoginPageProps> = ({ onLoginSuccess, onSetError }) => 
         // Handle both cases
         localStorage.setItem('token', data.Token || data.token)
         localStorage.setItem('userEmail', loginValues.email)
+        localStorage.setItem('userId', data.userId || '')
+        localStorage.setItem('userRole', data.role || 'basic')
         alert('Login successful!')
         console.log(data)
         if (onLoginSuccess && loginValues.username) {
           onLoginSuccess(loginValues.username)
         }
+        navigate('/')
       }
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -228,6 +231,8 @@ const LoginForm: React.FC<LoginPageProps> = ({ onLoginSuccess, onSetError }) => 
 
       if (data.token) {
         localStorage.setItem('token', data.token)
+        localStorage.setItem('userId', data.userId || '')
+        localStorage.setItem('userRole', data.role || 'basic')
         alert('Login Successful!')
         navigate('/')
         console.log(data)
