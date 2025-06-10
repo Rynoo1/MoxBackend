@@ -699,11 +699,16 @@ namespace MoxBackEnd.Controllers
             {
                 var user = await _userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
 
+                if (user == null)
+                {
+                    return BadRequest("User not found after external login.");
+                }
+
                 var token = _tokenservices.GenerateToken(
                     user.Id,
                     user.Email ?? string.Empty,
                     user.UserName ?? string.Empty);
-                return Ok(new { token });
+                return Redirect($"{returnUrl}?token={token}&email={user.Email}&userId={user.Id}");
             }
 
             if (result.IsLockedOut)
@@ -750,7 +755,7 @@ namespace MoxBackEnd.Controllers
                         user.Id,
                         user.Email ?? string.Empty,
                         user.UserName ?? string.Empty);
-                    return Ok(new { token });
+                    return Redirect($"{returnUrl}?token={token}&email={user.Email}&userId={user.Id}");;
                 }
             }
 

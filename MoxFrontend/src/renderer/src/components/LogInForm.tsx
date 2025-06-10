@@ -216,7 +216,6 @@ const LoginForm: React.FC<LoginPageProps> = ({ onLoginSuccess, onSetError }) => 
               onTwoFactorSubmit()
             }}
           >
-            {/* Code */}
             <div className="form-group">
               <label className="fieldset-legend">Code</label>
               <input
@@ -323,15 +322,7 @@ const LoginForm: React.FC<LoginPageProps> = ({ onLoginSuccess, onSetError }) => 
       <button type="submit" className="register-btn w-full">
         Log In
       </button>
-
-      {/* Switch to Register */}
-      {/* <div className="register-footer">
-        <a href="#register">Don’t have an account? Register now</a>
-      </div> */}
     </form>
-    // )}
-    //   </div>
-    // </div>
   )
 }
 

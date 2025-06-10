@@ -83,18 +83,18 @@ builder.Services.AddAuthentication(options =>
              return Task.CompletedTask;
          }
      };
+ })
+ .AddGoogle(GoogleOptions =>
+ {
+     GoogleOptions.ClientId = builder.Configuration["Authentication:Google:ClientId"] ?? string.Empty;
+     GoogleOptions.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"] ?? string.Empty;
+     GoogleOptions.CallbackPath = "/signin-google"; // Ensure this matches your Google API settings
+
+     GoogleOptions.Scope.Add("email");
+     GoogleOptions.Scope.Add("profile");
+
+     GoogleOptions.SaveTokens = true;
  });
-//  .AddGoogle(GoogleOptions =>
-//  {
-//      GoogleOptions.ClientId = builder.Configuration["Authentication:Google:ClientId"] ?? string.Empty;
-//      GoogleOptions.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"] ?? string.Empty;
-//      GoogleOptions.CallbackPath = "/signin-google"; // Ensure this matches your Google API settings
-
-//      GoogleOptions.Scope.Add("email");
-//      GoogleOptions.Scope.Add("profile");
-
-//      GoogleOptions.SaveTokens = true;
-//  });
 
 builder.Services.AddAuthorization();
 
