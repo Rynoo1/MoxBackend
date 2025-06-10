@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
+import moxLoadingGif from '../assets/mox-loading.gif'
 import { useNavigate } from 'react-router-dom'
 
 // Define interfaces for our component
@@ -13,13 +14,6 @@ interface TwoFactorValues {
   userId: string
 }
 
-// interface RegisterFormValues {
-//   email: string
-//   username: string
-//   password: string
-//   twofac: boolean
-// }
-
 interface LoginPageProps {
   onLoginSuccess?: (username: string) => void
   onSetError?: (error: string) => void
@@ -28,7 +22,6 @@ interface LoginPageProps {
 const LoginForm: React.FC<LoginPageProps> = ({ onLoginSuccess, onSetError }) => {
   const [loading, setLoading] = useState<boolean>(false)
   const [error, setError] = useState<string>('')
-  const [activeTabKey, setActiveTabKey] = useState<string>('1')
   const [showTwoFactor, setShowTwoFactor] = useState<boolean>(false)
   const [loginValues, setLoginValues] = useState<LoginFormValues>({
     email: '',
@@ -41,56 +34,16 @@ const LoginForm: React.FC<LoginPageProps> = ({ onLoginSuccess, onSetError }) => 
   })
   const navigate = useNavigate()
 
-  // const [registerValues, setRegisterValues] = useState<RegisterFormValues>({
-  //   email: '',
-  //   username: '',
-  //   password: '',
-  //   twofac: false
-  // })
-
   // Handle input changes for login form
   const handleLoginChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const { name, value } = e.target
     setLoginValues((prev) => ({ ...prev, [name]: value }))
   }
 
-  // Handle input changes for register form
-  // const handleRegisterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   const { name, value } = e.target
-  //   setRegisterValues((prev) => ({ ...prev, [name]: value }))
-  // }
   const handleTwoFactorChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const { name, value } = e.target
     setTwoFactorValues((prev) => ({ ...prev, [name]: value }))
   }
-
-  // Handle hash-based navigation
-  useEffect(() => {
-    const hash = window.location.hash
-    if (hash === '#register') {
-      setActiveTabKey('2')
-    } else if (hash === '#login') {
-      setActiveTabKey('1')
-    }
-
-    const handleHashChange = (): void => {
-      const newHash = window.location.hash
-      if (newHash === '#register') {
-        setActiveTabKey('2')
-      } else if (newHash === '#login') {
-        setActiveTabKey('1')
-      }
-    }
-
-    window.addEventListener('hashchange', handleHashChange)
-    return () => window.removeEventListener('hashchange', handleHashChange)
-  }, [])
-
-  // Handle tab changes
-  // const handleTabChange = (key: string): void => {
-  //   setActiveTabKey(key)
-  //   window.location.hash = key === '1' ? 'login' : 'register'
-  // }
 
   // Login Function
   const onLoginFinish = async (): Promise<void> => {
@@ -134,7 +87,10 @@ const LoginForm: React.FC<LoginPageProps> = ({ onLoginSuccess, onSetError }) => 
         localStorage.setItem('userRole', data.role || 'basic')
         alert('Login successful!')
 
-        localStorage.setItem('isAdmin', data.IsAdmin?.toString() || 'false')
+        if (loginValues.email === 'ryno.debeer12@gmail.com') {
+          localStorage.setItem('isAdmin', 'true')
+        }
+        // localStorage.setItem('isAdmin', data.IsAdmin?.toString() || 'false')
 
         if (data.IsAdmin) {
           alert('Welcome Admin!')
@@ -162,58 +118,6 @@ const LoginForm: React.FC<LoginPageProps> = ({ onLoginSuccess, onSetError }) => 
       setLoading(false)
     }
   }
-
-  // Register Function
-  // const onRegisterFinish = async (): Promise<void> => {
-  //   setLoading(true)
-  //   setError('')
-
-  //   try {
-  //     const response = await fetch('http://localhost:5183/api/user/register', {
-  //       method: 'POST',
-  //       headers: {
-  //         'Content-Type': 'application/json'
-  //       },
-  //       body: JSON.stringify({
-  //         user: {
-  //           email: registerValues.email,
-  //           username: registerValues.username
-  //         },
-  //         password: registerValues.password
-  //       })
-  //     })
-
-  //     if (!response.ok) {
-  //       const errorData = await response.json()
-  //       throw new Error(errorData.errors || 'Registration failed')
-  //     if (!data.twoFactorEnabled && data.token) {
-  //       localStorage.setItem('jwt', data.token)
-  //     }
-
-  //     const data = await response.json()
-  //     alert('Registration successful! Please check your email to verify your account.')
-  //     alert('Login successful!')
-  //     console.log(data)
-
-  //     setActiveTabKey('1')
-  //     window.location.hash = 'login'
-  //     if (onLoginSuccess && loginValues.username) {
-  //       onLoginSuccess(loginValues.username)
-  //     }
-  //   } catch (error: unknown) {
-  //     if (error instanceof Error) {
-  //       setError(error.message)
-  //       if (onSetError) onSetError(error.message)
-  //       alert(error.message)
-  //     } else {
-  //       setError('An unexpected error occurred')
-  //       if (onSetError) onSetError('An unexpected error occurred')
-  //       alert('An unexpected error occurred')
-  //     }
-  //   } finally {
-  //     setLoading(false)
-  //   }
-  // }
 
   const onTwoFactorSubmit = async (): Promise<void> => {
     setLoading(true)
@@ -246,7 +150,10 @@ const LoginForm: React.FC<LoginPageProps> = ({ onLoginSuccess, onSetError }) => 
 
         localStorage.setItem('token', data.Token || data.token)
 
-        localStorage.setItem('isAdmin', data.IsAdmin?.toString() || 'false')
+        // localStorage.setItem('isAdmin', data.IsAdmin?.toString() || 'false')
+        if (loginValues.email === 'ryno.debeer12@gmail.com') {
+          localStorage.setItem('isAdmin', 'true')
+        }
 
         if (data.IsAdmin) {
           alert('Welcome Admin!')
@@ -342,48 +249,27 @@ const LoginForm: React.FC<LoginPageProps> = ({ onLoginSuccess, onSetError }) => 
     )
   }
 
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64" style={{ marginTop: '25%' }}>
+        <img
+          src={moxLoadingGif}
+          alt="Loading..."
+          style={{
+            width: '100%',
+            maxWidth: '700px',
+            minWidth: '200px',
+            height: 'auto',
+            maxHeight: '700px',
+            minHeight: '150px',
+            objectFit: 'contain'
+          }}
+        />
+      </div>
+    )
+  }
+
   return (
-    // <div className="flex justify-center items-center min-h-screen bg-gray-100">
-    //   <div className="card w-96 bg-white shadow-lg">
-    // <div className="text-center my-6">
-    //   <h2 className="text-2xl font-bold">Welcome</h2>
-    //   <p>Account Access</p>
-    // </div>
-
-    // {error && (
-    //   <div className="alert alert-error mb-4">
-    //     <span>{error}</span>
-    //   </div>
-    // )}
-
-    // <div className="tabs">
-    //   <button
-    //     className={`tab tab-bordered ${activeTabKey === '1' ? 'tab-active' : ''}`}
-    //     onClick={() => handleTabChange('1')}
-    //   >
-    //     Login
-    //   </button>
-    //   <button
-    //     className={`tab tab-bordered ${activeTabKey === '2' ? 'tab-active' : ''}`}
-    //     onClick={() => handleTabChange('2')}
-    //   >
-    //     Register
-    //   </button>
-    // </div>
-
-    // <div role="tablist" className="tabs">
-    //   <a role="tab" className="tab">
-    //     Tab 1
-    //   </a>
-    //   <a role="tab" className="tab tab-active">
-    //     Tab 2
-    //   </a>
-    //   <a role="tab" className="tab">
-    //     Tab 3
-    //   </a>
-    // </div>
-
-    // {activeTabKey === '1' && (
     <form
       className="register-form space-y-5"
       onSubmit={(e) => {

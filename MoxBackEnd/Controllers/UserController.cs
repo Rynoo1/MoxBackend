@@ -185,7 +185,7 @@ namespace MoxBackEnd.Controllers
                 "ryno.debeer12@gmail.com"
             };
 
-            bool isAdmin = !string.IsNullOrEmpty(user.Email) && adminEmails.Contains(user.Email.ToLower());
+            bool isAdmin = !string.IsNullOrEmpty(user.Email) && adminEmails.Contains(user.Email.ToUpper());
 
             var token = _tokenservices.GenerateToken(
                 user.Id,
@@ -202,6 +202,56 @@ namespace MoxBackEnd.Controllers
             [Required]
             [StringLength(50, MinimumLength = 6)]
             public string Password { get; set; } = string.Empty;
+        }
+
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpGet("profile/{userId}")]
+        public async Task<IActionResult> GetProfile(string userId)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return BadRequest(new ApiResponse<object>
+                    {
+                        Success = false,
+                        Message = "User ID must be provided"
+                    });
+                }
+
+                var user = await _userManager.FindByIdAsync(userId);
+
+                if (user == null)
+                {
+                    return NotFound(new ApiResponse<object>
+                    {
+                        Success = false,
+                        Message = "User not found"
+                    });
+                }
+
+                var userProfile = new UserProfileDto
+                {
+                    UserName = user.UserName!,
+                    Email = user.Email!,
+                    ProfilePicture = user.ProfilePicture!
+                };
+
+                return Ok(new ApiResponse<UserProfileDto>
+                {
+                    Success = true,
+                    Data = userProfile
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Profile error: {ex.Message}");
+                return StatusCode(500, new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = "An error occurred while retrieving the profile"
+                });
+            }
         }
 
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
@@ -298,7 +348,7 @@ namespace MoxBackEnd.Controllers
             try
             {
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ??
-                            User.FindFirstValue("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier) ??
+                            User.FindFirstValue("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier") ??
                             User.FindFirstValue("sub");
 
                 if (string.IsNullOrEmpty(userId))
@@ -354,7 +404,7 @@ namespace MoxBackEnd.Controllers
 
                     foreach (var meeting in createdMeetings)
                     {
-                        meeting.CreatedByUserId = null;
+                        meeting.CreatedByUserId = "";
                     }
 
                     var userWithMeetings = await _context.Users
@@ -366,14 +416,14 @@ namespace MoxBackEnd.Controllers
                         userWithMeetings.Meetings.Clear();
                     }
 
-                    var ownedProjects = await _context.Projects
-                        .Where(p => p.CreatedBy == userId)
-                        .ToListAsync();
+                    // var ownedProjects = await _context.Projects
+                    //     .Where(p => p.CreatedBy == userId)
+                    //     .ToListAsync();
 
-                    foreach (var project in ownedProjects)
-                    {
-                        project.CreatedBy = null;
-                    }
+                    // foreach (var project in ownedProjects)
+                    // {
+                    //     project.CreatedBy = null;
+                    // }
 
                     await _context.SaveChangesAsync();
 
@@ -486,7 +536,7 @@ namespace MoxBackEnd.Controllers
 
                     foreach (var meeting in createdMeetings)
                     {
-                        meeting.CreatedByUserId = null;
+                        meeting.CreatedByUserId = "";
                     }
 
                     var userWithMeetings = await _context.Users
@@ -498,14 +548,14 @@ namespace MoxBackEnd.Controllers
                         userWithMeetings.Meetings.Clear();
                     }
 
-                    var ownedProjects = await _context.Projects
-                        .Where(p => p.CreatedBy == userId)
-                        .ToListAsync();
+                    // var ownedProjects = await _context.Projects
+                    //     .Where(p => p.CreatedBy == userId)
+                    //     .ToListAsync();
 
-                    foreach (var project in ownedProjects)
-                    {
-                        project.CreatedBy = null;
-                    }
+                    // foreach (var project in ownedProjects)
+                    // {
+                    //     project.CreatedBy = null;
+                    // }
 
                     await _context.SaveChangesAsync();
 
