@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using MoxBackEnd.Models;
+using System.Text.Json.Serialization;
 
 namespace MoxBackEnd.DTOs;
 
@@ -25,8 +26,11 @@ public class ApiResponse<T>
 
 public class UserProfileDto
 {
+    [JsonPropertyName("UserName")]
     public string UserName { get; set; } = string.Empty;
+    [JsonPropertyName("Email")]
     public string Email { get; set; } = string.Empty;
+    [JsonPropertyName("ProfilePicture")]
     public string ProfilePicture { get; set; } = string.Empty;
 }
 

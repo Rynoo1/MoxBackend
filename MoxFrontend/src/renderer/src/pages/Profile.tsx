@@ -4,10 +4,11 @@ import '../styles/dashboard.css'
 import { useAuth } from './useAuth'
 import { storage } from '../firebase'
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
+import moxLoadingGif from '../assets/mox-loading.gif'
 
 interface User {
-  Username: string
-  ProfilePic: string
+  UserName: string
+  ProfilePicture: string
   Email: string
 }
 
@@ -18,7 +19,7 @@ interface ApiResponse<T> {
 }
 
 const ProfilePage: React.FC = () => {
-  const { isAuthenticated, getAuthHeaders, logout, user: tokenUser } = useAuth()
+  const { isAuthenticated, getAuthHeaders, logout, isLoading, user: tokenUser } = useAuth()
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
@@ -35,7 +36,7 @@ const ProfilePage: React.FC = () => {
         setUploading(false)
         return
       }
-      const storageRef = ref(storage, `profile-pics/${user?.Username}_${file.name}`)
+      const storageRef = ref(storage, `profile-pics/${user?.UserName}_${file.name}`)
       await uploadBytes(storageRef, file)
       const url = await getDownloadURL(storageRef)
 
@@ -55,15 +56,18 @@ const ProfilePage: React.FC = () => {
   }
 
   useEffect(() => {
+    // Don't check authentication while still loading
+    if (isLoading) return
+
     if (!isAuthenticated) {
-      // REDIRECT TO LOGIN
       console.log('User not authenticated')
+      // Handle redirect to login here
       return
     }
-  }, [isAuthenticated])
+  }, [isAuthenticated, isLoading])
 
   useEffect(() => {
-    if (!isAuthenticated) return
+    if (isLoading || !isAuthenticated) return
     const fetchUserProfile = async (): Promise<void> => {
       try {
         setLoading(true)
@@ -71,13 +75,25 @@ const ProfilePage: React.FC = () => {
 
         const headers = getAuthHeaders()
 
+        console.log('=== DEBUGGING TOKEN ===')
+        console.log('Headers being sent:', headers)
+        console.log('Token from localStorage:', localStorage.getItem('token'))
+        //console.log('Token from context:', token)
+        console.log('Is authenticated:', isAuthenticated)
+        //console.log('User from context:', user)
+
         const response = await fetch('http://localhost:5183/api/user/profile', {
           method: 'GET',
           headers
         })
 
+        console.log('Response status:', response.status)
+        console.log('Response URL:', response.url)
+
         if (response.status === 401) {
           logout()
+          console.log('Got 401 - response body:', await response.text())
+          // Don't logout yet - let's debug first
           throw new Error('Session expired. Please log in again.')
         }
 
@@ -88,28 +104,53 @@ const ProfilePage: React.FC = () => {
         const result: ApiResponse<User> = await response.json()
 
         if (result.success) {
-          setUser(result.data)
+          setUser({
+            UserName: result.data.UserName,
+            Email: result.data.Email,
+            ProfilePicture: result.data.ProfilePicture || ''
+          })
         } else {
           throw new Error(result.message || 'Failed to load user profile')
         }
       } catch (error) {
         setError(error instanceof Error ? error.message : 'An unexpected error occured')
 
-        if (error instanceof Error && error.message.includes('Session expired')) {
-          logout()
-        }
+        // if (error instanceof Error && error.message.includes('Session expired')) {
+        //   logout()
+        // }
       } finally {
         setLoading(false)
       }
     }
 
     fetchUserProfile()
-  }, [isAuthenticated, getAuthHeaders, logout])
+  }, [isAuthenticated, isLoading, getAuthHeaders, logout])
 
-  //TODO: HANDLE SAVE
-  const handleSave = async () => {
-    console.log('Saving user profile:', user)
-    setEdit(false)
+  const handleSave = async (): Promise<void> => {
+    if (!user) return
+    try {
+      const response = await fetch('http://localhost:5183/api/user/profile', {
+        method: 'PUT',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          userName: user.UserName,
+          email: user.Email,
+          profilePicture: user.ProfilePicture
+        })
+      })
+      if (!response.ok) {
+        const data = await response.json()
+        alert(data.message || 'Failed to save profile')
+        return
+      }
+      setEdit(false)
+    } catch (error) {
+      console.error('Error saving profile:', error)
+      alert('Failed to save profile. Please try again later.')
+    }
   }
 
   //TODO: HANDLE CANCEL
@@ -119,7 +160,23 @@ const ProfilePage: React.FC = () => {
 
   //TODO: LOADING STATE
   if (loading) {
-    return <div className="text-center mt-20">Loading...</div>
+    return (
+      <div className="flex justify-center items-center h-64" style={{ marginTop: '25%' }}>
+        <img
+          src={moxLoadingGif}
+          alt="Loading..."
+          style={{
+            width: '100%',
+            maxWidth: '700px',
+            minWidth: '200px',
+            height: 'auto',
+            maxHeight: '700px',
+            minHeight: '150px',
+            objectFit: 'contain'
+          }}
+        />
+      </div>
+    )
   }
 
   //TODO: ERROR STATE
@@ -144,139 +201,8 @@ const ProfilePage: React.FC = () => {
     day: 'numeric'
   })
 
-  //   return (
-  // <div className="w-full">
-  //   <header className="flex justify-between items-center mt-30 bg-white shadow-md">
-  //     <h1 className="text-4xl font-semibold">Profile</h1>
-  //     <span className="text-gray-600">{formattedDate}</span>
-  //   </header>
-
-  //   <div className="divider divider-neutral"></div>
-
-  //   <main className="px-6 py-4">
-  //     {username && (
-  //       <div className="text-center mb-10">
-  //         <h2 className="text-3xl font-light">Welcome, {username}</h2>
-  //       </div>
-  //     )}
-
-  //     <div className="grid grid-cols-1 sm:grid-cols-2 gap-100 mb-10">
-  //       <p className="text-4xl font-bold text-blue-600 mt-10">Profile Picture</p>
-  //       <div className="avatar">
-  //         <div className="w-24 h-24 rounded-full">
-  //           <img src="https://img.daisyui.com/images/profile/demo/yellingcat@192.webp" />
-  //         </div>
-  //       </div>
-  //     </div>
-
-  //     <div className="divider divider-neutral"></div>
-
-  //     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 mb-10 mt-10">
-  //       <p className="text-4xl font-bold text-blue-600">Username</p>
-  //       <p className="text-4xl font-bold text-blue-600">Username</p>
-  //     </div>
-
-  //     <div className="divider divider-neutral"></div>
-
-  //     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 mb-10 mt-10">
-  //       <p className="text-4xl font-bold text-blue-600">Email</p>
-  //       <p className="text-4xl font-bold text-blue-600">Email</p>
-  //     </div>
-
-  //     <div className="divider divider-neutral"></div>
-
-  //     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 mb-10 mt-10">
-  //       <p className="text-4xl font-bold text-blue-600">Username</p>
-  //       <p className="text-4xl font-bold text-blue-600">Username</p>
-  //     </div>
-  //   </main>
-  // </div>
-
-  //     <div className="w-full">
-  //       <header className="flex justify-between items-center mt-30 bg-white shadow-md">
-  //         <h1 className="text-4xl font-semibold">Profile</h1>
-  //         <span className="text-gray-600">{formattedDate}</span>
-  //       </header>
-
-  //       <div className="divider divider-neutral"></div>
-
-  //       <main className="px-6 py-4">
-  //         {user?.Username && (
-  //           <div className="text-center mb-10">
-  //             <h2 className="text-3xl font-light">Welcome, {user.Username || tokenUser?.email}</h2>
-  //           </div>
-  //         )}
-
-  //         <div className="grid grid-cols-1 sm:grid-cols-2 gap-100 mb-10 mt-5">
-  //           <p className="text-4xl font-bold text-blue-600">Profile Picture</p>
-  //           <input type="file" className="file-input file-input-ghost" />
-  //         </div>
-
-  //         <div className="divider divider-neutral"></div>
-
-  //         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-50 mb-10 mt-10">
-  //           <p className="text-4xl font-bold text-blue-600">Username</p>
-  //           <input
-  //             type="text"
-  //             required
-  //             placeholder="Username"
-  //             className="input input-ghost"
-  //             value={user?.Username || ''}
-  //             disabled={!edit}
-  //             onChange={(e) =>
-  //               setUser((prev) => (prev ? { ...prev, Username: e.target.value } : null))
-  //             }
-  //           />
-  //         </div>
-
-  //         <div className="divider divider-neutral"></div>
-
-  //         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-50 mb-10 mt-10">
-  //           <p className="text-4xl font-bold text-blue-600">Email</p>
-  //           <label className="input input-ghost validator">
-  //             <svg
-  //               className="h-[1em] opacity-50"
-  //               xmlns="http://www.w3.org/2000/svg"
-  //               viewBox="0 0 24 24"
-  //             >
-  //               <g
-  //                 strokeLinejoin="round"
-  //                 strokeLinecap="round"
-  //                 strokeWidth="2.5"
-  //                 fill="none"
-  //                 stroke="currentColor"
-  //               >
-  //                 <rect width="20" height="16" x="2" y="4" rx="2"></rect>
-  //                 <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
-  //               </g>
-  //             </svg>
-  //             <input
-  //               type="email"
-  //               placeholder="mail@site.com"
-  //               required
-  //               value={user?.Email || tokenUser?.email || ''}
-  //               disabled={!edit}
-  //               onChange={(e) =>
-  //                 setUser((prev) => (prev ? { ...prev, Email: e.target.value } : null))
-  //               }
-  //             />
-  //           </label>
-  //           <div className="validator-hint hidden">Enter valid email address</div>
-  //         </div>
-
-  //         <div className="divider divider-neutral"></div>
-
-  //         {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 mb-10 mt-10">
-  //           <p className="text-4xl font-bold text-blue-600">Username</p>
-  //           <p className="text-4xl font-bold text-blue-600">Username</p>
-  //         </div> */}
-  //       </main>
-  //     </div>
-  //   )
-  // }
-
   if (edit) {
-    // EDIT MODE - Complete edit layout
+    // EDIT MODE
     return (
       <div className="w-full">
         <header className="flex justify-between items-center mt-30 bg-white shadow-md">
@@ -297,9 +223,9 @@ const ProfilePage: React.FC = () => {
         <div className="divider divider-neutral"></div>
 
         <main className="px-6 py-4">
-          {user?.Username && (
+          {user?.UserName && (
             <div className="text-center mb-10">
-              <h2 className="text-3xl font-light">Editing {user.Username}'s Profile</h2>
+              <h2 className="text-3xl font-light">Editing {user.UserName}&apos;s Profile</h2>
             </div>
           )}
 
@@ -324,9 +250,9 @@ const ProfilePage: React.FC = () => {
               required
               placeholder="Username"
               className="input input-ghost"
-              value={user?.Username || ''}
+              value={user?.UserName || ''}
               onChange={(e) =>
-                setUser((prev) => (prev ? { ...prev, Username: e.target.value } : null))
+                setUser((prev) => (prev ? { ...prev, UserName: e.target.value } : null))
               }
             />
           </div>
@@ -371,7 +297,7 @@ const ProfilePage: React.FC = () => {
     )
   }
 
-  // DISPLAY MODE - Complete display layout
+  // DISPLAY MODE
   return (
     <div className="w-full">
       <header className="flex justify-between items-center mt-30 bg-white shadow-md">
@@ -387,9 +313,9 @@ const ProfilePage: React.FC = () => {
       <div className="divider divider-neutral"></div>
 
       <main className="px-6 py-4">
-        {user?.Username && (
+        {user?.UserName && (
           <div className="text-center mb-10">
-            <h2 className="text-3xl font-light">Welcome, {user.Username}</h2>
+            <h2 className="text-3xl font-light">Welcome, {user.UserName}</h2>
           </div>
         )}
 
@@ -399,7 +325,7 @@ const ProfilePage: React.FC = () => {
             <div className="w-24 h-24 rounded-full">
               <img
                 src={
-                  user?.ProfilePic ||
+                  user?.ProfilePicture ||
                   'https://img.daisyui.com/images/profile/demo/yellingcat@192.webp'
                 }
                 alt="Profile"
@@ -412,7 +338,7 @@ const ProfilePage: React.FC = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 mb-10 mt-10">
           <p className="text-4xl font-bold text-blue-600">Username</p>
-          <p className="text-4xl font-bold text-gray-800">{user?.Username}</p>
+          <p className="text-4xl font-bold text-gray-800">{user?.UserName}</p>
         </div>
 
         <div className="divider divider-neutral"></div>

@@ -10,6 +10,8 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,10 +48,13 @@ if (string.IsNullOrEmpty(secret))
 }
 var key = Encoding.UTF8.GetBytes(secret);
 
+JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
 })
  .AddJwtBearer(options =>
  {
@@ -63,26 +68,40 @@ builder.Services.AddAuthentication(options =>
          ValidAudience = jwtSettings["Audience"],
          IssuerSigningKey = new SymmetricSecurityKey(key)
      };
+     
+     options.Events = new JwtBearerEvents
+     {
+         OnAuthenticationFailed = context =>
+        {
+            Console.WriteLine($"Authentication failed: {context.Exception.Message}");
+            return Task.CompletedTask;
+        },
+         OnTokenValidated = context =>
+         {
+             var claims = context.Principal?.Claims?.Select(c => $"{c.Type}: {c.Value}").ToArray() ?? [];
+             Console.WriteLine($"Token validated. Claims: {string.Join(", ", claims)}");
+             return Task.CompletedTask;
+         }
+     };
  });
+//  })
 //  .AddGoogle(GoogleOptions =>
-{
-    GoogleOptions.ClientId = builder.Configuration["Authentication:Google:ClientId"] ?? string.Empty;
-    GoogleOptions.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"] ?? string.Empty;
-    GoogleOptions.CallbackPath = "/signin-google"; // Ensure this matches your Google API settings
+//  {
+//      GoogleOptions.ClientId = builder.Configuration["Authentication:Google:ClientId"] ?? string.Empty;
+//      GoogleOptions.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"] ?? string.Empty;
+//      GoogleOptions.CallbackPath = "/signin-google"; // Ensure this matches your Google API settings
 
-    GoogleOptions.Scope.Add("email");
-    GoogleOptions.Scope.Add("profile");
+//      GoogleOptions.Scope.Add("email");
+//      GoogleOptions.Scope.Add("profile");
 
-    GoogleOptions.SaveTokens = true;
-}
-;
+//      GoogleOptions.SaveTokens = true;
+//  });
 
 builder.Services.AddAuthorization();
-// builder.Services.AddAuthentication().Add
+
 
 builder.Services.AddIdentity<Users, IdentityRole>(Options =>
 {
-
     Options.SignIn.RequireConfirmedAccount = true;
     Options.SignIn.RequireConfirmedEmail = true;
 
@@ -100,9 +119,24 @@ builder.Services.AddIdentity<Users, IdentityRole>(Options =>
     .AddDefaultTokenProviders()
     .AddTokenProvider<AuthenticatorTokenProvider<Users>>(TokenOptions.DefaultAuthenticatorProvider)
     .AddApiEndpoints();
+//     builder.Services.ConfigureApplicationCookie(options =>
+// {
+//     options.Events.OnRedirectToLogin = context =>
+//     {
+//         context.Response.StatusCode = 401;
+//         return Task.CompletedTask;
+//     };
+//     options.Events.OnRedirectToAccessDenied = context =>
+//     {
+//         context.Response.StatusCode = 403;
+//         return Task.CompletedTask;
+//     };
+// });
 
 var connectionstring = builder.Configuration.GetConnectionString("LiveConnection");
-builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionstring));
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(connectionstring, npgsqlOptions => npgsqlOptions.EnableRetryOnFailure())
+);
 
 builder.Services.AddCors(options =>
 {
@@ -116,9 +150,9 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-app.UseCors("AllowFrontend");
-app.UseAuthentication();
-app.UseAuthorization();
+// app.UseCors("AllowFrontend");
+// app.UseAuthentication();
+// app.UseAuthorization();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -128,8 +162,48 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// app.UseHttpsRedirection();
+app.UseHttpsRedirection();
 app.UseStaticFiles(); // Enables serving files from wwwroot
+
+app.UseCors("AllowFrontend");
+
+app.Use(async (context, next) =>
+{
+    if (context.Request.Path.StartsWithSegments("/api"))
+    {
+        Console.WriteLine($"\n=== DEBUG: API Request ===");
+        Console.WriteLine($"Path: {context.Request.Path}");
+        Console.WriteLine($"Method: {context.Request.Method}");
+        Console.WriteLine($"Authorization Header: {context.Request.Headers.Authorization}");
+
+        // Check if JWT token is present
+        var authHeader = context.Request.Headers.Authorization.ToString();
+        if (authHeader.StartsWith("Bearer "))
+        {
+            var token = authHeader.Substring("Bearer ".Length).Trim();
+            Console.WriteLine($"JWT Token (first 50 chars): {token.Substring(0, Math.Min(50, token.Length))}...");
+        }
+    }
+
+    await next();
+
+    if (context.Request.Path.StartsWithSegments("/api"))
+    {
+        Console.WriteLine($"Response Status: {context.Response.StatusCode}");
+        Console.WriteLine($"User.Identity.IsAuthenticated: {context.User?.Identity?.IsAuthenticated}");
+        Console.WriteLine($"User.Identity.Name: {context.User?.Identity?.Name}");
+        Console.WriteLine($"User Claims Count: {context.User?.Claims?.Count() ?? 0}");
+        if (context.User?.Claims?.Any() == true)
+        {
+            var claims = context.User.Claims.Select(c => $"{c.Type}: {c.Value}").Take(5);
+            Console.WriteLine($"First 5 Claims: {string.Join(", ", claims)}");
+        }
+        Console.WriteLine($"=== END DEBUG ===\n");
+    }
+});
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllers();
 

@@ -14,6 +14,7 @@ using QRCoder;
 using System.Text.Json;
 using System.Security.Claims;
 using Microsoft.DotNet.Scaffolding.Shared.Messaging;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace MoxBackEnd.Controllers
 {
@@ -220,19 +221,23 @@ namespace MoxBackEnd.Controllers
             public string Password { get; set; } = string.Empty;
         }
 
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet("profile")]
         public async Task<IActionResult> GetProfile()
         {
             try
             {
-                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ??
+                            User.FindFirstValue("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier") ??
+                            User.FindFirstValue("sub");
+
 
                 if (string.IsNullOrEmpty(userId))
                 {
                     return Unauthorized(new ApiResponse<object>
                     {
                         Success = false,
-                        Message = "User not authenticated"
+                        Message = "User not authenticated - no user ID found in claims"
                     });
                 }
 
@@ -262,6 +267,7 @@ namespace MoxBackEnd.Controllers
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Profile error: {ex.Message}");
                 return StatusCode(500, new ApiResponse<object>
                 {
                     Success = false,
@@ -270,7 +276,7 @@ namespace MoxBackEnd.Controllers
             }
         }
 
-        [Authorize]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpPut("profile")]
         public async Task<IActionResult> UpdateProfile([FromBody] UpdateUserProfileDto dto)
         {
