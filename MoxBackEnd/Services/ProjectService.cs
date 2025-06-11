@@ -309,10 +309,21 @@ public class ProjectService : IProjects
         throw new NotImplementedException();
     }
 
-    public Task<IEnumerable<ProjectUserDto>> GetProjectMembersAsync(int projectId)
+    public async Task<IEnumerable<ProjectUserDto>> GetProjectMembersAsync(int projectId)
     {
-        throw new NotImplementedException();
+        var members = await _context.ProjectUsers
+            .Where(pu => pu.ProjectID == projectId)
+            .Select(pu => new ProjectUserDto
+            {
+                Id = pu.User.Id,
+                UserName = pu.User.UserName,
+                Email = pu.User.Email
+            })
+            .ToListAsync();
+
+        return members;
     }
+
 
     public Task<bool> AssignUserToProjectAsync(int projectId, string userId)
     {

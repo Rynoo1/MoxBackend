@@ -64,34 +64,39 @@ const Projects: React.FC<ProjectsProps> = ({ isAdmin: propIsAdmin, userId: propU
     }
   }
 
-  // Attach users to each subtask using the join table API
+  const unwrapDotNetArray = <T extends unknown>(obj: any): T[] => {
+    if (!obj) return [];
+    if (Array.isArray(obj)) return obj;
+    if (Array.isArray(obj.$values)) return obj.$values;
+    return [];
+  };
+
   const attachUsersToSubTasks = async (tasks: Task[]) => {
     return Promise.all(
       tasks.map(async (task) => {
-        if (!Array.isArray(task.subTasks)) return task
+        const rawSubTasks = unwrapDotNetArray(task.subTasks);
         const subTasksWithUsers = await Promise.all(
-          task.subTasks.map(async (sub) => {
-            if (!sub) return sub
-            const subTaskId = sub.id || sub.subTaskID
-            let assignedUsers: { id: string }[] = []
+        rawSubTasks.map(async (sub: any) => {
+            const subTaskId = sub.id || sub.subTaskID;
+            let assignedUsers: { id: string }[] = [];
             if (subTaskId !== undefined && subTaskId !== null) {
               try {
-                const res = await fetch(`http://localhost:5183/api/SubTask/${subTaskId}/users`)
+                const res = await fetch(`http://localhost:5183/api/SubTask/${subTaskId}/users`);
                 if (res.ok) {
-                  const usersData = await res.json()
-                  assignedUsers = Array.isArray(usersData.$values) ? usersData.$values : usersData
+                  const usersData = await res.json();
+                  assignedUsers = unwrapDotNetArray(usersData);
                 }
               } catch {
-                assignedUsers = []
+                assignedUsers = [];
               }
             }
-            return { ...sub, assignedUsers }
+            return { ...sub, assignedUsers };
           })
-        )
-        return { ...task, subTasks: subTasksWithUsers }
+        );
+        return { ...task, subTasks: subTasksWithUsers };
       })
-    )
-  }
+    );
+  };
 
   // Fetch tasks for all projects and attach users to subtasks
   const fetchAllProjectTasks = async (projectsList: Project[]) => {
@@ -186,6 +191,8 @@ const Projects: React.FC<ProjectsProps> = ({ isAdmin: propIsAdmin, userId: propU
     setCreateKey((k) => k + 1)
     modalRef.current?.showModal()
   }
+  console.log("Logged in userId:", userId)
+
 
   return (
     <div className="projects-page min-h-screen overflow-y-auto">
