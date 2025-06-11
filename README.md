@@ -156,6 +156,10 @@ MOX is more than a task manager—it's an inclusive, UX-driven solution tailored
 
 ![Kanban Board](./Mockups/Kanbanboard.jpg)
 
+## Final Outcome
+
+* [Demo Video](https://drive.google.com/file/d/1_PCpEJUAp0yoOiCF5Nqn_mXfbKeqFh37/view?usp=sharing)
+
 ## License
 
 **Educational Use Disclaimer**  
