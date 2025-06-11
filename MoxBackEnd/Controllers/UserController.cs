@@ -672,8 +672,7 @@ namespace MoxBackEnd.Controllers
         [HttpGet("external-login")]
         public IActionResult ExternalLogin(string provider, string returnUrl = "/")
         {
-            var redirectUrl = Url.Action(nameof(ExternalLoginCallback), "Auth",
-                new { returnUrl = returnUrl });
+            var redirectUrl = $"{Request.Scheme}://{Request.Host}/api/user/external-login-callback";
 
             var properties = _signInManager.ConfigureExternalAuthenticationProperties(
                 provider, redirectUrl);
@@ -708,7 +707,7 @@ namespace MoxBackEnd.Controllers
                     user.Id,
                     user.Email ?? string.Empty,
                     user.UserName ?? string.Empty);
-                return Redirect($"{returnUrl}?token={token}&email={user.Email}&userId={user.Id}");
+                return Redirect($"http://localhost:5173/auth-handler?token={token}&email={user.Email}&returnUrl=/profile");
             }
 
             if (result.IsLockedOut)
@@ -755,7 +754,7 @@ namespace MoxBackEnd.Controllers
                         user.Id,
                         user.Email ?? string.Empty,
                         user.UserName ?? string.Empty);
-                    return Redirect($"{returnUrl}?token={token}&email={user.Email}&userId={user.Id}");;
+                    return Redirect($"http://localhost:5173/auth-handler?token={token}&email={user.Email}&returnUrl=/profile");
                 }
             }
 
