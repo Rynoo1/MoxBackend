@@ -2,6 +2,7 @@ import React from 'react'
 import './styles/Projectcard.css'
 import Progressbar from './ProgressBar'
 import { useNavigate } from 'react-router-dom'
+import loadingGif from '../assets/mox-loading.gif'
 
 interface SubTask {
   id: number
@@ -42,10 +43,12 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   const [tasks, setTasks] = React.useState<Task[]>([])
   const [error, setError] = React.useState<string | null>(null)
   const [expandedTaskId, setExpandedTaskId] = React.useState<number | null>(null)
+  const [loading, setLoading] = React.useState<boolean>(true) // Add this line
   const navigate = useNavigate()
 
   React.useEffect(() => {
     const fetchTasks = async () => {
+      setLoading(true) // Start loading
       try {
         const response = await fetch(`http://localhost:5183/api/Task/by-project/${ProjectID}`)
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
@@ -95,8 +98,11 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
         )
 
         setTasks(normalized)
+        setError(null)
       } catch (err: any) {
         setError(err.message || 'Failed to fetch tasks.')
+      } finally {
+        setLoading(false) // Stop loading
       }
     }
     fetchTasks()
@@ -191,7 +197,11 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
       )}
 
       <div className="overflow-x-auto">
-        {sortedTasks.length === 0 ? (
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '2rem' }}>
+            <img src={loadingGif} alt="Loading..." style={{ width: 300, height: 100 }} />
+          </div>
+        ) : sortedTasks.length === 0 ? (
           <div className="text-center bg-[#3f51b5] text-white font-bold rounded-xl py-4">
             No tasks for this project.
           </div>
@@ -245,8 +255,9 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
                                 <img
                                   key={user.id}
                                   src={
-                                    user.ProfilePicture ||
-                                    `https://ui-avatars.com/api/?name=${encodeURIComponent(user.userName)}&size=32&background=random`
+                                    user.ProfilePicture
+                                      ? user.ProfilePicture
+                                      : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.userName)}&size=32&background=random`
                                   }
                                   alt={user.userName}
                                   title={user.userName}

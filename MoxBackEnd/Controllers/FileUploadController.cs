@@ -1,8 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
-using MoxBackEnd.Models; // Adjust namespace as needed
-using MoxBackEnd.Data;   // Adjust namespace as needed
+using MoxBackEnd.Models;
+using MoxBackEnd.Data;
 using System.Linq;
-using MoxBackEnd.Interfaces;
+using System.Threading.Tasks;
+using System;
 
 
 namespace MoxBackEnd.Controllers
@@ -21,14 +22,20 @@ namespace MoxBackEnd.Controllers
         }
 
         [HttpPost]
-        public IActionResult UploadFile([FromBody] FileUpload model)
+        public async Task<IActionResult> UploadFile([FromBody] FileUpload model)
         {
-            if (model == null)
-                return BadRequest();
+            if (model == null ||
+                string.IsNullOrEmpty(model.FileName) ||
+                string.IsNullOrEmpty(model.FilePath) ||
+                model.ProjectID == 0 ||
+                model.SubTaskID == 0)
+            {
+                return BadRequest("Missing required fields.");
+            }
 
             model.UploadDate = DateTime.UtcNow;
             _context.FileUploads.Add(model);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return Ok(model);
         }
@@ -55,15 +62,15 @@ namespace MoxBackEnd.Controllers
         }
 
         [HttpDelete("{id}")]
-public async Task<IActionResult> DeleteFileUpload(int id)
-{
-    var file = await _context.FileUploads.FindAsync(id);
-    if (file == null)
-        return NotFound();
+        public async Task<IActionResult> DeleteFileUpload(int id)
+        {
+            var file = await _context.FileUploads.FindAsync(id);
+            if (file == null)
+                return NotFound();
 
-    _context.FileUploads.Remove(file);
-    await _context.SaveChangesAsync();
-    return NoContent();
-}
+            _context.FileUploads.Remove(file);
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
     }
 }

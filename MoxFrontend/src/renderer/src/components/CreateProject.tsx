@@ -236,7 +236,6 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose }) => {
 
   return (
     <div className="max-w-3xl mx-auto p-10">
-      {' '}
       {step === 1 && (
         <>
           <h1 className="text-center text-black font-bold text-4xl mb-10">New Project</h1>
@@ -657,6 +656,7 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose }) => {
           </div>
         </>
       )}
+
       {step === 5 && (
         <>
           <h2 className="text-center text-black font-bold text-3xl mb-8">
@@ -698,68 +698,7 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose }) => {
             <option value="High">High</option>
             <option value="Critical">Critical</option>
           </select>
-          <label className="block mb-2 font-semibold text-lg">Assign users</label>
-          <input
-            type="text"
-            className="input input-bordered w-full text-lg bg-white text-black py-3"
-            placeholder="Type to search users..."
-            value={userSearch}
-            onChange={(e) => setUserSearch(e.target.value)}
-          />
-          {userSearch && (
-            <div className="bg-white border rounded shadow w-full mt-2 max-h-56 overflow-auto z-40">
-              {allUsers
-                .filter(
-                  (u) =>
-                    u.userName.toLowerCase().includes(userSearch.toLowerCase()) &&
-                    !(currentSubtask.users || []).some((sel) => sel.id === u.id)
-                )
-                .map((user) => (
-                  <div
-                    key={user.id}
-                    className="px-4 py-3 hover:bg-gray-100 cursor-pointer text-lg"
-                    onClick={() => {
-                      setCurrentSubtask({
-                        ...currentSubtask,
-                        users: [...(currentSubtask.users || []), user]
-                      })
-                      setUserSearch('')
-                    }}
-                  >
-                    {user.userName}
-                  </div>
-                ))}
-              {allUsers.filter(
-                (u) =>
-                  u.userName.toLowerCase().includes(userSearch.toLowerCase()) &&
-                  !(currentSubtask.users || []).some((sel) => sel.id === u.id)
-              ).length === 0 && (
-                <div className="px-4 py-3 text-gray-400 text-lg">No users found</div>
-              )}
-            </div>
-          )}
-          <div className="flex flex-wrap gap-3 mt-3 mb-3">
-            {(currentSubtask.users || []).map((user) => (
-              <span
-                key={user.id}
-                className="badge badge-primary gap-2 flex items-center text-lg px-4 py-2"
-              >
-                {user.userName}
-                <button
-                  type="button"
-                  className="ml-2 text-white bg-red-500 rounded-full px-3 py-1"
-                  onClick={() => {
-                    setCurrentSubtask({
-                      ...currentSubtask,
-                      users: (currentSubtask.users || []).filter((u) => u.id !== user.id)
-                    })
-                  }}
-                >
-                  <HiX />
-                </button>
-              </span>
-            ))}
-          </div>
+          {/* User assignment UI removed from here */}
           <div className="flex justify-between mt-8">
             <button
               className="btn text-white border-2 border-white bg-[#6D28D9] hover:bg-white hover:border-[#6D28D9] hover:text-[#1E3A8A] shadow-none text-lg px-8 py-3"
@@ -776,6 +715,7 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose }) => {
           </div>
         </>
       )}
+
       {step === 6 && (
         <>
           <h1 className="text-center text-black font-bold text-4xl mb-10">Review Project</h1>

@@ -1,4 +1,6 @@
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using MoxBackEnd.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -13,7 +15,6 @@ public class AppDbContext : IdentityDbContext<Users>
     }
 
     public DbSet<Projects> Projects { get; set; }
-    //public DbSet<Users> Users { get; set; }
     public DbSet<AppRoles> AppRoles { get; set; }
     public DbSet<Tasks> Tasks { get; set; }
     public DbSet<SubTasks> SubTasks { get; set; }
@@ -21,7 +22,7 @@ public class AppDbContext : IdentityDbContext<Users>
     public DbSet<Comment> Comments { get; set; }
     public DbSet<EmergencyMeeting> EmergencyMeetings { get; set; }
     public DbSet<ProjectUser> ProjectUsers { get; set; }
-    public DbSet<StickyNote> StickyNotes { get; set; }
+    
     public DbSet<SubTaskUserAssignment> SubTaskUserAssignments { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -58,12 +59,6 @@ public class AppDbContext : IdentityDbContext<Users>
             .WithMany(p => p.FileUploads)
             .HasForeignKey(f => f.ProjectID);
 
-        // REMOVE this block to avoid table mapping conflict:
-        // modelBuilder.Entity<SubTasks>()
-        //     .HasMany(s => s.AssignedUsers)
-        //     .WithMany(u => u.AssignedSubTasks)
-        //     .UsingEntity(j => j.ToTable("SubTaskUserAssignments"));
-
         modelBuilder.Entity<EmergencyMeeting>()
             .HasOne(em => em.Project)
             .WithMany()
@@ -80,15 +75,15 @@ public class AppDbContext : IdentityDbContext<Users>
             .HasMany(em => em.Attendees)
             .WithMany(u => u.Meetings);
 
-        modelBuilder.Entity<Comment>()
-            .HasOne(sn => sn.Task)
-            .WithMany(t => t.Comments)
-            .HasForeignKey(sn => sn.TaskId);
-
+        // Cascade delete for Comments when Task is deleted
         modelBuilder.Entity<Comment>()
             .HasOne(c => c.Task)
             .WithMany(t => t.Comments)
-            .HasForeignKey(c => c.TaskId);
+            .HasForeignKey(c => c.TaskId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        
+        
 
         modelBuilder.Entity<Comment>()
             .HasOne(c => c.Project)
@@ -115,7 +110,6 @@ public class AppDbContext : IdentityDbContext<Users>
             .WithMany(u => u.ProjectUsers)
             .HasForeignKey(pu => pu.UserID);
 
-        // Explicit join entity for SubTaskUserAssignments
         modelBuilder.Entity<SubTaskUserAssignment>()
             .HasKey(x => new { x.AssignedSubTasksSubTaskID, x.AssignedUsersId });
     }
@@ -158,4 +152,3 @@ public class AppDbContext : IdentityDbContext<Users>
         return await base.SaveChangesAsync(cancellationToken);
     }
 }
-

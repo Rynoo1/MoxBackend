@@ -328,7 +328,6 @@ export default function EditProject() {
         DueDate: t.dueDate,
         Priority: t.priority ? (priorityReverseMap[t.priority as string] ?? 1) : 1,
         SubTasks: t.subtasks.map((s) => ({
-          SubTaskID: s.id,
           Title: s.name,
           Description: s.description,
           DueDate: s.dueDate,

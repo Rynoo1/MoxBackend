@@ -40,35 +40,17 @@ namespace MoxBackEnd.Controllers
             return Ok(users);
         }
 
-        [HttpPut("{id}/complete")]
-        public async Task<IActionResult> MarkComplete(int id)
-        {
-            var subTask = await _context.SubTasks.FindAsync(id);
-            if (subTask == null)
-                return NotFound();
+      
 
-            subTask.SubTStatus = (WorkStatus)1;
-            subTask.CompletedDate = System.DateTime.UtcNow;
-            await _context.SaveChangesAsync();
-            return Ok(subTask);
-        }
-
-        // [HttpPut("{id}/status")]
-        // public async Task<IActionResult> UpdateStatus(int id, [FromBody] SubTaskStatusDto dto)
-        // {
-        //     var subTask = await _context.SubTasks.FindAsync(id);
-        //     if (subTask == null)
-        //         return NotFound();
-
-        //     subTask.SubTStatus = (WorkStatus)dto.SubTStatus;
-        //     if (dto.SubTStatus == 1)
-        //         subTask.CompletedDate = System.DateTime.UtcNow;
-        //     else
-        //         subTask.CompletedDate = null;
-
-        //     await _context.SaveChangesAsync();
-        //     return Ok(subTask);
-        // }
+         [HttpPut("{subTaskId}/status")]
+public async Task<IActionResult> UpdateStatus(int subTaskId, [FromBody] SubTaskStatusDto dto)
+{
+    var subtask = await _context.SubTasks.FindAsync(subTaskId);
+    if (subtask == null) return NotFound();
+    subtask.SubTStatus = (MoxBackEnd.Models.WorkStatus)dto.SubTStatus;
+    await _context.SaveChangesAsync();
+    return Ok(subtask);
+}
 
         [HttpGet("by-task/{taskId}")]
         public IActionResult GetSubTasksByTaskId(int taskId)
@@ -80,6 +62,6 @@ namespace MoxBackEnd.Controllers
 
     public class SubTaskStatusDto
     {
-        public WorkStatus SubTStatus { get; internal set; }
+        public int SubTStatus { get; set; }
     }
 }

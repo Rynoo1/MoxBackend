@@ -13,7 +13,7 @@ public class FileUpload
     [Required]
     public int ProjectID { get; set; } //FK
     public int? SubTaskID { get; set; }
-    public int TaskId { get; set; }
+    
 
     [Required]
     public string FilePath { get; set; } = string.Empty;
@@ -23,7 +23,7 @@ public class FileUpload
 
     //Navigation properties
     public Projects? Project { get; set; }
-    public Tasks Task { get; set; } = null!;
+    
 
 
 }

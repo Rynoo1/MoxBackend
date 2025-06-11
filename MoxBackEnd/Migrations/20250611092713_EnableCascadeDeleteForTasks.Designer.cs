@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MoxBackEnd.Data;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MoxBackEnd.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250611092713_EnableCascadeDeleteForTasks")]
+    partial class EnableCascadeDeleteForTasks
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -348,6 +351,50 @@ namespace MoxBackEnd.Migrations
                     b.HasKey("ProjectID");
 
                     b.ToTable("Projects");
+                });
+
+            modelBuilder.Entity("MoxBackEnd.Models.StickyNote", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ColorHex")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedById")
+                        .HasColumnType("text");
+
+                    b.Property<string>("CreatedByUserId")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("ProjectID")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("TaskId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedById");
+
+                    b.HasIndex("ProjectID");
+
+                    b.HasIndex("TaskId");
+
+                    b.ToTable("StickyNotes");
                 });
 
             modelBuilder.Entity("MoxBackEnd.Models.SubTasks", b =>
@@ -715,6 +762,28 @@ namespace MoxBackEnd.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("MoxBackEnd.Models.StickyNote", b =>
+                {
+                    b.HasOne("MoxBackEnd.Models.Users", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById");
+
+                    b.HasOne("MoxBackEnd.Models.Projects", "Project")
+                        .WithMany()
+                        .HasForeignKey("ProjectID");
+
+                    b.HasOne("MoxBackEnd.Models.Tasks", "Task")
+                        .WithMany("StickyNotes")
+                        .HasForeignKey("TaskId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("CreatedBy");
+
+                    b.Navigation("Project");
+
+                    b.Navigation("Task");
+                });
+
             modelBuilder.Entity("MoxBackEnd.Models.SubTasks", b =>
                 {
                     b.HasOne("MoxBackEnd.Models.Projects", "Project")
@@ -795,6 +864,8 @@ namespace MoxBackEnd.Migrations
             modelBuilder.Entity("MoxBackEnd.Models.Tasks", b =>
                 {
                     b.Navigation("Comments");
+
+                    b.Navigation("StickyNotes");
 
                     b.Navigation("SubTasks");
                 });

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using MoxBackEnd.Interfaces;
 using MoxBackEnd.Models;
 using MoxBackEnd.DTOs;
+using MoxBackEnd.Data;
 
 namespace MoxBackEnd.Controllers;
 
@@ -10,10 +11,11 @@ namespace MoxBackEnd.Controllers;
 public class TaskController : ControllerBase
 {
     private readonly ITask _service;
-
-    public TaskController(ITask service)
+    private readonly AppDbContext _context;
+    public TaskController(ITask service, AppDbContext context)
     {
         _service = service;
+        _context = context;
     }
 
     [HttpPost]
@@ -80,4 +82,18 @@ public class TaskController : ControllerBase
     [HttpGet("overdue")]
     public async Task<IActionResult> GetOverdueTasks() =>
         Ok(await _service.GetOverdueTasksAsync());
+
+       [HttpPut("{taskId}/status")]
+public async Task<IActionResult> UpdateStatus(int taskId, [FromBody] TaskStatusDto dto)
+{
+    var task = await _context.Tasks.FindAsync(taskId);
+    if (task == null) return NotFound();
+    task.Status = (WorkStatus)dto.Status;
+   await _context.SaveChangesAsync();
+    return Ok(task);
+} 
+}
+public class TaskStatusDto
+{
+    public int Status { get; set; }
 }

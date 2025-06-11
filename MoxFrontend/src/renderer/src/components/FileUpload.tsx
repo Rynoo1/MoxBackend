@@ -5,7 +5,7 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 interface FileUploadProps {
   projectId: number | string
   taskId: number | string
-  subTaskId: number | string
+  subTaskId: number
   onFileUploaded?: () => void
 }
 
@@ -50,17 +50,25 @@ const FileUpload: React.FC<FileUploadProps> = ({
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            projectId,
-            subTaskId,
-            fileName: file.name,
-            filePath: downloadURL
+            ProjectID: Number(projectId),
+            SubTaskID: Number(subTaskId),
+
+            FileName: file.name,
+            FilePath: downloadURL
           })
+        })
+        console.log({
+          ProjectID: projectId,
+          SubTaskID: subTaskId,
+
+          FileName: file.name,
+          FilePath: downloadURL
         })
         if (!res.ok) throw new Error('Failed to save file info to backend.')
       }
 
       // 3. Mark subtask as complete (subTStatus = 1)
-      await fetch(`http://localhost:5183/api/SubTask/${subTaskId}/complete`, {
+      await fetch(`http://localhost:5183/api/SubTask/${subTaskId}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ SubTStatus: 1 })
@@ -77,7 +85,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
         await fetch(`http://localhost:5183/api/Task/${taskId}/status`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status: newStatus })
+          body: JSON.stringify({ Status: newStatus })
         })
       }
 
