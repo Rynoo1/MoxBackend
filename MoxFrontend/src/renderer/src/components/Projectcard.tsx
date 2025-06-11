@@ -43,7 +43,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   const [tasks, setTasks] = React.useState<Task[]>([])
   const [error, setError] = React.useState<string | null>(null)
   const [expandedTaskId, setExpandedTaskId] = React.useState<number | null>(null)
-  const [loading, setLoading] = React.useState<boolean>(true) // Add this line
+  const [loading, setLoading] = React.useState<boolean>(true)
   const navigate = useNavigate()
 
   React.useEffect(() => {
@@ -102,7 +102,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
       } catch (err: any) {
         setError(err.message || 'Failed to fetch tasks.')
       } finally {
-        setLoading(false) // Stop loading
+        setLoading(false)
       }
     }
     fetchTasks()
@@ -244,7 +244,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
                     <td>
                       {task.subTasks && task.subTasks.length > 0 ? (
                         (() => {
-                          // Flatten all assigned users from all subtasks, deduplicate by user.id
+                          // Flattening all assigned users from all subtasks, deduplicate by user.id
                           const allUsers = task.subTasks.flatMap((sub) => sub.assignedUsers || [])
                           const uniqueUsers = Array.from(
                             new Map(allUsers.map((u) => [u.id, u])).values()

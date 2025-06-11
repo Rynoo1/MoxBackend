@@ -75,15 +75,11 @@ public class AppDbContext : IdentityDbContext<Users>
             .HasMany(em => em.Attendees)
             .WithMany(u => u.Meetings);
 
-        // Cascade delete for Comments when Task is deleted
         modelBuilder.Entity<Comment>()
             .HasOne(c => c.Task)
             .WithMany(t => t.Comments)
             .HasForeignKey(c => c.TaskId)
             .OnDelete(DeleteBehavior.Cascade);
-
-        
-        
 
         modelBuilder.Entity<Comment>()
             .HasOne(c => c.Project)

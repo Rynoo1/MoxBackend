@@ -45,7 +45,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
         await uploadBytes(storageRef, file)
         const downloadURL = await getDownloadURL(storageRef)
 
-        // 2. Save file info to your backend
+        // 2. Save file info to backend
         const res = await fetch('http://localhost:5183/api/FileUpload', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

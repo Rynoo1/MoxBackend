@@ -46,33 +46,9 @@ public class UserService : IUser
         throw new NotImplementedException();
     }
 
-    // public Task<Tasks> GetUserTasks(string userID)
-    // {
-    //     throw new NotImplementedException();
-    // }
-
-    // public Task<string> HashPassword(string password)
-    // {
-    //     string HashedPassword = BCrypt.Net.BCrypt.EnhancedHashPassword(password, 13);
-    //     return Task.FromResult(HashedPassword);
-    // }
-
     public async Task<string> LoginUser(string email, string password)
     {
-        // Users? userFromDB = UserExists(email).Result;
-
-        // if (userFromDB == null)
-        // {
-        //     return Task.FromResult("User does not exist");
-        // }
-
-        // if (ValidatePassword(userFromDB, password).Result)
-        // {
-        //     return Task.FromResult("Password is incorrect");
-        // }
-
-        // return Task.FromResult("Login Successful!");
-
+       
         var user = await _userManager.FindByEmailAsync(email);
 
         if (user == null)
@@ -130,16 +106,5 @@ public class UserService : IUser
 
     }
 
-    // public async Task<Users?> UserExists(string email)
-    // {
-    //     Users? userFromFB = await _context.Users.FirstOrDefaultAsync(userInDB => userInDB.Email == email);
 
-    //     return userFromFB;
-    // }
-
-    // public Task<bool> ValidatePassword(Users user, string password)
-    // {
-    //     bool isPasswordValid = BCrypt.Net.BCrypt.EnhancedVerify(password, user.PasswordHash);
-    //     return Task.FromResult(isPasswordValid);
-    // }
 }

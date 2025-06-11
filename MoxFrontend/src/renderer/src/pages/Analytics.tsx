@@ -156,7 +156,6 @@ const Analytics: React.FC<AnalyticsProps> = ({ isAdmin, userId }) => {
         }
       })
       .finally(() => setLoading(false))
-    // eslint-disable-next-line
   }, [isAdmin, userId])
 
   // --- Analytics Calculations ---
@@ -284,7 +283,6 @@ const Analytics: React.FC<AnalyticsProps> = ({ isAdmin, userId }) => {
     }))
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
 
-  // Debug logs
   useEffect(() => {
     console.log('TasksOverTimeChart data:', tasksOverTimeData)
     console.log('TaskStatusChart data:', statusData)

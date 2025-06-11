@@ -28,12 +28,6 @@ public class ProjectController(IProjects projectService) : ControllerBase
         return Ok(project);
     }
 
-    // [HttpGet("c")]
-    // public async Task<IActionResult> GetMembers(int projectId)
-    // {
-    //     var members = await _projectService.GetProjectMembersAsync(projectId);
-    //     return Ok(members);
-    // }
 
     [HttpGet("{projectId}/members")]
     public async Task<IActionResult> GetMembers(int projectId)

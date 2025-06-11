@@ -277,6 +277,7 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose }) => {
           </div>
         </>
       )}
+
       {step === 2 && (
         <>
           <h1 className="text-center text-black font-bold text-3xl mb-10">Add Tasks</h1>
@@ -427,6 +428,7 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose }) => {
           </div>
         </>
       )}
+
       {step === 3 && (
         <>
           <h2 className="text-center text-black font-bold text-3xl mb-8">
@@ -523,6 +525,7 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose }) => {
           </div>
         </>
       )}
+
       {step === 4 && editingTaskIndex !== null && (
         <>
           <h1 className="text-center text-black font-bold text-3xl mb-8">Add Subtasks</h1>
@@ -698,7 +701,6 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose }) => {
             <option value="High">High</option>
             <option value="Critical">Critical</option>
           </select>
-          {/* User assignment UI removed from here */}
           <div className="flex justify-between mt-8">
             <button
               className="btn text-white border-2 border-white bg-[#6D28D9] hover:bg-white hover:border-[#6D28D9] hover:text-[#1E3A8A] shadow-none text-lg px-8 py-3"
