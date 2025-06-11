@@ -83,18 +83,24 @@ builder.Services.AddAuthentication(options =>
              return Task.CompletedTask;
          }
      };
- })
- .AddGoogle(GoogleOptions =>
- {
-     GoogleOptions.ClientId = builder.Configuration["Authentication:Google:ClientId"] ?? string.Empty;
-     GoogleOptions.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"] ?? string.Empty;
-     GoogleOptions.CallbackPath = "/api/user/signin-google";
-
-     GoogleOptions.Scope.Add("email");
-     GoogleOptions.Scope.Add("profile");
-
-     GoogleOptions.SaveTokens = true;
  });
+ 
+var googleClientId = builder.Configuration["Authentication:Google:ClientId"];
+var googleClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+
+if (!string.IsNullOrWhiteSpace(googleClientId) && !string.IsNullOrWhiteSpace(googleClientSecret))
+{
+    builder.Services.AddAuthentication()
+        .AddGoogle(options =>
+        {
+            options.ClientId = googleClientId;
+            options.ClientSecret = googleClientSecret;
+            options.CallbackPath = "/api/user/signin-google";
+            options.Scope.Add("email");
+            options.Scope.Add("profile");
+            options.SaveTokens = true;
+        });
+}
 
 builder.Services.AddAuthorization();
 

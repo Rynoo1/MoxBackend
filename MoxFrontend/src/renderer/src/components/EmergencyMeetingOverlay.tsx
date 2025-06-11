@@ -21,23 +21,24 @@ const Emergency: React.FC = () => {
     return !m.isResolved && endTime > now && isUserIncluded;
   });
 
-  useEffect(() => {
-    const loadMeetings = async () => {
-      try {
-        const [allMeetingsRes, usersRes] = await Promise.all([
-          fetchAllEmergencyMeetings(),
-          fetch("http://localhost:5183/api/User")
-        ]);
+  const loadMeetings = async () => {
+    try {
+      const [allMeetingsRes, usersRes] = await Promise.all([
+        fetchAllEmergencyMeetings(),
+        fetch("http://localhost:5183/api/User"),
+      ]);
 
-        const usersRaw = await usersRes.json();
-        const users = usersRaw?.$values ?? usersRaw;
-        setMeetings(allMeetingsRes);
-        setAllUsers(Array.isArray(users) ? users : []);
-      } catch (err) {
-        console.error("Failed to load data", err);
-        setError("Failed to fetch emergency meetings.");
-      }
-    };
+      const usersRaw = await usersRes.json();
+      const users = usersRaw?.$values ?? usersRaw;
+      setMeetings(allMeetingsRes);
+      setAllUsers(Array.isArray(users) ? users : []);
+    } catch (err) {
+      console.error("Failed to load data", err);
+      setError("Failed to fetch emergency meetings.");
+    }
+  };
+
+  useEffect(() => {
     loadMeetings();
   }, []);
 
@@ -60,15 +61,16 @@ const Emergency: React.FC = () => {
         body: JSON.stringify({
           ...editingMeeting,
           attendees: editingMeeting.attendees?.map((a: any) => a.id) ?? [],
-          projectID: null
+          projectID: null,
         }),
       });
 
       if (!res.ok) throw new Error("Failed to save meeting.");
 
-      const updated = await res.json();
-      setMeetings((prev) => prev.map((m) => (m.id === updated.id ? { ...updated } : m)));
+      await loadMeetings();
+
       setEditingMeeting(null);
+      setCancelWarning(null);
       setSuccessMessage("Meeting updated successfully.");
     } catch (err) {
       console.error(err);
