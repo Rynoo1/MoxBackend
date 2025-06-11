@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { DayPicker } from 'react-day-picker'
 import 'react-day-picker/dist/style.css'
 import '../styles/dashboard.css'
+import EmergencyMeeting from '../components/EmergencyMeetingOverlay'
 import { Link } from 'react-router-dom'
 import OverdueTasksChart from '../components/charts/OverdueTasksChart'
 
@@ -13,13 +14,6 @@ interface Project {
   tasksTotal?: number
   updatesCount?: number
   emergencyTasksCount?: number
-}
-
-interface EmergencyMeeting {
-  title: string
-  startTime: string
-  location: string
-  isResolved: boolean
 }
 
 const Dashboard = () => {
@@ -42,7 +36,6 @@ const Dashboard = () => {
   const [emergencyTasks, setEmergencyTasks] = useState(0)
   const [mostActiveProject, setMostActiveProject] = useState<Project | null>(null)
   const [recentlyViewed, setRecentlyViewed] = useState<Project[]>([])
-  const [emergencyMeeting, setEmergencyMeeting] = useState<EmergencyMeeting | null>(null)
 
   const getGreeting = () => {
     const hour = new Date().getHours()
@@ -100,20 +93,7 @@ const Dashboard = () => {
       }
     }
 
-    const fetchEmergencyMeeting = async () => {
-      try {
-        const response = await fetch('http://localhost:5183/api/EmergencyMeeting/latest')
-        if (response.ok) {
-          const data = await response.json()
-          setEmergencyMeeting(data)
-        }
-      } catch (err) {
-        console.error('Failed to fetch emergency meeting', err)
-      }
-    }
-
     fetchProjects()
-    fetchEmergencyMeeting()
 
     const recent = localStorage.getItem('recentlyViewedProjects')
     if (recent) {
@@ -147,7 +127,7 @@ const Dashboard = () => {
             <h1 className="text-2xl font-semibold">Dashboard</h1>
             <p className="text-sm text-gray-500">{formattedDate}</p>
           </div>
-
+            <EmergencyMeeting />
           <div className="flex flex-wrap gap-3 items-center">
             <input
               type="text"
@@ -189,24 +169,10 @@ const Dashboard = () => {
           <div className="stat-desc">+2 new this month</div>
         </div>
         <div className="stat">
-          <div className="stat-title">Emergency</div>
-          <div className="stat-value text-red-600">{emergencyMeeting ? 1 : 0}</div>
-          <div className="stat-desc">Meetings logged</div>
-        </div>
-        <div className="stat">
           <div className="stat-title">Progress</div>
           <div className="stat-value text-primary">{weeklyProgress.percent}%</div>
           <div className="stat-desc text-gray-500">{weeklyProgress.total - weeklyProgress.done} tasks remaining</div>
         </div>
-        {emergencyMeeting && (
-          <div className="stat bg-red-100 border border-red-400 text-red-800 px-4 py-2 rounded-md">
-            <div className="stat-title border-b border-red-300 font-semibold pb-1 mb-1">🚨 Emergency Meeting</div>
-            <div className="text-sm font-medium">{emergencyMeeting.title}</div>
-            <div className="text-sm">📍 {emergencyMeeting.location}</div>
-            <div className="text-sm">🕓 {new Date(emergencyMeeting.startTime).toLocaleString()}</div>
-            {!emergencyMeeting.isResolved && <div className="text-xs text-red-600 mt-1">Status: Ongoing</div>}
-          </div>
-        )}
       </div>
       <main className="px-6 py-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

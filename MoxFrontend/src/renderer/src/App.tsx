@@ -14,6 +14,7 @@ import TaskDetails from './pages/TaskDetails'
 import ProfilePage from './pages/Profile'
 import UserManagement from './pages/UserManagement'
 import { AuthProvider } from './pages/AuthContext'
+import EmerencyMeeting from './pages/EmergencyMeeting'
 import Analytics from './pages/Analytics'
 import AuthCallback from './components/AuthCallback'
 
@@ -57,6 +58,7 @@ const AppContent = () => {
           <Route path="/task/:taskId" element={<TaskDetails />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/userman" element={<UserManagement />} />
+          <Route path ="/emergency-meeting" element={<EmerencyMeeting />} />
           <Route
             path="/analytics"
             element={<Analytics isAdmin={localStorage.getItem('isAdmin') === 'true'} userId={''} />}

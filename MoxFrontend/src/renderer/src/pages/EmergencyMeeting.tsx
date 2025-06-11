@@ -57,45 +57,15 @@ const CreateEmergencyMeeting: React.FC = () => {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleProjectChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const idStr = e.target.value;
-
-    if (idStr === "") {
-      setProjectId(null);
-      setAttendees([]);
-      setError("");
-      return;
-    }
-
-    const id = parseInt(idStr);
-    setProjectId(id);
-
-    try {
-      const res = await fetch(`http://localhost:5183/api/EmergencyMeeting/project-attendees/${id}`);
-      const users = await res.json();
-
-      const parsedUsers = users.$values ?? users;
-      setAttendees(parsedUsers);
-
-      if (!parsedUsers || parsedUsers.length === 0) {
-        setError("⚠️ There are no users assigned to this project.");
-      } else {
-        setError("");
-      }
-    } catch (err) {
-      console.error("Failed to fetch attendees", err);
-      setError("Failed to fetch attendees.");
-    }
-  };
-
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
+  const userId = localStorage.getItem("userId");
+
   const payload: any = {
     ...form,
-    createdByUserId: "9c3e7c81-3141-43b4-9b04-88055026934e",
+    createdByUserId: userId,
     isResolved: false,
     attendees: attendees.map((a) => a.id),
     startTime: new Date(form.startTime).toISOString(),
@@ -129,7 +99,6 @@ const CreateEmergencyMeeting: React.FC = () => {
 
   return (
     <div className="min-h-screen overflow-y-auto flex justify-center items-start p-4 pt-20">
-      <Emergency />
       <div className="w-3xl bg-white rounded-3xl shadow-xl border border-gray-200 p-8 overflow-y-auto max-h-[90vh]">
         <div className="text-center mb-8">
           <div className="text-4xl mb-2">🚨</div>
@@ -154,22 +123,6 @@ const CreateEmergencyMeeting: React.FC = () => {
         )}
 
         <form onSubmit={handleSubmit} className="grid gap-5">
-          <div>
-            <label className="block text-sm font-medium mb-1 text-gray-700">Project (Optional)</label>
-            <select
-              className="w-full px-4 py-2 rounded-lg border border-gray-300"
-              onChange={handleProjectChange}
-              defaultValue=""
-            >
-              <option value="" disabled>Select a project</option>
-              {projects.map((project) => (
-                <option key={project.projectID} value={project.projectID}>
-                  {project.projectName}
-                </option>
-              ))}
-            </select>
-          </div>
-
           <div className="flex flex-wrap gap-2">
             {attendees.map((user) => (
               <span

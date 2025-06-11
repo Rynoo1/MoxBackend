@@ -38,6 +38,7 @@ public class EmergencyMeetingController : ControllerBase
             m.ProjectID,
             m.IsResolved,
             CreatedBy = m.CreatedBy?.UserName ?? "Unknown",
+            CreatedByUserId = m.CreatedByUserId,
             Attendees = m.Attendees.Select(a => new
             {
                 a.Id,
@@ -49,10 +50,12 @@ public class EmergencyMeetingController : ControllerBase
     }
 
     [HttpGet("by-project/{projectId}")]
-    public async Task<IActionResult> GetByProject(int projectId) => Ok(await _service.GetMeetingsByProjectAsync(projectId));
+    public async Task<IActionResult> GetByProject(int projectId)
+        => Ok(await _service.GetMeetingsByProjectAsync(projectId));
 
     [HttpGet("by-user/{userId}")]
-    public async Task<IActionResult> GetByUser(string userId) => Ok(await _service.GetMeetingsByUserAsync(userId));
+    public async Task<IActionResult> GetByUser(string userId)
+        => Ok(await _service.GetMeetingsByUserAsync(userId));
 
     [HttpGet("{id}")]
     public async Task<IActionResult> Get(int id)
@@ -62,16 +65,28 @@ public class EmergencyMeetingController : ControllerBase
     }
 
     [HttpGet("project-attendees/{projectId}")]
-    public async Task<IActionResult> GetProjectAttendees(int projectId)
+    public async Task<IActionResult> GetUsersByProjectIdAsync(int projectId)
     {
-        var users = await _service.GetUsersByProjectIdAsync(projectId);
-        var result = users.Select(u => new
+        try
         {
-            u.Id,
-            u.UserName
-        });
+            var users = await _context.Users
+                .Include(u => u.AssignedSubTasks)
+                .Where(u => u.AssignedSubTasks.Any(st => st.ProjectID == projectId))
+                .Distinct()
+                .ToListAsync();
 
-        return Ok(result);
+            var result = users.Select(u => new
+            {
+                u.Id,
+                u.UserName
+            });
+
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = ex.Message });
+        }
     }
 
     [HttpPost]
