@@ -1,44 +1,50 @@
-@ -0,0 +1,43 @@
-.kanban-board {
-  display: flex;
-  justify-content: space-between;
-  padding: 20px;
+.kanban-column {
+  @apply bg-white/90 shadow-sm border border-transparent rounded-box grow p-4 min-h-[200px] transition;
 }
 
-.column {
-  width: 22%;
-  background: #f4f4f4;
-  padding: 10px;
-  border-radius: 5px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+.kanban-card {
+  @apply bg-white shadow-md rounded-lg p-4 cursor-move hover:shadow-lg transition;
+  user-select: none;
+  touch-action: none;
+  z-index: 10;
 }
 
-.column h2 {
-  text-align: center;
-  font-size: 1.2em;
+.kanban-header {
+  @apply flex flex-col md:flex-row justify-between items-center gap-4 px-6 py-4 shadow-sm rounded-b-lg;
 }
 
-.task-list {
-  margin-top: 10px;
+.kanban-select {
+  @apply select select-bordered;
 }
 
-.task-card {
-  background: white;
-  margin: 5px 0;
-  padding: 10px;
-  border-radius: 5px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+.kanban-avatar {
+  @apply avatar placeholder;
 }
 
-.task-card button {
-  background-color: #4caf50;
-  color: white;
+.kanban-avatar-circle {
+  @apply bg-neutral-focus text-neutral-content rounded-full w-10;
+}
+
+.kanban-column-title {
+  @apply text-[#1D3557];
+}
+
+.card {
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.35);
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border: 1px solid white;
+  color: #122235;
+}
+
+
+.btn-edit {
+  background-color: #200072;
+  color: #122235;
   border: none;
-  padding: 5px 10px;
-  border-radius: 5px;
-  cursor: pointer;
+}
+.kanban-column-title {
+  color: #1D3557;
 }
 
-.task-card button:hover {
-  background-color: #45a049;
-}

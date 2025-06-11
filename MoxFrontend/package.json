@@ -29,13 +29,17 @@
     "@electron-toolkit/utils": "^4.0.0",
     "@heroicons/react": "^2.2.0",
     "@tailwindcss/cli": "^4.1.6",
+    "@vue-dnd-kit/core": "^1.5.0",
     "canvas-confetti": "^1.9.3",
     "electron-updater": "^6.3.9",
     "postcss-cli": "^11.0.1",
     "react-bootstrap-icons": "^1.11.6",
+    "react-confetti": "^6.4.0",
     "react-day-picker": "^9.7.0",
     "react-icons": "^5.5.0",
-    "react-router-dom": "^7.6.0"
+    "react-router-dom": "^7.6.0",
+    "react-use": "^17.6.0",
+    "recharts": "^2.15.3"
   },
   "devDependencies": {
     "@electron-toolkit/eslint-config-prettier": "^3.0.0",

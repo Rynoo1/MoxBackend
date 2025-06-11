@@ -97,7 +97,6 @@ html.dark .sidebar {
   margin-bottom: 20px;
 }
 
-/* Navigation styles */
 .sidebar-nav {
   list-style-type: none;
   padding: 0;
@@ -186,3 +185,212 @@ code {
   flex-direction: column;
   margin-bottom: 80px;
 }
+
+/*   background-image: url('../assets/Dark-Mode.jpg');
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap");
+
+@import "tailwindcss";
+@plugin "daisyui";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@plugin "daisyui" {
+  themes: light --default, dark --prefersdark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  width: 100%;
+  font-family: 'Poppins', sans-serif;
+  transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
+}
+
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background-color: #EDF2F7;
+  color: #000000;
+  user-select: none;
+}
+
+body.dark-mode {
+  background-image: url('/assets/Dark-Mode.jpg');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-position: center;
+}
+
+body.dark-mode * {
+  color: #f0f0f0 !important;
+}
+
+.card-shadow {
+  @apply shadow-sm rounded bg-white dark:bg-slate-800 text-black dark:text-white p-4;
+}
+
+.kanban-card {
+  @apply bg-white dark:bg-slate-800 text-black dark:text-white rounded-lg p-4 border border-white dark:border-slate-700;
+}
+
+html.dark .sidebar {
+  background-color: var(--fallback-b1);
+  color: var(--fallback-bc);
+}
+
+html.dark .nav-link {
+  color: var(--fallback-bc);
+}
+
+html.dark .nav-link:hover {
+  background-color: var(--fallback-b2);
+}
+
+html.dark .upgrade-btn {
+  background-color: var(--fallback-b2);
+}
+
+html.dark .upgrade-btn:hover {
+  background-color: var(--fallback-b3);
+}
+
+.sidebar {
+  width: 250px;
+  height: 100vh;
+  background-color: #1E3A8A;
+  padding: 20px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  color: #fff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
+}
+
+html.dark .sidebar {
+  background-color: #122235;
+}
+
+.logo {
+  margin-bottom: 20px;
+  -webkit-user-drag: none;
+  height: 128px;
+  width: 128px;
+  will-change: filter;
+  transition: filter 300ms;
+}
+
+.logo:hover {
+  filter: drop-shadow(0 0 1.2em #6988e6aa);
+}
+
+.logo img {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.sidebar-nav {
+  list-style-type: none;
+  padding: 0;
+}
+
+.sidebar-nav li {
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+
+.nav-link {
+  color: inherit;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border-radius: 4px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.nav-link:hover {
+  background-color: #3b82f6;
+}
+
+html.dark .nav-link {
+  color: #e2e8f0;
+}
+
+html.dark .nav-link:hover {
+  background-color: #4a5568;
+}
+
+.upgrade {
+  margin-top: 20px;
+}
+
+.upgrade h6 {
+  margin-bottom: 10px;
+  font-size: 14px;
+  color: #eee;
+}
+
+.upgrade-btn {
+  display: block;
+  width: 100%;
+  padding: 10px 0;
+  text-align: center;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.upgrade-btn:hover {
+  background-color: #0056b3;
+}
+
+html.dark .upgrade-btn {
+  background-color: #2b6cb0;
+}
+
+html.dark .upgrade-btn:hover {
+  background-color: #3182ce;
+}
+
+.dashboard {
+  min-height: 100vh;
+}
+
+code {
+  font-weight: 600;
+  padding: 3px 5px;
+  border-radius: 2px;
+  background-color: var(--color-background-mute);
+  font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+  font-size: 85%;
+}
+
+#root {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  margin-bottom: 80px;
+}
+
+.grid-container {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-height: 100vh;
+}
+
+.main {
+  width: 100%;
+}
+ */

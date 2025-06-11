@@ -1,50 +1,32 @@
-import React, { useEffect } from "react";
-import confetti from "canvas-confetti";
+import { useEffect } from 'react';
+import confetti from 'canvas-confetti';
 
 const ConfettiEffect: React.FC = () => {
   useEffect(() => {
+    const duration = 3 * 1000;
+    const end = Date.now() + duration;
 
-    const triggerConfetti = () => {
+    (function frame() {
       confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 },
-        colors: ['#ff0a5b', '#00b0b9', '#ffbc00'],
+        particleCount: 4,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0 },
       });
-    };
+      confetti({
+        particleCount: 4,
+        angle: 120,
+        spread: 55,
+        origin: { x: 1 },
+      });
 
-    triggerConfetti();
-
-
-    return () => {
-
-    };
+      if (Date.now() < end) {
+        requestAnimationFrame(frame);
+      }
+    })();
   }, []);
 
   return null;
 };
 
 export default ConfettiEffect;
-import React, { useEffect } from 'react'
-import confetti from 'canvas-confetti'
-
-const ConfettiEffect: React.FC = () => {
-  useEffect(() => {
-    const triggerConfetti = () => {
-      confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 },
-        colors: ['#ff0a5b', '#00b0b9', '#ffbc00']
-      })
-    }
-
-    triggerConfetti()
-
-    return () => {}
-  }, [])
-
-  return null
-}
-
-export default ConfettiEffect

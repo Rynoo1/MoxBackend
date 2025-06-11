@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react'
 import { DayPicker } from 'react-day-picker'
 import 'react-day-picker/dist/style.css'
 import '../styles/dashboard.css'
-import bg from '../assets/Background.jpg'
+import { Link } from 'react-router-dom'
+import OverdueTasksChart from '../components/charts/OverdueTasksChart'
 
 interface Project {
   projectID: number
@@ -12,6 +13,13 @@ interface Project {
   tasksTotal?: number
   updatesCount?: number
   emergencyTasksCount?: number
+}
+
+interface EmergencyMeeting {
+  title: string
+  startTime: string
+  location: string
+  isResolved: boolean
 }
 
 const Dashboard = () => {
@@ -24,13 +32,17 @@ const Dashboard = () => {
 
   const [date, setDate] = useState<Date | undefined>()
   const [projects, setProjects] = useState<Project[]>([])
+  const [filteredProjects, setFilteredProjects] = useState<Project[]>([])
   const [error, setError] = useState<string | null>(null)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [statusFilter, setStatusFilter] = useState('All')
   const username = 'Taylor'
 
   const [weeklyProgress, setWeeklyProgress] = useState({ percent: 0, done: 0, total: 0 })
   const [emergencyTasks, setEmergencyTasks] = useState(0)
   const [mostActiveProject, setMostActiveProject] = useState<Project | null>(null)
   const [recentlyViewed, setRecentlyViewed] = useState<Project[]>([])
+  const [emergencyMeeting, setEmergencyMeeting] = useState<EmergencyMeeting | null>(null)
 
   const getGreeting = () => {
     const hour = new Date().getHours()
@@ -39,18 +51,28 @@ const Dashboard = () => {
     return 'Good evening'
   }
 
+  const calculateOverdueTasks = () => {
+    const now = new Date()
+    return filteredProjects
+      .filter((project) => {
+        const dueDate = new Date(project.dueDate)
+        return dueDate < now && (project.tasksTotal ?? 0) > (project.tasksCompleted ?? 0)
+      })
+      .map((project) => ({
+        task: project.projectName,
+        dueDate: project.dueDate
+      }))
+  }
+
   useEffect(() => {
     const fetchProjects = async () => {
       try {
         const response = await fetch('http://localhost:5183/api/Project')
         if (!response.ok) throw new Error(`Error ${response.status}`)
         const data = await response.json()
-        const projectsArray = Array.isArray(data.$values)
-          ? data.$values
-          : Array.isArray(data)
-            ? data
-            : []
+        const projectsArray = Array.isArray(data.$values) ? data.$values : Array.isArray(data) ? data : []
         setProjects(projectsArray)
+        setFilteredProjects(projectsArray)
 
         let totalTasks = 0
         let completedTasks = 0
@@ -78,7 +100,20 @@ const Dashboard = () => {
       }
     }
 
+    const fetchEmergencyMeeting = async () => {
+      try {
+        const response = await fetch('http://localhost:5183/api/EmergencyMeeting/latest')
+        if (response.ok) {
+          const data = await response.json()
+          setEmergencyMeeting(data)
+        }
+      } catch (err) {
+        console.error('Failed to fetch emergency meeting', err)
+      }
+    }
+
     fetchProjects()
+    fetchEmergencyMeeting()
 
     const recent = localStorage.getItem('recentlyViewedProjects')
     if (recent) {
@@ -86,22 +121,27 @@ const Dashboard = () => {
     }
   }, [])
 
-  const upcomingProjects = projects.filter((project) => {
-    const due = new Date(project.dueDate)
-    return due >= today
-  })
+  useEffect(() => {
+    let filtered = [...projects]
+
+    if (searchTerm) {
+      filtered = filtered.filter((p) => p.projectName?.toLowerCase().includes(searchTerm.toLowerCase()))
+    }
+
+    if (statusFilter === 'Done') {
+      filtered = filtered.filter((p) => (p.tasksTotal ?? 0) === (p.tasksCompleted ?? 0))
+    } else if (statusFilter === 'In Progress') {
+      filtered = filtered.filter((p) => (p.tasksCompleted ?? 0) > 0 && (p.tasksCompleted ?? 0) < (p.tasksTotal ?? 0))
+    } else if (statusFilter === 'To Do') {
+      filtered = filtered.filter((p) => (p.tasksCompleted ?? 0) === 0)
+    }
+
+    setFilteredProjects(filtered)
+  }, [searchTerm, statusFilter, projects])
 
   return (
-    <div
-      className="min-h-screen w-full"
-      style={{
-        backgroundImage: `url(${bg})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat'
-      }}
-    >
-      <div className="bg-base-300 px-6 py-4 shadow-sm rounded-b-lg">
+    <div className="min-h-screen w-full pt-10">
+      <div className="bg-white px-6 py-4 shadow-sm rounded-b-lg">
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <div>
             <h1 className="text-2xl font-semibold">Dashboard</h1>
@@ -109,28 +149,35 @@ const Dashboard = () => {
           </div>
 
           <div className="flex flex-wrap gap-3 items-center">
-            <input type="text" placeholder="Search projects..." className="input input-bordered input-sm w-40 md:w-56" />
-            <select className="select select-bordered select-sm w-28 md:w-32">
+            <input
+              type="text"
+              placeholder="Search projects..."
+              className="input input-bordered input-sm w-40 md:w-56"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <select
+              className="select select-bordered select-sm w-32"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
               <option>All</option>
-              <option>Ongoing</option>
-              <option>Completed</option>
+              <option>To Do</option>
+              <option>In Progress</option>
+              <option>Done</option>
             </select>
-            <div className="avatar placeholder">
-              <div className="w-10 rounded-full bg-neutral-focus text-neutral-content">
-                <span>T</span>
+            <Link to="/profile">
+              <div className="avatar placeholder cursor-pointer">
+                <div className="w-10 rounded-full bg-neutral text-white">
+                  <span className="text-lg">👤</span>
+                </div>
               </div>
-            </div>
+            </Link>
           </div>
         </div>
       </div>
 
-      {username && (
-        <div className="text-center mt-6">
-          <h2 className="text-3xl font-light">{getGreeting()}, {username}</h2>
-        </div>
-      )}
-
-      <div className="stats shadow w-full overflow-x-auto mt-10 mb-10">
+      <div className="stats shadow w-full overflow-x-auto mt-10 mb-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="stat">
           <div className="stat-title">Tasks Completed</div>
           <div className="stat-value text-primary">{weeklyProgress.done}</div>
@@ -142,100 +189,75 @@ const Dashboard = () => {
           <div className="stat-desc">+2 new this month</div>
         </div>
         <div className="stat">
+          <div className="stat-title">Emergency</div>
+          <div className="stat-value text-red-600">{emergencyMeeting ? 1 : 0}</div>
+          <div className="stat-desc">Meetings logged</div>
+        </div>
+        <div className="stat">
           <div className="stat-title">Progress</div>
           <div className="stat-value text-primary">{weeklyProgress.percent}%</div>
           <div className="stat-desc text-gray-500">{weeklyProgress.total - weeklyProgress.done} tasks remaining</div>
         </div>
+        {emergencyMeeting && (
+          <div className="stat bg-red-100 border border-red-400 text-red-800 px-4 py-2 rounded-md">
+            <div className="stat-title border-b border-red-300 font-semibold pb-1 mb-1">🚨 Emergency Meeting</div>
+            <div className="text-sm font-medium">{emergencyMeeting.title}</div>
+            <div className="text-sm">📍 {emergencyMeeting.location}</div>
+            <div className="text-sm">🕓 {new Date(emergencyMeeting.startTime).toLocaleString()}</div>
+            {!emergencyMeeting.isResolved && <div className="text-xs text-red-600 mt-1">Status: Ongoing</div>}
+          </div>
+        )}
       </div>
-
       <main className="px-6 py-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div className="bg-white p-4 shadow rounded">
-            <h3 className="text-xl font-semibold mb-2">Activity Log</h3>
-            <p>Recent updates (placeholder)</p>
+            <h3 className="text-xl font-semibold mb-4">Tasks Overview</h3>
+            <OverdueTasksChart
+              overdueTasks={calculateOverdueTasks()}
+              allTasks={projects.map((project) => ({ id: project.projectID, name: project.projectName }))}
+            />
           </div>
 
           <div className="bg-white p-4 shadow rounded">
-            <h3 className="text-xl font-semibold mb-2">Upcoming Deadlines</h3>
-            {error && <p className="text-red-500">{error}</p>}
-            {upcomingProjects.length === 0 ? (
-              <p>No upcoming projects.</p>
+            <h3 className="text-xl font-semibold mb-4">Your Projects</h3>
+            {projects.length === 0 ? (
+              <p>No projects found.</p>
             ) : (
-              <ul className="list-disc list-inside space-y-1">
-                {upcomingProjects.slice(0, 5).map((project) => (
-                  <li key={project.projectID}>
-                    {project.projectName} – due {new Date(project.dueDate).toLocaleDateString()}
-                  </li>
-                ))}
-              </ul>
+              <div className="overflow-x-auto">
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Project Name</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                   {filteredProjects.slice(0, 5).map((project) => (
+
+                      <tr key={project.projectID}>
+                        <td>{project.projectID}</td>
+                        <td>{project.projectName || 'Untitled'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
 
-          <div className="card bg-base-100 shadow-sm w-full">
-            <div className="card-body">
-              <h3 className="card-title">Calendar</h3>
-              <DayPicker
-                mode="single"
-                selected={date}
-                onSelect={setDate}
-                className="react-day-picker"
-              />
-            </div>
+          <div className="bg-white p-4 shadow rounded">
+            <h3 className="text-xl font-semibold mb-4">Calendar</h3>
+            <DayPicker
+              mode="single"
+              selected={date}
+              onSelect={setDate}
+              className="react-day-picker"
+            />
           </div>
         </div>
 
-        {/* Project Overview Table */}
-        <div className="mt-10 card bg-white shadow rounded">
-          <div className="card-body">
-            <h3 className="card-title mb-4">Recently Viewed</h3>
-            <div className="overflow-x-auto max-h-[400px]">
-              <table className="table w-full">
-                <thead>
-                  <tr>
-                    <th>Weekly Progress</th>
-                    <th>Emergency Tasks</th>
-                    <th>Most Active Project</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>
-                      <div className="text-success font-bold text-lg">{weeklyProgress.percent}%</div>
-                      <progress className="progress progress-success w-full" value={weeklyProgress.percent} max="100" />
-                      <p className="text-sm text-gray-500">
-                        {weeklyProgress.done} of {weeklyProgress.total} tasks done
-                      </p>
-                    </td>
-                    <td>
-                      <div className="text-error font-bold text-lg">{emergencyTasks}</div>
-                      <p className="text-error text-sm">Handle immediately</p>
-                    </td>
-                    <td>
-                      <div className="font-semibold">{mostActiveProject?.projectName ?? "N/A"}</div>
-                      <p className="text-sm text-gray-500">
-                        {mostActiveProject?.updatesCount ?? 0} updates this week
-                      </p>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td colSpan={3}>
-                      <h4 className="text-md font-semibold mb-2">Recently Viewed Items</h4>
-                      {recentlyViewed.length === 0 ? (
-                        <span>No recently viewed projects.</span>
-                      ) : (
-                        <ul className="list-disc list-inside space-y-1 max-h-32 overflow-auto">
-                          {recentlyViewed.map((proj) => (
-                            <li key={proj.projectID}>{proj.projectName}</li>
-                          ))}
-                        </ul>
-                      )}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
+
+
       </main>
     </div>
   )
