@@ -122,13 +122,13 @@ namespace MoxBackEnd.Controllers
             var user = await _userManager.FindByEmailAsync(loginDto.Email);
             if (user == null)
             {
-                return Unauthorized("Invalid email or password");
+                return BadRequest(new { message = "Invalid email or password" });
             }
 
             var passwordValid = await _userManager.CheckPasswordAsync(user, loginDto.Password);
             if (!passwordValid)
             {
-                return Unauthorized("Invalid email or password");
+                return BadRequest(new { message = "Invalid email or password" });
             }
 
             var adminEmails = new HashSet<string>
@@ -169,7 +169,7 @@ namespace MoxBackEnd.Controllers
             var user = await _userManager.FindByIdAsync(dto.UserId);
             if (user == null)
             {
-                return Unauthorized("User not found");
+                return BadRequest(new { message = "User not found" });
             }
 
             var isValid = await _userManager.VerifyTwoFactorTokenAsync(
@@ -177,7 +177,7 @@ namespace MoxBackEnd.Controllers
 
             if (!isValid)
             {
-                return Unauthorized("Invalid 2FA code");
+                return BadRequest(new { message = "Invalid 2FA code" });
             }
 
             var adminEmails = new HashSet<string>
@@ -688,7 +688,7 @@ namespace MoxBackEnd.Controllers
             if (info == null)
             {
                 // Redirect to an error page or return a proper error response
-                return BadRequest("Error loading external login information");
+                return BadRequest(new { message = "Error loading external login information" });
             }
 
             var result = await _signInManager.ExternalLoginSignInAsync(
@@ -700,7 +700,7 @@ namespace MoxBackEnd.Controllers
 
                 if (user == null)
                 {
-                    return BadRequest("User not found after external login.");
+                    return BadRequest(new { meassage = "User not found after external login." });
                 }
 
                 var token = _tokenservices.GenerateToken(
@@ -712,7 +712,7 @@ namespace MoxBackEnd.Controllers
 
             if (result.IsLockedOut)
             {
-                return BadRequest("User account locked out");
+                return BadRequest(new { message = "User account locked out" });
             }
 
             var email = info.Principal.FindFirstValue(ClaimTypes.Email);
@@ -742,7 +742,7 @@ namespace MoxBackEnd.Controllers
                     }
                     else
                     {
-                        return BadRequest("Failed to create user from external login");
+                        return BadRequest(new { message = "Failed to create user from external login" });
                     }
                 }
                 else
@@ -758,7 +758,7 @@ namespace MoxBackEnd.Controllers
                 }
             }
 
-            return BadRequest("Error processing external login");
+            return BadRequest(new { message = "Error processing external login" });
         }
 
     }

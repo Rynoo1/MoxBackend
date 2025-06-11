@@ -74,7 +74,7 @@ const ProfilePage: React.FC = () => {
         body: JSON.stringify({ profilePicture: url })
       })
     } catch (error) {
-      alert('Failed to upload profile picture')
+      alert('Failed to upload profile picture' + error)
     }
     setUploading(false)
   }

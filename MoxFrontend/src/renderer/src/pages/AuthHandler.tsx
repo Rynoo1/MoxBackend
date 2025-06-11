@@ -11,7 +11,7 @@ const AuthHandler: React.FC<AuthCallbackProps> = () => {
   const [searchParams] = useSearchParams()
 
   useEffect(() => {
-    const processAuthCallback = async () => {
+    const processAuthCallback = async (): Promise<void> => {
       try {
         const token = searchParams.get('token')
         const email = searchParams.get('email')
