@@ -100,7 +100,7 @@ const Emergency: React.FC = () => {
     <>
       {showPopup && activeMeetings.length > 0 && (
         <div className="fixed inset-0 flex justify-center items-center z-50 px-4">
-          <div className="relative w-full max-w-2xl bg-white rounded-3xl border border-red-300 shadow-xl p-8 space-y-6">
+          <div className="relative w-full max-w-2xl bg-[#FFFFFF] rounded-3xl border border-red-300 shadow-xl p-8 space-y-6">
             <button
               onClick={() => setShowPopup(false)}
               className="absolute top-4 right-4 text-red-500 hover:text-red-700 text-xl transition"
