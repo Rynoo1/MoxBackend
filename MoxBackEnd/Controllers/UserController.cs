@@ -761,24 +761,5 @@ namespace MoxBackEnd.Controllers
             return BadRequest("Error processing external login");
         }
 
-
-        [HttpPost("test-email")]
-        public async Task<IActionResult> TestEmail()
-        {
-            await _emailSender.SendEmailAsync(
-                "221361@virtualwindow.co.za",
-                "Test Subject",
-                "<b>Hello from MailKit!</b>");
-
-            return Ok("Email sent");
-
-        }
-
-
-        //TODO: Write get roles endpoint -- get projects? (own/add)
-        //TODO: Test all endpoints
-
-        //TODO: Write delete user endpoint? 
-        //TODO: Set Role endpoint?
     }
 }
