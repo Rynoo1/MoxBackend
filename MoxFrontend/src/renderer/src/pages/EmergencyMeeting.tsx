@@ -1,119 +1,117 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import Emergency from "../components/EmergencyMeetingOverlay";
+import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import Emergency from '../components/EmergencyMeetingOverlay'
 
 const CreateEmergencyMeeting: React.FC = () => {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
-  const [projectId, setProjectId] = useState<number | null>(null);
-  const [projects, setProjects] = useState<{ projectID: number; projectName: string }[]>([]);
-  const [attendees, setAttendees] = useState<{ id: string; userName: string }[]>([]);
-  const [allUsers, setAllUsers] = useState<{ id: string; userName: string }[]>([]);
+  const [projectId, setProjectId] = useState<number | null>(null)
+  const [projects, setProjects] = useState<{ projectID: number; projectName: string }[]>([])
+  const [attendees, setAttendees] = useState<{ id: string; userName: string }[]>([])
+  const [allUsers, setAllUsers] = useState<{ id: string; userName: string }[]>([])
   const [form, setForm] = useState({
-    title: "",
-    description: "",
-    location: "",
-    startTime: "",
-    endTime: "",
-  });
+    title: '',
+    description: '',
+    location: '',
+    startTime: '',
+    endTime: ''
+  })
 
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState(false)
 
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
         const [usersRes, projectsRes] = await Promise.all([
-          fetch("http://localhost:5183/api/User"),
-          fetch("http://localhost:5183/api/Project"),
-        ]);
+          fetch('http://localhost:5183/api/User'),
+          fetch('http://localhost:5183/api/Project')
+        ])
 
         if (!usersRes.ok || !projectsRes.ok) {
-          throw new Error("Failed to fetch users or projects.");
+          throw new Error('Failed to fetch users or projects.')
         }
 
-        const usersData = await usersRes.json();
-        const projectsData = await projectsRes.json();
+        const usersData = await usersRes.json()
+        const projectsData = await projectsRes.json()
 
-        const users = usersData.$values ?? usersData;
-        const projects = projectsData.$values ?? projectsData;
+        const users = usersData.$values ?? usersData
+        const projects = projectsData.$values ?? projectsData
 
-        setAllUsers(Array.isArray(users) ? users : []);
-        setProjects(Array.isArray(projects) ? projects : []);
+        setAllUsers(Array.isArray(users) ? users : [])
+        setProjects(Array.isArray(projects) ? projects : [])
       } catch (err) {
-        console.error("Failed to load users or projects", err);
-        setAllUsers([]);
-        setProjects([]);
+        console.error('Failed to load users or projects', err)
+        setAllUsers([])
+        setProjects([])
       }
-    };
+    }
 
-    fetchInitialData();
-  }, []);
+    fetchInitialData()
+  }, [])
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-
-  const userId = localStorage.getItem("userId");
-
-  const payload: any = {
-    ...form,
-    createdByUserId: userId,
-    isResolved: false,
-    attendees: attendees.map((a) => a.id),
-    startTime: new Date(form.startTime).toISOString(),
-    endTime: new Date(form.endTime).toISOString(),
-  };
-
-  if (projectId) {
-    payload.projectID = projectId;
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target
+    setForm((prev) => ({ ...prev, [name]: value }))
   }
 
-  console.log("Payload being submitted:", payload);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError('')
+
+    const userId = localStorage.getItem('userId')
+    if (!userId) {
+      setError('You must be logged in to create a meeting.')
+      return
+    }
+
+    const payload: any = {
+      title: form.title,
+      description: form.description,
+      location: form.location,
+      startTime: new Date(form.startTime).toISOString(),
+      endTime: new Date(form.endTime).toISOString(),
+      createdByUserId: userId,
+      isResolved: false,
+      attendees: attendees.map((a) => a.id)
+    }
+
+    if (projectId) {
+      payload.projectID = projectId
+    }
+
+    console.log('Payload being submitted:', payload)
 
     try {
-      const response = await fetch("http://localhost:5183/api/EmergencyMeeting", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      const response = await fetch('http://localhost:5183/api/EmergencyMeeting', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
 
       if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.message || "Failed to create meeting");
+        const data = await response.json()
+        throw new Error(data.message || 'Failed to create meeting')
       }
 
-      setSuccess(true);
-      setTimeout(() => navigate("/emergency-meeting"), 1500);
+      setSuccess(true)
+      setTimeout(() => navigate('/emergency-meeting'), 1500)
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message)
     }
-  };
+  }
 
   return (
     <div className="min-h-screen overflow-y-auto flex justify-center items-start p-4 pt-20">
       <div className="w-3xl bg-white rounded-3xl shadow-xl border border-gray-200 p-8 overflow-y-auto max-h-[90vh]">
         <div className="text-center mb-8">
           <div className="text-4xl mb-2">🚨</div>
-          <h1 className="text-2xl font-bold text-blue-400 uppercase">
-            Emergency Meeting
-          </h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Fill in the details to notify your team
-          </p>
+          <h1 className="text-2xl font-bold text-blue-400 uppercase">Emergency Meeting</h1>
+          <p className="text-sm text-gray-500 mt-1">Fill in the details to notify your team</p>
         </div>
 
         {error && (
-          <div className="bg-red-100 text-red-700 p-3 rounded-lg mb-4 text-sm">
-            {error}
-          </div>
+          <div className="bg-red-100 text-red-700 p-3 rounded-lg mb-4 text-sm">{error}</div>
         )}
 
         {success && (
@@ -145,14 +143,16 @@ const CreateEmergencyMeeting: React.FC = () => {
             <select
               className="w-full px-4 py-2 rounded-lg border border-gray-300"
               onChange={(e) => {
-                const user = allUsers.find((u) => u.id === e.target.value);
+                const user = allUsers.find((u) => u.id === e.target.value)
                 if (user && !attendees.find((a) => a.id === user.id)) {
-                  setAttendees([...attendees, user]);
+                  setAttendees([...attendees, user])
                 }
               }}
               defaultValue=""
             >
-              <option value="" disabled>Select user to add</option>
+              <option value="" disabled>
+                Select user to add
+              </option>
               {allUsers
                 .filter((u) => !attendees.some((a) => a.id === u.id))
                 .map((user) => (
@@ -227,7 +227,7 @@ const CreateEmergencyMeeting: React.FC = () => {
           <div className="flex justify-between mt-6">
             <button
               type="button"
-              onClick={() => navigate("/emergency-meeting")}
+              onClick={() => navigate('/emergency-meeting')}
               className="px-6 py-2 rounded-lg bg-red-500 text-white hover:bg-red-700 hover:scale-105 hover:shadow-md transition-all"
             >
               Cancel
@@ -242,7 +242,7 @@ const CreateEmergencyMeeting: React.FC = () => {
         </form>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default CreateEmergencyMeeting;
+export default CreateEmergencyMeeting
