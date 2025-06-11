@@ -200,7 +200,7 @@ const KanbanBoard = () => {
   }
 
   const handleDeleteTask = (id: number) => {
-    // implement task delete logic
+
   }
 
   return (

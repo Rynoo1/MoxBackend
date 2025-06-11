@@ -1,5 +1,5 @@
 .kanban-column {
-  @apply bg-white/90 shadow-sm border border-transparent rounded-box grow p-4 min-h-[200px] transition;
+  @apply bg-white bg-opacity-90 shadow-sm border border-transparent rounded-box grow p-4 min-h-[200px] transition;
 }
 
 .kanban-card {
@@ -29,6 +29,7 @@
   @apply text-[#1D3557];
 }
 
+/* Fallback styling */
 .card {
   padding: 1.5rem;
   background: rgba(255, 255, 255, 0.35);
@@ -38,13 +39,12 @@
   color: #122235;
 }
 
-
 .btn-edit {
   background-color: #200072;
   color: #122235;
   border: none;
 }
+
 .kanban-column-title {
   color: #1D3557;
 }
-

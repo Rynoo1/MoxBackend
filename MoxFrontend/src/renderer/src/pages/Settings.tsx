@@ -1,154 +1,299 @@
-import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import "../styles/dashboard.css";
+import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useAuth } from './useAuth';
+import { storage } from '../firebase';
+import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+import '../styles/dashboard.css';
+import moxLoadingGif from '../assets/mox-loading.gif';
+
+interface User {
+  UserName: string;
+  ProfilePicture: string;
+  Email: string;
+}
 
 const Settings = () => {
+  const { t, i18n } = useTranslation();
+  const { isAuthenticated, getAuthHeaders, logout, isLoading } = useAuth();
+  const [user, setUser] = useState<User | null>(null);
+  const [originalUser, setOriginalUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [edit, setEdit] = useState(false);
+
   const [darkMode, setDarkMode] = useState(false);
   const [contrast, setContrast] = useState(false);
-  const [fontSize, setFontSize] = useState("normal");
-  const [language, setLanguage] = useState("en");
-  const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState("");
-
-  const [username, setUsername] = useState("User");
-
-  useEffect(() => {
-    const storedName = localStorage.getItem("username") || "User";
-    setUsername(storedName);
-    setFullName(storedName);
-    document.body.classList.toggle("dark-mode", darkMode);
-  }, [darkMode]);
+  const [fontSize, setFontSize] = useState(() => localStorage.getItem('fontSize') || 'normal');
+  const [language, setLanguage] = useState(i18n.language);
 
   const today = new Date();
-  const formattedDate = today.toLocaleDateString("en-US", {
-    weekday: "long",
-    month: "long",
-    day: "numeric",
-  });
+  const formattedDate = today.toLocaleDateString(language);
 
   const getGreeting = () => {
     const hour = new Date().getHours();
-    if (hour < 12) return "Good morning";
-    if (hour < 18) return "Good afternoon";
-    return "Good evening";
+    if (hour < 12) return 'goodMorning';
+    if (hour < 18) return 'goodAfternoon';
+    return 'goodEvening';
   };
 
-  const handleSave = () => {
-    localStorage.setItem("username", fullName);
-    alert("Settings saved successfully.");
+  const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newLang = e.target.value;
+    setLanguage(newLang);
+    i18n.changeLanguage(newLang);
   };
+
+  const handleProfilePicChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    setUploading(true);
+
+    try {
+      if (user.ProfilePicture?.includes('firebase')) {
+        const url = new URL(user.ProfilePicture);
+        const match = url.pathname.match(/\/o\/(.+)$/);
+        const encodedPath = match ? match[1] : '';
+        const filePath = decodeURIComponent(encodedPath);
+        const oldRef = ref(storage, filePath);
+        await deleteObject(oldRef);
+      }
+
+      const storageRef = ref(storage, `profile-pics/${user.UserName}_${file.name}`);
+      await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(storageRef);
+
+      setUser(prev => prev ? { ...prev, ProfilePicture: downloadURL } : prev);
+
+      await fetch('http://localhost:5183/api/user/updateProfilePic', {
+        method: 'PUT',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ profilePicture: downloadURL }),
+      });
+    } catch (err) {
+      console.warn('Error uploading profile picture', err);
+    }
+
+    setUploading(false);
+  };
+
+  const handleSave = async () => {
+    if (!user) return;
+    try {
+      await fetch('http://localhost:5183/api/user/profile', {
+        method: 'PUT',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(user),
+      });
+      setEdit(false);
+    } catch {
+      alert('Failed to save profile');
+    }
+  };
+
+  const handleCancel = () => {
+    setUser(originalUser);
+    setEdit(false);
+  };
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await fetch('http://localhost:5183/api/user/profile', {
+          method: 'GET',
+          headers: getAuthHeaders(),
+        });
+
+        if (!res.ok) {
+          logout();
+          return;
+        }
+
+        const result = await res.json();
+        const { data } = result;
+
+        setUser(data);
+        setOriginalUser(data);
+      } catch (err) {
+        console.error('Failed to load profile', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (!isLoading && isAuthenticated) {
+      fetchProfile();
+    }
+  }, [isAuthenticated, isLoading]);
+
+  useEffect(() => {
+    document.body.classList.toggle('dark-mode', darkMode);
+  }, [darkMode]);
+
+  useEffect(() => {
+    localStorage.setItem('fontSize', fontSize);
+    const root = document.documentElement;
+    switch (fontSize) {
+      case 'large':
+        root.style.fontSize = '18px';
+        break;
+      case 'xl':
+        root.style.fontSize = '20px';
+        break;
+      default:
+        root.style.fontSize = '16px';
+        break;
+    }
+  }, [fontSize]);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <img src={moxLoadingGif} alt="Loading..." className="w-96" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen w-full pt-10">
-      {/* Header */}
       <div className="bg-white px-6 py-4 shadow-sm rounded-b-lg">
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <div>
-            <h1 className="text-2xl font-semibold">Settings</h1>
+            <h1 className="text-2xl font-semibold">{t('settings')}</h1>
             <p className="text-sm text-gray-500">{formattedDate}</p>
           </div>
-          <Link to="/profile">
-            <div className="avatar placeholder cursor-pointer">
-              <div className="w-10 rounded-full bg-neutral-focus text-white">
-                <span className="text-lg">👤</span>
-              </div>
-            </div>
-          </Link>
+          <div className="text-lg text-gray-600 md:text-right w-full md:w-auto">
+            {t(getGreeting())},{" "}
+            <span className="font-semibold break-all">{user?.UserName || 'User'}</span>
+          </div>
         </div>
       </div>
 
-      {/* Greeting */}
-      <div className="text-center mt-6 mb-6">
-        <h2 className="text-3xl font-light">
-          {getGreeting()},{" "}
-          <Link to="/profile" className="text-blue-600 underline hover:text-blue-800">
-            {username}
-          </Link>
-        </h2>
-      </div>
-
-      {/* Settings Form */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-6">
-        <div className="bg-white p-6 shadow rounded col-span-1 md:col-span-2 lg:col-span-3">
-          <h3 className="text-xl font-semibold mb-6">Account Settings</h3>
-
-          <div className="grid gap-4">
-            <input
-              type="text"
-              placeholder="Full Name"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              className="input input-bordered w-full"
-            />
-            <input
-              type="email"
-              placeholder="Email Address"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="input input-bordered w-full"
-            />
-            <input type="password" placeholder="New Password" className="input input-bordered w-full" />
-
-            <div className="flex items-center gap-2">
-              <span className="label-text w-40">Language</span>
-              <select
-                className="select select-bordered w-full"
-                value={language}
-                onChange={(e) => setLanguage(e.target.value)}
-              >
-                <option value="en">English</option>
-                <option value="af">Afrikaans</option>
-                <option value="zu">Zulu</option>
-              </select>
+      <div className="px-6 py-10">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-3xl font-light">{t('userProfile')}</h2>
+          {!edit ? (
+            <button className="btn btn-primary" onClick={() => setEdit(true)}>
+              {t('editProfile')}
+            </button>
+          ) : (
+            <div className="flex gap-2">
+              <button className="btn btn-outline" onClick={handleCancel}>
+                {t('cancel')}
+              </button>
+              <button className="btn btn-primary" onClick={handleSave}>
+                {t('save')}
+              </button>
             </div>
+          )}
+        </div>
 
-            <div className="flex items-center justify-between">
-              <span className="label-text">Dark Mode</span>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <div>
+            <p className="text-xl mb-2">{t('profilePicture')}</p>
+            <div className="avatar">
+              <div className="w-24 h-24 rounded-full">
+                <img
+                  src={
+                    user?.ProfilePicture ||
+                    'https://img.daisyui.com/images/profile/demo/yellingcat@192.webp'
+                  }
+                  alt="profile"
+                />
+              </div>
+            </div>
+            {edit && (
               <input
-                type="checkbox"
-                className="toggle"
-                checked={darkMode}
-                onChange={() => setDarkMode(!darkMode)}
+                type="file"
+                accept="image/*"
+                onChange={handleProfilePicChange}
+                className="file-input mt-4"
               />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <span className="label-text">Font Size</span>
-              <select
-                className="select select-bordered w-1/2"
-                value={fontSize}
-                onChange={(e) => setFontSize(e.target.value)}
-              >
-                <option value="normal">Normal</option>
-                <option value="large">Large</option>
-                <option value="xl">Extra Large</option>
-              </select>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <span className="label-text">High Contrast</span>
-              <input
-                type="checkbox"
-                className="toggle toggle-warning"
-                checked={contrast}
-                onChange={() => setContrast(!contrast)}
-              />
-            </div>
-
-            <div className="flex gap-4 mt-4">
-              <Link to="/kanban" className="btn btn-outline btn-sm">
-                Go to Kanban
-              </Link>
-              <Link to="/projects" className="btn btn-outline btn-sm">
-                Go to Timeline
-              </Link>
-            </div>
+            )}
           </div>
 
-          <div className="text-right mt-8">
-            <button className="btn btn-primary" onClick={handleSave}>
-              Save Settings
-            </button>
+          <div>
+            <label className="label">{t('username')}</label>
+            {edit ? (
+              <input
+                className="input input-bordered w-full"
+                value={user?.UserName || ''}
+                onChange={(e) =>
+                  setUser((prev) => (prev ? { ...prev, UserName: e.target.value } : prev))
+                }
+              />
+            ) : (
+              <p className="text-lg break-all">{user?.UserName}</p>
+            )}
+
+            <label className="label mt-4">{t('email')}</label>
+            {edit ? (
+              <input
+                className="input input-bordered w-full"
+                value={user?.Email || ''}
+                onChange={(e) =>
+                  setUser((prev) => (prev ? { ...prev, Email: e.target.value } : prev))
+                }
+              />
+            ) : (
+              <p className="text-lg break-all">{user?.Email}</p>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white shadow rounded p-6 mx-6">
+        <h3 className="text-xl font-semibold mb-4">{t('preferences')}</h3>
+
+        <div className="grid gap-4">
+          <div className="flex items-center justify-between">
+            <span className="label-text">{t('darkMode')}</span>
+            <input
+              type="checkbox"
+              className="toggle"
+              checked={darkMode}
+              onChange={() => setDarkMode(!darkMode)}
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <span className="label-text">{t('fontSize')}</span>
+            <select
+              className="select select-bordered w-1/2"
+              value={fontSize}
+              onChange={(e) => setFontSize(e.target.value)}
+            >
+              <option value="normal">{t('normal')}</option>
+              <option value="large">{t('large')}</option>
+              <option value="xl">{t('xl')}</option>
+            </select>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <span className="label-text">{t('language')}</span>
+            <select
+              className="select select-bordered w-1/2"
+              value={language}
+              onChange={handleLanguageChange}
+            >
+              <option value="en">English</option>
+              <option value="af">Afrikaans</option>
+            </select>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <span className="label-text">{t('highContrast')}</span>
+            <input
+              type="checkbox"
+              className="toggle toggle-warning"
+              checked={contrast}
+              onChange={() => setContrast(!contrast)}
+            />
           </div>
         </div>
       </div>

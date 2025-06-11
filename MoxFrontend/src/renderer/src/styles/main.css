@@ -185,6 +185,18 @@ code {
   flex-direction: column;
   margin-bottom: 80px;
 }
+.font-normal {
+  font-size: 1rem;
+}
+
+.font-large {
+  font-size: 1.25rem;
+}
+
+.font-xl {
+  font-size: 1.5rem;
+}
+
 
 /*   background-image: url('../assets/Dark-Mode.jpg');
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap");
