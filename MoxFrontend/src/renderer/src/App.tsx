@@ -17,6 +17,7 @@ import { AuthProvider } from './pages/AuthContext'
 import EmerencyMeeting from './pages/EmergencyMeeting'
 import Analytics from './pages/Analytics'
 import AuthCallback from './components/AuthCallback'
+import AuthHandler from './pages/AuthHandler'
 
 const AppContent = () => {
   const location = useLocation()
@@ -64,6 +65,7 @@ const AppContent = () => {
             element={<Analytics isAdmin={localStorage.getItem('isAdmin') === 'true'} userId={''} />}
           />
           <Route path="/auth-callback" element={<AuthCallback />} />
+          <Route path="/auth-handler" element={<AuthHandler />} />
         </Routes>
       </div>
     </div>
