@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import Emergency from '../components/EmergencyMeetingOverlay'
 
 const CreateEmergencyMeeting: React.FC = () => {
   const navigate = useNavigate()
